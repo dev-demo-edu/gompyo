@@ -1,5 +1,5 @@
-import Index from "@/containers/index";
+import Dashboard from "@/containers/dashboard";
 
 export default function Home() {
-  return <Index />;
+  return <Dashboard />;
 }
