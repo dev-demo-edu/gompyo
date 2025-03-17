@@ -1,7 +1,5 @@
+import Index from "@/containers/index";
+
 export default function Home() {
-  return (
-    <div>
-      <h1>Home</h1>
-    </div>
-  );
+  return <Index />;
 }

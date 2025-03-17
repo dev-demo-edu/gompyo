@@ -170,10 +170,18 @@ pnpm create jest@latest
 
 nextjs에서는 여러 디렉토리 구조를 사용할 수 있지만, [`app` 외부에 프로젝트 파일 저장](https://nextjs.org/docs/app/getting-started/project-structure#store-project-files-outside-of-app)하는 방법을 사용합니다.
 
+- [Next.js 폴더/파일 구조 잡기](https://miriya.net/blog/cliz752zc000lwb86y5gtxstu)
+- [NextJS 14 Folder Structure](https://medium.com/@mertenercan/nextjs-13-folder-structure-c3453d780366)
+- [Project structure and organization](https://nextjs.org/docs/app/getting-started/project-structure)
+
 ### src/app
 
 - 라우팅 용으로 사용한다 (라우팅과 관련된 파일만 넣어놓자)
 - e.g., `page.tsx`, `layout.tsx`, `opengraph-image.tsx`
+
+### src/actions
+
+- 페이지에서 사용되는 서버 액션들을 모아놓는다
 
 ### src/containers
 
@@ -211,12 +219,3 @@ nextjs에서는 여러 디렉토리 구조를 사용할 수 있지만, [`app` �
 ### src/types
 
 - 각종 타입 스크립트의 정의가 들어가는 곳
-
-### References
-
-- https://miriya.net/blog/cliz752zc000lwb86y5gtxstu
-- https://medium.com/@mertenercan/nextjs-13-folder-structure-c3453d780366
-
-```
-
-```
