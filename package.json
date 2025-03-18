@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "gompyo",
   "version": "0.1.0",
   "private": true,
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "ag-grid-react": "^33.1.1",
+    "better-sqlite3": "^11.9.1",
     "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

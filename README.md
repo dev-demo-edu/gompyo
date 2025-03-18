@@ -14,3 +14,17 @@ pnpm install
 ```bash
 pnpm run dev
 ```
+
+# DB
+
+### DB setting
+
+```bash
+node initdb.js
+```
+
+### DB testing
+
+```bash
+node testdb.js
+```
