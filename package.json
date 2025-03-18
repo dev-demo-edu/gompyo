@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "prepare": "husky install"
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "ag-grid-react": "^33.1.1",
@@ -29,7 +28,6 @@
     "eslint": "^9.22.0",
     "eslint-config-next": "15.2.2",
     "eslint-config-prettier": "^10.1.1",
-    "husky": "^8.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.5.0",

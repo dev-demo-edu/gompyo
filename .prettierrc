@@ -11,7 +11,6 @@
   "arrowParens": "always",
   "htmlWhitespaceSensitivity": "css",
   "jsxSingleQuote": false,
-  "jsxBracketSameLine": false,
   "quoteProps": "as-needed",
   "trailingComma": "all",
   "overrides": [

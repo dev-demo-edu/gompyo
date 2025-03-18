@@ -1,0 +1,124 @@
+# https://pre-commit.com/
+# pre-commit install
+
+repos:
+  - repo: local
+    hooks:
+      - id: prettier-js
+        name: Prettier (JavaScript/TypeScript Code Formatter)
+        entry: bash -c 'pnpm prettier --write --cache "{src,pages,components,lib,hooks,context,utils,styles}/**/*.{js,jsx,ts,tsx,css,json,md}"'
+        language: system
+        files: \.(js|jsx|ts|tsx|css|json|md)$
+        exclude: >
+          (?x)^(
+            node_modules/|
+            build/|
+            dist/|
+            __tests__/|
+            __mock__/|
+            __mocks__/|
+            __fixtures__/|
+            public/|
+            .github/|
+            .next/|
+            coverage/
+          )
+        pass_filenames: false
+        verbose: true
+
+      - id: eslint-js
+        name: ESLint (JavaScript/TypeScript Code Linter)
+        entry: bash -c 'pnpm eslint --fix --cache "{src,pages,components,lib,hooks,context,utils,styles}/**/*.{js,jsx,ts,tsx}"'
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        exclude: >
+          (?x)^(
+            node_modules/|
+            build/|
+            dist/|
+            __tests__/|
+            __mock__/|
+            __mocks__/|
+            __fixtures__/|
+            public/|
+            .github/|
+            .next/|
+            coverage/
+          )
+        pass_filenames: false
+        verbose: true
+
+      # - id: ts-typecheck
+      #   name: TypeScript Type Checking
+      #   entry: bash -c 'pnpm tsc --noEmit'
+      #   language: system
+      #   files: \.(ts|tsx)$
+      #   exclude: >
+      #     (?x)^(
+      #       node_modules/|
+      #       build/|
+      #       dist/|
+      #       __tests__/|
+      #       __mock__/|
+      #       __mocks__/|
+      #       __fixtures__/
+      #     )
+      #   pass_filenames: false
+      #   require_serial: true
+
+      - id: prevent-env-commit
+        name: .env 파일 커밋 방지
+        entry: |
+          bash -c 'echo -e "\033[31mERROR: .env 파일은 커밋할 수 없습니다. .env.example 파일을 대신 사용하세요.\033[0m" && exit 1'
+        language: system
+        files: \.env
+        exclude: \.env\.example$
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: 후행 공백 제거
+        exclude: >
+          (?x)^(
+            node_modules/|
+            backend/.venv/|
+            .github/|
+            __mock__/|
+            __mocks__/
+          )
+
+      - id: end-of-file-fixer
+        name: 파일 끝 개행 추가
+        exclude: >
+          (?x)^(
+            node_modules/|
+            backend/.venv/|
+            public/|
+            __mock__/|
+            __mocks__/
+          )
+
+      - id: check-yaml
+        name: YAML 파일 검증
+        exclude: >
+          (?x)^(
+            node_modules/|
+            __mock__/|
+            __mocks__/
+          )
+
+      - id: check-json
+        name: JSON 파일 검증
+        exclude: >
+          (?x)^(
+            node_modules/|
+            __mock__/|
+            __mocks__/
+          )
+
+      - id: check-merge-conflict
+        name: 병합 충돌 검사
+
+      - id: detect-private-key
+        name: 민감한 개인키 검출
