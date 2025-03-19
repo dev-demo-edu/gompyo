@@ -20,11 +20,11 @@ pnpm run dev
 ### DB setting
 
 ```bash
-node initdb.js
+npx drizzle-kit push
 ```
 
 ### DB testing
 
 ```bash
-node testdb.js
+npx tsx drizzle.test.ts
 ```
