@@ -104,7 +104,7 @@ export const costDetailsRelations = relations(costDetails, ({ one }) => ({
 
 // Contracts table
 export const contracts = sqliteTable("contracts", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   contractNumber: text("contract_number"),
   contractDate: text("contract_date"),
   contractParty: text("contract_party"),
@@ -116,6 +116,7 @@ export const contracts = sqliteTable("contracts", {
 export const contractsRelations = relations(contracts, ({ many }) => ({
   payments: many(payments),
   shipments: many(shipments),
+  documents: many(documents),
 }));
 
 // Items table
@@ -163,7 +164,7 @@ export const users = sqliteTable("users", {
 // Shipments table
 export const shipments = sqliteTable("shipments", {
   id: text("id").primaryKey(),
-  contractId: integer("contract_id").notNull(),
+  contractId: text("contract_id").notNull(),
   estimatedTimeArrival: text("estimated_time_arrival"),
   estimatedTimeDeparture: text("estimated_time_departure"),
   arrivalPort: text("arrival_port"),
@@ -181,6 +182,7 @@ export const shipmentsRelations = relations(shipments, ({ one, many }) => ({
     references: [contracts.id],
   }),
   cargos: many(cargos),
+  documents: many(documents),
 }));
 
 // Cargos table
@@ -219,4 +221,29 @@ export const cargosRelations = relations(cargos, ({ one, many }) => ({
     references: [shipments.id],
   }),
   costs: many(costs),
+}));
+
+// Documents table
+export const documents = sqliteTable("documents", {
+  id: text("id").primaryKey(),
+  documentName: text("document_name").notNull(),
+  documentType: text("document_type").notNull(),
+  s3Url: text("s3_url").notNull(),
+  uploadDate: text("upload_date").notNull(),
+  relatedId: text("related_id").notNull(),
+  documentCategory: text("document_category").notNull(),
+});
+
+// Documents relations
+export const documentsRelations = relations(documents, ({ one }) => ({
+  contract: one(contracts, {
+    fields: [documents.relatedId],
+    references: [contracts.id],
+    relationName: "contract_documents",
+  }),
+  shipment: one(shipments, {
+    fields: [documents.relatedId],
+    references: [shipments.id],
+    relationName: "shipment_documents",
+  }),
 }));
