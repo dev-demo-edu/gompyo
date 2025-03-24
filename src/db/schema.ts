@@ -247,3 +247,6 @@ export const documentsRelations = relations(documents, ({ one }) => ({
     relationName: "shipment_documents",
   }),
 }));
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
