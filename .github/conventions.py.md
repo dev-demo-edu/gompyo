@@ -80,18 +80,18 @@ repos:
     rev: 25.1.0
     hooks:
       - id: black
-        args: ["--target-version", "py313"]
+        args: ['--target-version', 'py313']
   - repo: https://github.com/pycqa/flake8
     rev: 7.1.1
     hooks:
       - id: flake8
-        args: ["--config=.flake8"]
+        args: ['--config=.flake8']
   - repo: https://github.com/pylint-dev/pylint
     rev: v3.3.4
     hooks:
       - id: pylint
         args:
-          - "--rcfile=.pylintrc"
+          - '--rcfile=.pylintrc'
 ```
 
 ```shell
