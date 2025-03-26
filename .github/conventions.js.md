@@ -8,23 +8,25 @@
 - [Code Style Convention](#code-style-convention)
   - [prettier](#prettier)
   - [pre-commit](#pre-commit)
-- [NextJS Testing Environment](#nextjs-testing-environment)
-  - [Jest](#jest)
-- [NextJS Naming Convention](#nextjs-naming-convention)
-  - [File Naming Convention](#file-naming-convention)
-  - [Function/Variable Naming Convention](#functionvariable-naming-convention)
-  - [Component Naming Convention](#component-naming-convention)
-- [Directory Convention](#directory-convention)
-  - [src/app](#srcapp)
-  - [src/containers](#srccontainers)
-  - [src/components](#srccomponents)
-  - [src/constants](#srcconstants)
-  - [src/hooks](#srchooks)
-  - [src/libs](#srclibs)
-  - [src/services](#srcservices)
-  - [src/states](#srcstates)
-  - [src/types](#srctypes)
-  - [References](#references)
+- [NextJS Convention](#nextjs-convention)
+  - [File Convention](#file-convention)
+  - [Function/Variable Convention](#functionvariable-convention)
+  - [Component Convention](#component-convention)
+  - [Directory Convention](#directory-convention)
+    - [src/app](#srcapp)
+    - [src/containers](#srccontainers)
+    - [src/components](#srccomponents)
+    - [src/constants](#srcconstants)
+    - [src/hooks](#srchooks)
+    - [src/libs](#srclibs)
+    - [src/services](#srcservices)
+    - [src/states](#srcstates)
+    - [src/types](#srctypes)
+  - [Testing Environment](#testing-environment)
+    - [Jest](#jest)
+- [Module Convention](#module-convention)
+  - [ShadCN Component](#shadcn-component)
+  - [Lucide React](#lucide-react)
 
 ## Package Manager
 
@@ -110,7 +112,7 @@
 ### pre-commit
 
 ```shell
-pnpm install -D husky prettier eslint lint-staged eslint-config-prettier
+pnpm install --save-dev husky prettier eslint lint-staged eslint-config-prettier
 
 pnpm dlx husky-init
 pnpm pkg set scripts.prepare="husky install"
@@ -137,11 +139,76 @@ chmod +x .husky/*
 pnpm dlx lint-staged
 ```
 
-## NextJS Testing Environment
+## NextJS Convention
+
+### File Convention
+
+- `kebab-case` 로 작성합니다.
+- `not-found.js`, `date-picker.js` 처럼, 최대한 간결하게 하되, 단어 사이는 [하이픈으로 연결](https://nextjs.org/docs/app/api-reference/file-conventions)합니다.
+
+### Function/Variable Convention
+
+- `camelCase` 로 작성합니다.
+- TypeScript 타입은 반드시 정의해야 합니다.
+
+### Component Convention
+
+- `PascalCase` 로 작성합니다.
+- Component는 재사용 가능하도록 설계해야 합니다.
+
+### Directory Convention
+
+nextjs에서는 여러 디렉토리 구조를 사용할 수 있지만, [`app` 외부에 프로젝트 파일 저장](https://nextjs.org/docs/app/getting-started/project-structure#store-project-files-outside-of-app)하는 방법을 사용합니다.
+
+- [Next.js 폴더/파일 구조 잡기](https://miriya.net/blog/cliz752zc000lwb86y5gtxstu)
+- [NextJS 14 Folder Structure](https://medium.com/@mertenercan/nextjs-13-folder-structure-c3453d780366)
+- [Project structure and organization](https://nextjs.org/docs/app/getting-started/project-structure)
+
+#### src/app
+
+- 라우팅 용으로 사용한다. (라우팅과 관련된 파일만 넣어놓는다)
+- e.g., `page.tsx`, `layout.tsx`, `opengraph-image.tsx`
+
+#### src/containers
+
+- `page.tsx` 안에서 보여줄 컨텐츠들을 넣어놓는다.
+
+#### src/components
+
+- 여러 페이지에서 공통으로 사용할 컴포넌트
+- Button, Loading...
+
+#### src/constants
+
+- 공통으로 사용 할 상수
+
+#### src/hooks
+
+- 페이지 곳곳에서 사용되는 공통 훅
+
+#### src/libs
+
+- 외부 라이브러리를 모아둔다. package.json때문에 쓸 일이 많지 않지만 튜닝해서 사용할 경우 발생
+
+#### src/services
+
+- 각종 API 요청
+- GET, POST, PATCH...
+
+#### src/states
+
+- 페이지 곳곳에서 사용되는 state를 모아두는 곳
+- 전역 상태관리 남발하지 않는다. (props drilling을 막기 위해서는 `Jotai`를 사용)
+
+#### src/types
+
+- 각종 타입 스크립트의 정의가 들어가는 곳
+
+### Testing Environment
 
 - [NetxJS/Testing](https://nextjs.org/docs/pages/building-your-application/testing)
 
-### Jest
+#### Jest
 
 - [Setting ui Jest with NextJS](https://nextjs.org/docs/pages/building-your-application/testing/jest)
 
@@ -151,71 +218,16 @@ pnpm install -D jest jest-environment-jsdom @testing-library/react @testing-libr
 pnpm create jest@latest
 ```
 
-## NextJS Naming Convention
+## Module Convention
 
-### File Naming Convention
+### ShadCN Component
 
-- `kebab-case` 로 작성합니다.
-- `not-found.js`, `date-picker.js` 처럼, 최대한 간결하게 하되, 단어 사이는 [하이픈으로 연결](https://nextjs.org/docs/app/api-reference/file-conventions)합니다.
+- 모든 UI 컴포넌트는 ShadCN을 사용해야 합니다.
+- 컴포넌트 사용 전 설치 여부를 확인해야 합니다: `/component/ui` 디렉토리 체크
+- 컴포넌트 설치 명령어를 사용해야 합니다: `pnpx shadcn@latest add [component-name]`
 
-### Function/Variable Naming Convention
+### Heroicons
 
-- `camelCase` 로 작성합니다.
-
-### Component Naming Convention
-
-- `PascalCase` 로 작성합니다.
-
-## Directory Convention
-
-nextjs에서는 여러 디렉토리 구조를 사용할 수 있지만, [`app` 외부에 프로젝트 파일 저장](https://nextjs.org/docs/app/getting-started/project-structure#store-project-files-outside-of-app)하는 방법을 사용합니다.
-
-- [Next.js 폴더/파일 구조 잡기](https://miriya.net/blog/cliz752zc000lwb86y5gtxstu)
-- [NextJS 14 Folder Structure](https://medium.com/@mertenercan/nextjs-13-folder-structure-c3453d780366)
-- [Project structure and organization](https://nextjs.org/docs/app/getting-started/project-structure)
-
-### src/app
-
-- 라우팅 용으로 사용한다 (라우팅과 관련된 파일만 넣어놓자)
-- e.g., `page.tsx`, `layout.tsx`, `opengraph-image.tsx`
-
-### src/actions
-
-- 페이지에서 사용되는 서버 액션들을 모아놓는다
-
-### src/containers
-
-- `page.tsx` 안에서 보여줄 컨텐츠들을 넣어놓는다
-- 전역 상태관리 남발하지 말자 (props drilling을 막기 위해서는 `Jotai`를 사용하자)
-- states.ts => 작은 단위의 상태관리
-- e.g., tsx, css, state, hooks ...
-
-### src/components
-
-- 여러 페이지에서 공통으로 사용할 컴포넌트
-- Button, Loading...
-
-### src/constants
-
-- 공통으로 사용 할 상수
-
-### src/hooks
-
-- 페이지 곳곳에서 사용되는 공통 훅
-
-### src/libs
-
-- 외부 라이브러리를 모아둔다. package.json때문에 쓸 일이 많지 않지만 튜닝해서 사용할 경우 발생
-
-### src/services
-
-- 각종 API 요청
-- GET, POST, PATCH...
-
-### src/states
-
-- 페이지 곳곳에서 사용되는 state를 모아두는 곳
-
-### src/types
-
-- 각종 타입 스크립트의 정의가 들어가는 곳
+- 모든 아이콘은 Heroicons를 사용해야 합니다.
+- 아이콘 임포트 방법: `import { IconName } from '@heroicons/react/24/outline';`
+- 예시: `import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';`
