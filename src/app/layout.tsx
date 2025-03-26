@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_KR } from "next/font/google";
 import Navbar from "@/containers/navbar";
 import "./globals.css";
+import ThemeRegistry from "@/components/ThemeRegistry";
 
 const notoSans = Noto_Sans_KR({
   variable: "--font-noto-sans",
@@ -21,8 +22,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${notoSans.variable} antialiased flex`}>
-        <Navbar />
-        <main className="flex-1">{children}</main>
+        <ThemeRegistry>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+        </ThemeRegistry>
       </body>
     </html>
   );

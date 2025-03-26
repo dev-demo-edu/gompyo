@@ -56,3 +56,9 @@ next-env.d.ts
 # Git related
 *.patch
 *.log
+
+# cursor
+.cursor/
+
+# drizzle
+drizzle/database.sqlite

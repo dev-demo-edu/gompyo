@@ -190,8 +190,8 @@ export const cargos = sqliteTable(
   "cargos",
   {
     id: text("id").primaryKey(),
-    itemsId: integer("items_id").notNull(),
-    shipmentId: integer("shipment_id").notNull(),
+    itemsId: text("items_id").notNull(),
+    shipmentId: text("shipment_id").notNull(),
     containerCount: integer("container_count"),
     contractTon: integer("contract_ton"),
     customsClearanceDate: text("customs_clearance_date"),
@@ -206,7 +206,7 @@ export const cargos = sqliteTable(
     check(
       "progress_status_check",
       sql`${table.progressStatus} IN ('예정', '입고', '출고', '판매')`,
-    ), //상태에 따라서 수정 필요
+    ),
   ],
 );
 
