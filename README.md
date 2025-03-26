@@ -20,11 +20,5 @@ pnpm run dev
 ### DB setting
 
 ```bash
-npx drizzle-kit push
-```
-
-### DB testing
-
-```bash
-npx tsx drizzle.test.ts
+pnpm drizzle:push
 ```
