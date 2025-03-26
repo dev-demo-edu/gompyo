@@ -3,39 +3,121 @@ description:
 globs:
 alwaysApply: true
 ---
-# Cursor Code Editing Rule
+# Conventions
 
-## 1. 기능 단위 개발
-- 작업을 시작할 때, 구현할 기능을 명확히 정의한다.
-- 기능을 개발하는 동안에는 해당 기능과 직접적으로 관련된 코드만 수정한다.
-- 기능 개발이 완료되면, 코드의 실행 및 정상 동작 여부를 확인한다.
+## Package Manager
 
-## 2. 오류 수정 및 검증
-- 기능 개발 후 즉시 오류를 점검하고, 모든 오류를 수정한 후에만 커밋을 진행한다.
-- 코드 실행 중 발생하는 에러 메시지를 확인하고 이를 해결한다.
-- 필요한 경우 테스트 코드를 작성하여 기능이 올바르게 동작하는지 확인한다.
+`pnpm`을 사용하여 패키지를 관리합니다.
 
-## 3. 커밋 규칙
-- 하나의 기능이 완전히 구현되고 오류가 없는 상태에서만 커밋을 수행한다.
-- 커밋 메시지는 다음 규칙을 따른다:
-  - `[Feature]` 새로운 기능 추가
-  - `[Fix]` 버그 수정
-  - `[Refactor]` 코드 리팩토링
-  - `[Docs]` 문서 수정
-  - `[Test]` 테스트 코드 추가 및 수정
-  - `[Chore]` 기타 작업 (예: 의존성 업데이트)
-- 예시:[Feature] 예약 시스템에서 사용자가 날짜별 예약을 조회하는 기능 추가
-      [Fix] 예약 리스트가 날짜별로 정렬되지 않는 문제 해결
-## 4. 코드 품질 및 스타일
-- 공식 문서에서 권장하는 코드 스타일을 준수한다.
-- 불필요한 코드나 중복을 줄이기 위해 리팩토링을 적극 활용한다.
-- 가독성을 높이기 위해 의미 있는 변수명과 함수명을 사용한다.
+## Git Convention
 
-## 5. 반복 작업 최소화
-- 동일한 작업을 반복하지 않도록 모듈화와 재사용성을 고려하여 코드를 작성한다.
-- 코드 작성 중 유사한 패턴이 발견되면 이를 함수나 클래스로 분리한다.
+- 깃 브랜치 전략은 GitFlow를 따르며 이를 기반으로 한 브랜치 네이밍 컨벤션을 사용합니다.
+- 브랜치 네이밍 형식: `type/[branch/]description[-#issue]`
+  - [] 안의 내용은 선택 사항입니다.
+  - `type`: 브랜치 타입
+  - `branch`: 분기한 브랜치명 (e.g. `dev`, `main`)
+  - `description`: 브랜치 설명
+  - `issue`: 관련된 이슈 번호
 
-## 6. 기타
-- Git 브랜치를 사용할 경우, 브랜치 이름은 `feature/원본브랜치명/기능명/#github이슈번호` 또는 `fix/원본브랜치명/수정내용/#github이슈번호` 형식으로 작성한다.
-- 필요할 경우, 커밋 전에 주요 변경 사항을 리뷰한다.
-- 패키지 관리 매니저는 pnpm을 사용한다.
+### Branch Type Description
+
+- **feat** (feature)
+  새로운 기능을 추가할 때 사용합니다.
+  예: `feat/login-#123`
+- **fix** (bug fix)
+  버그를 수정할 때 사용합니다.
+  예: `fix/button-click-#456`
+- **docs** (documentation)
+  문서 작업(README, 주석 등)을 할 때 사용합니다.
+  예: `docs/api-docs-#789`
+- **style** (formatting, missing semi colons, …)
+  코드 스타일(포맷 수정, 세미콜론 추가 등)을 수정할 때 사용합니다. 기능 수정은 포함되지 않습니다.
+  예: `style/css-format-#101`
+- **refactor**
+  코드 리팩토링(기능 변경 없이 코드 구조 개선)을 할 때 사용합니다.
+  예: `refactor/auth-service-#102`
+- **test** (when adding missing tests)
+  테스트 코드를 추가하거나 수정할 때 사용합니다.
+  예: `test/unit-tests-#103`
+- **chore** (maintain)
+  프로젝트 유지 보수 작업(빌드 설정, 패키지 업데이트 등)을 할 때 사용합니다.
+  예: `chore/dependency-update-#104`
+
+### Commit Message Convention
+
+`git config --local commit.template .github/.gitmessage` 명령어를 통해 커밋 메시지 템플릿을 설정할 수 있습니다.
+컨벤션 내용은 AngularJS Git Commit Message Conventions와 Conventional Commits을 기반으로 작성되어 있으며 @.gitmessage 파일에 작성되어 있습니다.
+
+## NextJS Convention
+
+### File Convention
+
+- `kebab-case` 로 작성합니다.
+- `not-found.js`, `date-picker.js` 처럼, 최대한 간결하게 하되, 단어 사이는 하이픈으로 연결합니다.
+
+### Function/Variable Convention
+
+- `camelCase` 로 작성합니다.
+- TypeScript 타입은 반드시 정의해야 합니다.
+
+### Component Convention
+
+- `PascalCase` 로 작성합니다.
+- Component는 재사용 가능하도록 설계해야 합니다.
+
+### Directory Convention
+
+`app` 외부에 프로젝트 파일 저장하는 방법을 사용합니다.
+
+#### src/app
+
+- 라우팅 용으로 사용한다. (라우팅과 관련된 파일만 넣어놓는다)
+- e.g., `page.tsx`, `layout.tsx`, `opengraph-image.tsx`
+
+#### src/containers
+
+- `page.tsx` 안에서 보여줄 컨텐츠들을 넣어놓는다.
+
+#### src/components
+
+- 여러 페이지에서 공통으로 사용할 컴포넌트
+- Button, Loading...
+
+#### src/constants
+
+- 공통으로 사용 할 상수
+
+#### src/hooks
+
+- 페이지 곳곳에서 사용되는 공통 훅
+
+#### src/libs
+
+- 외부 라이브러리를 모아둔다. package.json때문에 쓸 일이 많지 않지만 튜닝해서 사용할 경우 발생
+
+#### src/services
+
+- 각종 API 요청
+- GET, POST, PATCH...
+
+#### src/states
+
+- 페이지 곳곳에서 사용되는 state를 모아두는 곳
+- 전역 상태관리 남발하지 않는다. (props drilling을 막기 위해서는 `Jotai`를 사용)
+
+#### src/types
+
+- 각종 타입 스크립트의 정의가 들어가는 곳
+
+## Module Convention
+
+### MUI Component
+
+- 모든 UI 컴포넌트는 MUI를 사용해야 합니다.
+- 예시: `import Button from '@mui/material/Button';`
+
+### Heroicons
+
+- 모든 아이콘은 Heroicons를 사용해야 합니다.
+- 아이콘 임포트 방법: `import { IconName } from '@heroicons/react/24/outline';`
+- 예시: `import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';`
