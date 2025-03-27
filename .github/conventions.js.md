@@ -25,8 +25,13 @@
   - [Testing Environment](#testing-environment)
     - [Jest](#jest)
 - [Module Convention](#module-convention)
+  - [TailwindCSS](#tailwindcss)
   - [ShadCN Component](#shadcn-component)
-  - [Lucide React](#lucide-react)
+  - [Heroicons](#heroicons)
+- [Cursor Convention](#cursor-convention)
+  - [Code Writing](#code-writing)
+  - [File Context](#file-context)
+  - [Reference](#reference)
 
 ## Package Manager
 
@@ -220,6 +225,12 @@ pnpm create jest@latest
 
 ## Module Convention
 
+### TailwindCSS
+
+- 모든 스타일은 TailwindCSS를 사용해야 합니다.
+- [TailwindCSS v4](https://tailwindcss.com/blog/tailwindcss-v4/) 버전을 사용합니다.
+  - 그러므로 `tailwind.config.js`, `tailwind.config.ts` 파일은 사용하지 않고 `globals.css` 파일만을 사용합니다.
+
 ### ShadCN Component
 
 - 모든 UI 컴포넌트는 ShadCN을 사용해야 합니다.
@@ -231,3 +242,38 @@ pnpm create jest@latest
 - 모든 아이콘은 Heroicons를 사용해야 합니다.
 - 아이콘 임포트 방법: `import { IconName } from '@heroicons/react/24/outline';`
 - 예시: `import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';`
+
+## Cursor Convention
+
+### Code Writing
+
+1. 각 코드 파일의 길이를 500줄 이하로 유지하세요.
+
+> Cursor는 기본적으로 파일의 처음 250줄을 읽고, 필요 시 추가로 250줄을 더 읽습니다. 따라서 파일 길이를 500줄 이하로 유지하면 전체 파일을 읽을 수 있어 코드 이해와 처리가 원활해집니다.
+
+2. 각 코드 파일의 첫 100줄에 해당 파일의 기능과 구현 로직을 명확히 문서화하세요.
+
+> Cursor는 파일 검색 시 최대 100줄의 코드를 읽습니다. 파일의 초반부에 주석을 통해 해당 파일의 목적과 주요 로직을 설명하면, Cursor 에이전트가 파일의 역할을 빠르게 파악하여 적절한 처리를 수행할 수 있습니다.
+
+3. 프로젝트의 상태와 구조를 `README.md`와 같은 전용 파일에 정기적으로 문서화하세요.
+
+> 프로젝트의 전반적인 상태와 구조를 문서화하면 Cursor가 프로젝트를 빠르게 이해하고, 대화 재시작 시 불필요한 컨텍스트를 최소화할 수 있습니다.
+
+### File Context
+
+1. 프로젝트 구조를 이해하고 특정 파일을 대상으로 작업할 때는 Cursor의 `@` 기능을 활용하세요.
+
+> Cursor에서 `@`를 사용하여 특정 파일을 지정하면 해당 파일을 최대한 완전히 읽으려 시도합니다. (최대 2000줄) 이를 통해 필요한 코드 컨텍스트를 확보하여 작업의 정확성을 높일 수 있습니다.
+
+2. `@[파일/폴더]` 태그를 적극적으로 활용하세요.
+
+> Cursor의 `@[파일/폴더]` 태그를 사용하여 특정 파일이나 폴더를 지정하면, 해당 파일들의 전체 내용(최대 2000자)을 언어 모델에 전달할 수 있습니다. 이를 통해 모델이 필요한 컨텍스트를 충분히 확보하여 더 정확한 코드를 생성하거나 수정할 수 있습니다.
+
+3. 새로운 기능을 추가하거나 버그를 수정한 후에는 대화를 재시작하세요.
+
+> 작업 후 대화를 재시작하면 긴 컨텍스트로 인한 혼란을 방지하고, 프로젝트의 최신 상태를 반영한 새로운 컨텍스트로 작업을 이어갈 수 있습니다.
+
+### Reference
+
+- [Understanding Cursor and WindSurf's Code Indexing Logic](https://www.pixelstech.net/article/1734832711-understanding-cursor-and-windsurf-s-code-indexing-logic)
+- [How Cursor (AI IDE) Works](https://blog.sshh.io/p/how-cursor-ai-ide-works)
