@@ -10,8 +10,13 @@ import {
   costDetails,
 } from "@/db/schema";
 import { nanoid } from "nanoid";
-import { ContractData, CargoItem } from "@/types/plan";
+import { z } from "zod";
+import { contractSchema, cargoSchema } from "@/containers/plan";
 
+type ContractData = z.infer<typeof contractSchema>;
+type CargoItem = z.infer<typeof cargoSchema>;
+
+// TODO: 각 DB에 저장하는 함수로 분리
 export async function createPlan(
   contractData: ContractData,
   cargoItems: CargoItem[],
@@ -32,7 +37,7 @@ export async function createPlan(
           id: contractId,
           contractNumber: contractData.contractNumber,
           contractDate: contractData.contractDate,
-          contractParty: contractData.supplier,
+          contractParty: contractData.contractParty,
           importer: contractData.importer,
           incoterms: contractData.incoterms,
         })
@@ -52,13 +57,10 @@ export async function createPlan(
         .values({
           id: shipmentId,
           contractId: contractId,
-          estimatedTimeArrival: contractData.eta,
-          estimatedTimeDeparture: contractData.etd,
+          estimatedTimeArrival: contractData.estimatedTimeArrival,
+          estimatedTimeDeparture: contractData.estimatedTimeDeparture,
           arrivalPort: contractData.arrivalPort,
           departurePort: contractData.departurePort,
-          shippingCompany: contractData.vessel,
-          blNumber: contractData.blNumber,
-          palletType: contractData.containerType,
         })
         .returning();
       console.log("선적 정보 저장 완료:", shipment);
@@ -72,36 +74,58 @@ export async function createPlan(
     // 화물 정보 저장
     for (const cargo of cargoItems) {
       try {
-        const itemId = nanoid();
         const costId = nanoid();
 
-        // 품목 정보 저장
-        const [item] = await db
-          .insert(items)
-          .values({
-            id: itemId,
-            itemName: cargo.item,
-            itemVariety: cargo.variety,
-            originCountry: cargo.originCountry,
-            hsCode: cargo.hsCode,
-            packingUnit: cargo.packagingUnit,
-          })
-          .returning();
-        console.log("품목 정보 저장 완료:", item);
+        // 기존 품목 확인
+        const existingItem = await db.query.items.findFirst({
+          where: (items, { eq, and }) =>
+            and(
+              eq(items.itemName, cargo.itemName),
+              eq(items.itemVariety, cargo.itemVariety),
+              cargo.hsCode ? eq(items.hsCode, cargo.hsCode) : undefined,
+              eq(items.packingUnit, cargo.packingUnit),
+            ),
+        });
+
+        let itemId: string;
+
+        if (existingItem) {
+          // 기존 품목이 있는 경우 해당 ID 사용
+          itemId = existingItem.id;
+        } else {
+          // 새로운 품목 저장
+          const [newItem] = await db
+            .insert(items)
+            .values({
+              id: nanoid(),
+              itemName: cargo.itemName,
+              itemVariety: cargo.itemVariety,
+              originCountry: null,
+              hsCode: cargo.hsCode,
+              packingUnit: cargo.packingUnit,
+            })
+            .returning();
+          itemId = newItem.id;
+          console.log("새로운 품목 정보 저장 완료:", newItem);
+        }
 
         // 화물 정보 저장
+        const cargoId = nanoid();
+        const supplyPrice =
+          (cargo.unitPrice! * cargo.exchangeRate * cargo.contractTon) / 1000;
         const [cargoResult] = await db
           .insert(cargos)
           .values({
-            id: nanoid(),
+            id: cargoId,
             itemsId: itemId,
             shipmentId: shipmentId,
-            containerCount: cargo.containerCount,
-            contractTon: cargo.contractTonnage,
+            containerCount: 1,
+            contractTon: cargo.contractTon,
             progressStatus: "예정",
             sellingPrice: cargo.sellingPrice,
-            margin: 0,
-            totalProfit: 0,
+            margin: cargo.sellingPrice - supplyPrice,
+            totalProfit:
+              (cargo.sellingPrice - supplyPrice) * cargo.contractTon * 1000,
           })
           .returning();
         console.log("화물 정보 저장 완료:", cargoResult);
@@ -111,9 +135,9 @@ export async function createPlan(
           .insert(costs)
           .values({
             id: costId,
-            cargoId: costId,
+            cargoId: cargoId,
             supplyPrice: cargo.unitPrice,
-            shippingCost: 0,
+            shippingCost: cargo.shippingCost,
             laborCost: 0,
             transportStorageFee: 0,
             loadingUnloadingFee: 0,
@@ -129,8 +153,8 @@ export async function createPlan(
             costId: costId,
             unitPrice: cargo.unitPrice,
             exchangeRate: cargo.exchangeRate,
-            customsTaxRate: cargo.tariffRate,
-            customTaxAmount: 0,
+            customsTaxRate: cargo.customsTaxRate,
+            customTaxAmount: cargo.customTaxAmount,
             customsFee: cargo.customsFee,
             inspectionFee: cargo.inspectionFee,
             doCharge: 0,
