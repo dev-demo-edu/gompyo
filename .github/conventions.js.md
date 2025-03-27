@@ -192,8 +192,8 @@ nextjs에서는 여러 디렉토리 구조를 사용할 수 있지만, [`app` �
 
 #### src/services
 
-- 각종 API 요청
-- GET, POST, PATCH...
+- DB CRUD함수들
+- CREATE, GET, DELETE...
 
 #### src/states
 
