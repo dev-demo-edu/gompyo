@@ -6,6 +6,7 @@ import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import type { IShipmentData } from "@/constants/dummy-data";
 import { dummyShipmentData } from "@/constants/dummy-data";
+import { FilterList as FilterListIcon } from "@mui/icons-material";
 
 // Register AG-Grid Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -38,6 +39,7 @@ export default function ShipmentGrid() {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
 
   // 컬럼 정의
   const [columnDefs] = useState<ColDef[]>([
@@ -218,79 +220,88 @@ export default function ShipmentGrid() {
   }
 
   return (
-    <div className="flex w-full h-[800px] bg-slate-50 rounded-xl overflow-hidden shadow-lg p-6 gap-6">
-      {/* 왼쪽 필터 패널 */}
-      <div className="w-80 shrink-0">
-        <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">필터</h2>
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  검색어
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="검색어를 입력하세요"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
+    <div className="flex flex-col md:flex-row w-full h-[800px] bg-slate-50 rounded-xl overflow-hidden shadow-lg p-6 gap-6">
+      {/* 필터 토글 버튼 (모바일) */}
+      <button
+        onClick={() => setShowFilter(!showFilter)}
+        className="md:hidden flex items-center justify-center gap-2 mb-4 px-4 py-2 bg-white rounded-lg shadow-sm text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <FilterListIcon className="w-5 h-5" />
+        <span>필터 {showFilter ? "숨기기" : "보기"}</span>
+      </button>
+
+      {/* 필터 패널 */}
+      <div
+        className={`bg-white rounded-xl shadow-sm p-6 space-y-6 ${showFilter ? "block" : "hidden md:block"} w-full md:w-80 md:shrink-0`}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">필터</h2>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                검색어
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="검색어를 입력하세요"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  조회 기간
-                </label>
-                <div>
-                  <input
-                    type="date"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-3"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div className="relative flex justify-center">
-                      <span className="px-2 bg-white text-sm text-gray-500">
-                        부터
-                      </span>
-                    </div>
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                조회 기간
+              </label>
+              <div>
+                <input
+                  type="date"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-3"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
                   </div>
-                  <input
-                    type="date"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mt-3"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
+                  <div className="relative flex justify-center">
+                    <span className="px-2 bg-white text-sm text-gray-500">
+                      부터
+                    </span>
+                  </div>
                 </div>
+                <input
+                  type="date"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mt-3"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 오른쪽 그리드 */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* 그리드 */}
+      <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden min-h-[400px]">
         {loading ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="flex items-center space-x-3">
