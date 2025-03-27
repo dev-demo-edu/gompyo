@@ -16,7 +16,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createPlan } from "@/app/actions/plan";
+import { createPlan } from "@/actions/plan";
 import { ContractData, CargoItem } from "@/types/plan";
 
 // 계약 정보 스키마
