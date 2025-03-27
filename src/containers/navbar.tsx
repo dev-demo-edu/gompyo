@@ -1,70 +1,65 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  IconButton,
-  useMediaQuery,
-  useTheme,
-  AppBar,
-  Toolbar,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { Drawer, List, useMediaQuery, useTheme, Box } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ScienceIcon from "@mui/icons-material/Science";
+import NavigationItem from "./nav/navigation-item";
+import SidebarHeader from "./nav/sidebar-header";
+import MobileAppBar from "./nav/mobile-app-bar";
+
+const DRAWER_WIDTH = 240;
+const COLLAPSED_WIDTH = 64;
 
 export default function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isDesktopDrawerOpen, setIsDesktopDrawerOpen] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const pathname = usePathname();
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    if (isMobile) {
+      setIsMobileDrawerOpen(!isMobileDrawerOpen);
+      setIsSidebarCollapsed(false);
+    } else {
+      setIsDesktopDrawerOpen(!isDesktopDrawerOpen);
+    }
   };
 
-  const menuItems = [
+  const handleSidebarCollapse = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  const navigationItems = [
     { text: "대시보드", href: "/", icon: <DashboardIcon /> },
     { text: "계획 관리", href: "/plan", icon: <ScheduleIcon /> },
     { text: "선적 관리", href: "/shipment", icon: <LocalShippingIcon /> },
     { text: "테스트", href: "/test", icon: <ScienceIcon /> },
   ];
 
-  const drawer = (
+  const sidebarContent = (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b border-gray-200">
-        <Link href="/">
-          <Image src="/logo.png" alt="Logo" width={120} height={27} priority />
-        </Link>
-      </div>
+      <SidebarHeader
+        isSidebarCollapsed={isSidebarCollapsed}
+        isMobile={isMobile}
+        onToggleCollapse={handleSidebarCollapse}
+      />
       <List className="flex-grow">
-        {menuItems.map((item) => (
-          <ListItem
+        {navigationItems.map((item) => (
+          <NavigationItem
             key={item.href}
-            component={Link}
             href={item.href}
-            className={`hover:bg-primary-100 transition-colors ${
-              pathname === item.href
-                ? "bg-primary-100 text-primary-900 font-bold"
-                : ""
-            }`}
-          >
-            <ListItemIcon
-              className={pathname === item.href ? "text-primary-900" : ""}
-            >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
+            icon={item.icon}
+            text={item.text}
+            isActive={pathname === item.href}
+            isSidebarCollapsed={isSidebarCollapsed}
+            isMobile={isMobile}
+          />
         ))}
       </List>
     </div>
@@ -73,44 +68,52 @@ export default function Navbar() {
   return (
     <>
       {isMobile && (
-        <AppBar position="fixed" color="default" elevation={1}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-            >
-              <MenuIcon />
-            </IconButton>
-            <div className="ml-4">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={100}
-                height={22}
-                priority
-              />
-            </div>
-          </Toolbar>
-        </AppBar>
+        <MobileAppBar
+          onMenuClick={handleDrawerToggle}
+          isDrawerOpen={isDesktopDrawerOpen}
+          isSidebarCollapsed={isSidebarCollapsed}
+          drawerWidth={DRAWER_WIDTH}
+          collapsedWidth={COLLAPSED_WIDTH}
+          zIndex={theme.zIndex.drawer - 1}
+        />
       )}
-      <nav className={isMobile ? "mt-16" : ""}>
+      <Box
+        component="nav"
+        sx={{
+          width: {
+            sm: isDesktopDrawerOpen
+              ? isSidebarCollapsed
+                ? COLLAPSED_WIDTH
+                : DRAWER_WIDTH
+              : 0,
+          },
+          flexShrink: { sm: 0 },
+          zIndex: theme.zIndex.drawer,
+        }}
+      >
         <Drawer
           variant={isMobile ? "temporary" : "permanent"}
-          open={isMobile ? mobileOpen : true}
-          onClose={isMobile ? handleDrawerToggle : undefined}
-          className="w-64"
-          classes={{
-            paper: "w-64",
+          open={isMobile ? isMobileDrawerOpen : isDesktopDrawerOpen}
+          onClose={handleDrawerToggle}
+          sx={{
+            "& .MuiDrawer-paper": {
+              width: isSidebarCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
+              boxSizing: "border-box",
+              transition: theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+              overflowX: "hidden",
+              borderRight: `1px solid ${theme.palette.divider}`,
+            },
           }}
           ModalProps={{
-            keepMounted: true, // Better mobile performance
+            keepMounted: true,
           }}
         >
-          {drawer}
+          {sidebarContent}
         </Drawer>
-      </nav>
+      </Box>
     </>
   );
 }

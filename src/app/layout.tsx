@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className={`${notoSans.variable} antialiased flex`}>
         <ThemeRegistry>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 sm:pt-0 pt-16">{children}</main>
         </ThemeRegistry>
       </body>
     </html>
