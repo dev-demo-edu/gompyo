@@ -1,12 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Drawer, List, useMediaQuery, useTheme, Box } from "@mui/material";
+import {
+  Drawer,
+  List,
+  useMediaQuery,
+  useTheme,
+  Box,
+  IconButton,
+  Divider,
+  Tooltip,
+} from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ScienceIcon from "@mui/icons-material/Science";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NavigationItem from "./nav/navigation-item";
 import SidebarHeader from "./nav/sidebar-header";
 import MobileAppBar from "./nav/mobile-app-bar";
@@ -20,12 +31,28 @@ export default function Navbar() {
   const [isDesktopDrawerOpen, setIsDesktopDrawerOpen] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const pathname = usePathname();
+
+  // Auto-collapse sidebar on tablet view
+  useEffect(() => {
+    if (isTablet && !isMobile) {
+      setIsSidebarCollapsed(true);
+    } else if (!isTablet) {
+      setIsSidebarCollapsed(false);
+    }
+  }, [isTablet, isMobile]);
+
+  // Close mobile drawer when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileDrawerOpen(false);
+    }
+  }, [pathname, isMobile]);
 
   const handleDrawerToggle = () => {
     if (isMobile) {
       setIsMobileDrawerOpen(!isMobileDrawerOpen);
-      setIsSidebarCollapsed(false);
     } else {
       setIsDesktopDrawerOpen(!isDesktopDrawerOpen);
     }
@@ -36,11 +63,23 @@ export default function Navbar() {
   };
 
   const navigationItems = [
-    { text: "대시보드", href: "/", icon: <DashboardIcon /> },
-    { text: "계획 관리", href: "/plan", icon: <ScheduleIcon /> },
-    { text: "선적 관리", href: "/shipment", icon: <LocalShippingIcon /> },
-    { text: "테스트", href: "/test", icon: <ScienceIcon /> },
+    { text: "대시보드", href: "/", icon: <DashboardIcon />, exact: true },
+    { text: "계획 관리", href: "/plan", icon: <ScheduleIcon />, exact: false },
+    {
+      text: "선적 관리",
+      href: "/shipment",
+      icon: <LocalShippingIcon />,
+      exact: false,
+    },
+    { text: "테스트", href: "/test", icon: <ScienceIcon />, exact: false },
   ];
+
+  const isActive = (item: { href: string; exact: boolean }) => {
+    if (item.exact) {
+      return pathname === item.href;
+    }
+    return pathname.startsWith(item.href);
+  };
 
   const sidebarContent = (
     <div className="h-full flex flex-col">
@@ -49,20 +88,57 @@ export default function Navbar() {
         isMobile={isMobile}
         onToggleCollapse={handleSidebarCollapse}
       />
-      <List className="flex-grow">
+      <Divider className="my-2" />
+      <List className="flex-grow py-2 px-1">
         {navigationItems.map((item) => (
           <NavigationItem
             key={item.href}
             href={item.href}
             icon={item.icon}
             text={item.text}
-            isActive={pathname === item.href}
+            isActive={isActive(item)}
             isSidebarCollapsed={isSidebarCollapsed}
             isMobile={isMobile}
           />
         ))}
       </List>
+      <Divider className="my-2" />
+      <div className="p-3 flex justify-center items-center">
+        {!isSidebarCollapsed ? (
+          <div className="text-xs text-gray-500 text-center">
+            <p>Gompyo Dashboard v0.1.0</p>
+            <p> 2025 Gompyo</p>
+          </div>
+        ) : (
+          <Tooltip title="Gompyo Dashboard v0.1.0" placement="right">
+            <div className="w-8 h-8 flex items-center justify-center">
+              <span className="text-xs text-gray-500">G</span>
+            </div>
+          </Tooltip>
+        )}
+      </div>
     </div>
+  );
+
+  // Floating collapse button for desktop
+  const collapseButton = !isMobile && isDesktopDrawerOpen && (
+    <IconButton
+      onClick={handleSidebarCollapse}
+      size="small"
+      className="absolute -right-3 top-20 bg-white shadow-md border border-gray-200 z-10"
+      sx={{
+        width: "24px",
+        height: "24px",
+        borderRadius: "50%",
+        display: { xs: "none", sm: "flex" },
+      }}
+    >
+      {isSidebarCollapsed ? (
+        <MenuOpenIcon fontSize="small" />
+      ) : (
+        <ChevronLeftIcon fontSize="small" />
+      )}
+    </IconButton>
   );
 
   return (
@@ -89,8 +165,10 @@ export default function Navbar() {
           },
           flexShrink: { sm: 0 },
           zIndex: theme.zIndex.drawer,
+          position: "relative",
         }}
       >
+        {collapseButton}
         <Drawer
           variant={isMobile ? "temporary" : "permanent"}
           open={isMobile ? isMobileDrawerOpen : isDesktopDrawerOpen}
