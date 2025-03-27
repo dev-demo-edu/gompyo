@@ -58,11 +58,12 @@ export class PaymentService {
     return await db.select().from(payments);
   }
 
-  async findByContractId(contractId: string) {
-    return await db
+  async findByContractId(contractId: number) {
+    const [payment] = await db
       .select()
       .from(payments)
       .where(eq(payments.contractId, contractId));
+    return payment;
   }
 
   // Update

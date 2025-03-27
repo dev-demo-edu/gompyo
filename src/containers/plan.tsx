@@ -13,11 +13,16 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useState } from "react";
+import { useState, useRef, ChangeEvent } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createPlan } from "@/app/actions/plan";
+import { searchItems } from "@/app/actions/item";
+import Popper from "@mui/material/Popper";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import MenuItem from "@mui/material/MenuItem";
+import MenuList from "@mui/material/MenuList";
 
 // 계약 정보 스키마
 export const contractSchema = z.object({
@@ -133,6 +138,14 @@ export const cargoSchema = z.object({
 type ContractFormData = z.infer<typeof contractSchema>;
 type CargoFormData = z.infer<typeof cargoSchema>;
 
+interface SearchItem {
+  id: string;
+  itemName: string | null;
+  itemVariety: string | null;
+  hsCode?: string | null;
+  packingUnit?: string | null;
+}
+
 export default function Plan() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -142,6 +155,11 @@ export default function Plan() {
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register: registerContract,
@@ -157,6 +175,7 @@ export default function Plan() {
     handleSubmit: handleCargoSubmit,
     formState: { errors: cargoErrors },
     reset: resetCargo,
+    setValue,
   } = useForm<CargoFormData>({
     resolver: zodResolver(cargoSchema),
   });
@@ -220,6 +239,53 @@ export default function Plan() {
     resetCargo();
   };
 
+  const handleSearch = async (event: ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+    setAnchorEl(event.currentTarget);
+
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const result = await searchItems(query);
+      setSearchResults(result.items || []);
+    } catch (error) {
+      console.error("검색 오류:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleItemSelect = (item: SearchItem) => {
+    // 폼 필드 채우기
+    setValue("itemName", item.itemName || "");
+    setValue("itemVariety", item.itemVariety || "");
+    setValue("hsCode", item.hsCode || "");
+    setValue("packingUnit", item.packingUnit || "");
+
+    // Input 라벨 변경을 위한 트리거
+    document.querySelectorAll("input").forEach((input) => {
+      const event = new Event("input", { bubbles: true });
+      input.dispatchEvent(event);
+    });
+
+    // 검색 상태 초기화
+    setSearchQuery("");
+    setSearchResults([]);
+    setAnchorEl(null);
+  };
+
+  const handleClickAway = () => {
+    setAnchorEl(null);
+  };
+
+  const isSearchOpen = Boolean(anchorEl) && searchResults.length > 0;
+  const popperId = isSearchOpen ? "item-search-popper" : undefined;
+
   const renderContractForm = () => (
     <form onSubmit={handleContractSubmit(handleNext)}>
       {/* 헤더 영역 */}
@@ -253,7 +319,9 @@ export default function Plan() {
           error={!!contractErrors.contractDate}
           helperText={contractErrors.contractDate?.message}
           fullWidth
-          InputLabelProps={{ shrink: true }}
+          slotProps={{
+            inputLabel: { shrink: true },
+          }}
           className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
         />
 
@@ -316,7 +384,9 @@ export default function Plan() {
             error={!!contractErrors.estimatedTimeDeparture}
             helperText={contractErrors.estimatedTimeDeparture?.message}
             fullWidth
-            InputLabelProps={{ shrink: true }}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
           <TextField
@@ -326,7 +396,9 @@ export default function Plan() {
             error={!!contractErrors.estimatedTimeArrival}
             helperText={contractErrors.estimatedTimeArrival?.message}
             fullWidth
-            InputLabelProps={{ shrink: true }}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
         </Box>
@@ -336,7 +408,7 @@ export default function Plan() {
             type="button"
             variant="outlined"
             onClick={handleClose}
-            className="h-12 min-w-16 px-4 rounded-lg outline outline-1 outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
+            className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
           >
             취소
           </Button>
@@ -362,21 +434,93 @@ export default function Plan() {
           </Typography>
         </Box>
         <Box className="p-6 flex flex-col gap-6">
-          <Box className="flex flex-col gap-1">
+          <Box className="flex flex-col gap-1 relative">
             <TextField
               label="상품 검색"
-              {...registerCargo("itemName")}
-              error={!!cargoErrors.itemName}
-              helperText={cargoErrors.itemName?.message}
-              placeholder="입력해주세요."
+              value={searchQuery}
+              onChange={handleSearch}
+              ref={searchInputRef}
+              placeholder="검색어를 입력하세요 (2글자 이상)"
               fullWidth
               className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
             />
-            <Box className="flex items-center gap-1">
-              <Typography className="text-xs text-text-secondary">
-                전에 등록하셨던 상품을 검색해서 자동으로 입력할 수 있습니다
-              </Typography>
-            </Box>
+            {isSearching && (
+              <CircularProgress
+                size={20}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+              />
+            )}
+            <Typography className="text-xs text-text-secondary">
+              전에 등록하셨던 상품을 검색해서 자동으로 입력할 수 있습니다
+            </Typography>
+
+            <ClickAwayListener onClickAway={handleClickAway}>
+              <Popper
+                id={popperId}
+                open={isSearchOpen}
+                anchorEl={anchorEl}
+                placement="bottom-start"
+                className="z-[9999] w-full"
+                style={{ width: anchorEl ? anchorEl.clientWidth : "auto" }}
+                disablePortal={true}
+                modifiers={[
+                  {
+                    name: "flip",
+                    enabled: true,
+                  },
+                  {
+                    name: "preventOverflow",
+                    enabled: true,
+                    options: {
+                      altAxis: true,
+                      boundary: "clippingParents",
+                    },
+                  },
+                  {
+                    name: "offset",
+                    enabled: true,
+                    options: {
+                      offset: [0, 4],
+                    },
+                  },
+                ]}
+              >
+                <Paper
+                  className="w-full max-h-60 overflow-auto shadow-xl border border-gray-200"
+                  style={{
+                    position: "relative",
+                    zIndex: 9999,
+                    backgroundColor: "white",
+                  }}
+                >
+                  <MenuList>
+                    {searchResults.length > 0 ? (
+                      searchResults.map((item) => (
+                        <MenuItem
+                          key={item.id}
+                          onClick={() => handleItemSelect(item)}
+                          className="py-3 px-4 border-b last:border-b-0 border-gray-100 hover:bg-gray-50"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium text-primary-main">
+                              {item.itemName || ""}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {item.itemVariety || ""} |{" "}
+                              {item.packingUnit || ""}
+                            </span>
+                          </div>
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled className="py-3 px-4 text-gray-500">
+                        검색 결과가 없습니다
+                      </MenuItem>
+                    )}
+                  </MenuList>
+                </Paper>
+              </Popper>
+            </ClickAwayListener>
           </Box>
 
           <TextField
@@ -386,6 +530,9 @@ export default function Plan() {
             helperText={cargoErrors.itemName?.message}
             placeholder="입력해주세요."
             fullWidth
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
@@ -396,6 +543,9 @@ export default function Plan() {
             helperText={cargoErrors.itemVariety?.message}
             placeholder="입력해주세요."
             fullWidth
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
@@ -406,6 +556,9 @@ export default function Plan() {
             helperText={cargoErrors.hsCode?.message}
             placeholder="입력해주세요."
             fullWidth
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
@@ -427,6 +580,9 @@ export default function Plan() {
             helperText={cargoErrors.packingUnit?.message}
             placeholder="입력해주세요."
             fullWidth
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
         </Box>
@@ -544,7 +700,7 @@ export default function Plan() {
               type="button"
               variant="outlined"
               onClick={() => setIsAddingCargo(false)}
-              className="h-12 min-w-16 px-4 rounded-lg outline outline-1 outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
+              className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
             >
               취소
             </Button>
@@ -582,10 +738,10 @@ export default function Plan() {
             <TableHead>
               <TableRow className="bg-background-neutral">
                 <TableCell className="w-40 text-text-secondary text-sm font-semibold font-['Public_Sans']">
-                  SKU
+                  품목
                 </TableCell>
                 <TableCell className="w-48 text-text-secondary text-sm font-semibold font-['Public_Sans']">
-                  품목
+                  품종
                 </TableCell>
                 <TableCell className="flex-1 text-text-secondary text-sm font-semibold font-['Public_Sans']">
                   HS-CODE
@@ -593,7 +749,7 @@ export default function Plan() {
                 <TableCell className="w-24 text-text-secondary text-sm font-semibold font-['Public_Sans']">
                   계약톤수
                 </TableCell>
-                <TableCell className="w-20 text-text-secondary text-sm font-semibold font-['Public_Sans']">
+                <TableCell className="w-24 text-text-secondary text-sm font-semibold font-['Public_Sans']">
                   포장단위
                 </TableCell>
               </TableRow>
@@ -625,20 +781,22 @@ export default function Plan() {
           </Table>
         </TableContainer>
 
-        <Button
-          variant="outlined"
-          onClick={handleAddCargo}
-          className="h-7 min-w-16 px-2 rounded-lg outline outline-1 outline-offset-[-1px] outline-primary-48% outline-opacity-50 text-primary-main text-xs font-bold font-['Public_Sans']"
-        >
-          추가하기
-        </Button>
+        <Box className="flex justify-end">
+          <Button
+            variant="outlined"
+            onClick={handleAddCargo}
+            className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-primary-48% outline-opacity-50 text-primary-main font-bold font-['Public_Sans']"
+          >
+            추가하기
+          </Button>
+        </Box>
 
         {/* 버튼 영역 */}
         <Box className="flex flex-col sm:flex-row gap-6 justify-end">
           <Button
             variant="outlined"
             onClick={handleBack}
-            className="h-12 min-w-16 px-4 rounded-lg outline outline-1 outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
+            className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
           >
             이전
           </Button>

@@ -61,9 +61,6 @@ export async function createPlan(
           estimatedTimeDeparture: contractData.estimatedTimeDeparture,
           arrivalPort: contractData.arrivalPort,
           departurePort: contractData.departurePort,
-          shippingCompany: contractData.vessel,
-          blNumber: contractData.blNumber,
-          palletType: contractData.containerType,
         })
         .returning();
       console.log("선적 정보 저장 완료:", shipment);
@@ -126,7 +123,7 @@ export async function createPlan(
             contractTon: cargo.contractTon,
             progressStatus: "예정",
             sellingPrice: cargo.sellingPrice,
-            margin: supplyPrice - cargo.sellingPrice,
+            margin: cargo.sellingPrice - supplyPrice,
             totalProfit:
               (cargo.sellingPrice - supplyPrice) * cargo.contractTon * 1000,
           })
