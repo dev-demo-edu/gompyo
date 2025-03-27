@@ -111,13 +111,19 @@ alwaysApply: true
 
 ## Module Convention
 
+### TailwindCSS
+
+- 모든 스타일은 TailwindCSS를 사용해야 합니다.
+- [TailwindCSS v4](mdc:https:/tailwindcss.com/blog/tailwindcss-v4) 버전을 사용합니다.
+  - 그러므로 `tailwind.config.js`, `tailwind.config.ts` 파일은 사용하지 않고 `globals.css` 파일만을 사용합니다.
+
 ### MUI Component
 
 - 모든 UI 컴포넌트는 MUI를 사용해야 합니다.
 - 예시: `import Button from '@mui/material/Button';`
 
-### Heroicons
+### mui/icons-material
 
-- 모든 아이콘은 Heroicons를 사용해야 합니다.
-- 아이콘 임포트 방법: `import { IconName } from '@heroicons/react/24/outline';`
-- 예시: `import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';`
+- 모든 아이콘은 mui/icons-material를 사용해야 합니다.
+- 아이콘 임포트 방법: `import { IconName } from '@mui/icons-material';`
+- 예시: `import { MenuIcon, CloseIcon } from '@mui/icons-material';`

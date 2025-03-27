@@ -1,44 +1,197 @@
-"use server";
+"use client";
 
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import NavLink from "./nav_link";
+import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import {
+  Drawer,
+  List,
+  useMediaQuery,
+  useTheme,
+  Box,
+  IconButton,
+  Divider,
+  Tooltip,
+} from "@mui/material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import ScienceIcon from "@mui/icons-material/Science";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import NavigationItem from "./nav/navigation-item";
+import SidebarHeader from "./nav/sidebar-header";
+import MobileAppBar from "./nav/mobile-app-bar";
 
-export default async function Navbar() {
-  return (
-    <div className="w-64 h-screen flex flex-col border-r b border-r-gray-200">
-      <div className="p-6">
-        <Link href="/">
-          <Image src="/logo.png" alt="Logo" width={120} height={27} />
-        </Link>
+const DRAWER_WIDTH = 240;
+const COLLAPSED_WIDTH = 64;
+
+export default function Navbar() {
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isDesktopDrawerOpen, setIsDesktopDrawerOpen] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  const pathname = usePathname();
+
+  // Auto-collapse sidebar on tablet view
+  useEffect(() => {
+    if (isTablet && !isMobile) {
+      setIsSidebarCollapsed(true);
+    } else if (!isTablet) {
+      setIsSidebarCollapsed(false);
+    }
+  }, [isTablet, isMobile]);
+
+  // Close mobile drawer when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileDrawerOpen(false);
+    }
+  }, [pathname, isMobile]);
+
+  const handleDrawerToggle = () => {
+    if (isMobile) {
+      setIsMobileDrawerOpen(!isMobileDrawerOpen);
+    } else {
+      setIsDesktopDrawerOpen(!isDesktopDrawerOpen);
+    }
+  };
+
+  const handleSidebarCollapse = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  const navigationItems = [
+    { text: "대시보드", href: "/", icon: <DashboardIcon />, exact: true },
+    { text: "계획 관리", href: "/plan", icon: <ScheduleIcon />, exact: false },
+    {
+      text: "선적 관리",
+      href: "/shipment",
+      icon: <LocalShippingIcon />,
+      exact: false,
+    },
+    { text: "테스트", href: "/test", icon: <ScienceIcon />, exact: false },
+  ];
+
+  const isActive = (item: { href: string; exact: boolean }) => {
+    if (item.exact) {
+      return pathname === item.href;
+    }
+    return pathname.startsWith(item.href);
+  };
+
+  const sidebarContent = (
+    <div className="h-full flex flex-col">
+      <SidebarHeader
+        isSidebarCollapsed={isSidebarCollapsed}
+        isMobile={isMobile}
+        onToggleCollapse={handleSidebarCollapse}
+      />
+      <Divider className="my-2" />
+      <List className="flex-grow py-2 px-1">
+        {navigationItems.map((item) => (
+          <NavigationItem
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            text={item.text}
+            isActive={isActive(item)}
+            isSidebarCollapsed={isSidebarCollapsed}
+            isMobile={isMobile}
+          />
+        ))}
+      </List>
+      <Divider className="my-2" />
+      <div className="p-3 flex justify-center items-center">
+        {!isSidebarCollapsed ? (
+          <div className="text-xs text-gray-500 text-center">
+            <p>Gompyo Dashboard v0.1.0</p>
+            <p> 2025 Gompyo</p>
+          </div>
+        ) : (
+          <Tooltip title="Gompyo Dashboard v0.1.0" placement="right">
+            <div className="w-8 h-8 flex items-center justify-center">
+              <span className="text-xs text-gray-500">G</span>
+            </div>
+          </Tooltip>
+        )}
       </div>
-      <ul className="flex-grow">
-        <li className="block">
-          <NavLink
-            className="hover:text-primary-900 hover:font-bold hover:bg-primary-100 p-6 w-full h-full block"
-            href="/"
-          >
-            대시보드
-          </NavLink>
-        </li>
-        <li className="block">
-          <NavLink
-            className="hover:text-primary-900 hover:font-bold hover:bg-primary-100 p-6 w-full h-full block"
-            href="/plan"
-          >
-            계획 관리
-          </NavLink>
-        </li>
-        <li className="block">
-          <NavLink
-            className="hover:text-primary-900 hover:font-bold hover:bg-primary-100 p-6 w-full h-full block"
-            href="/shipment"
-          >
-            선적 관리
-          </NavLink>
-        </li>
-      </ul>
     </div>
+  );
+
+  // Floating collapse button for desktop
+  const collapseButton = !isMobile && isDesktopDrawerOpen && (
+    <IconButton
+      onClick={handleSidebarCollapse}
+      size="small"
+      className="absolute -right-3 top-20 bg-white shadow-md border border-gray-200 z-10"
+      sx={{
+        width: "24px",
+        height: "24px",
+        borderRadius: "50%",
+        display: { xs: "none", sm: "flex" },
+      }}
+    >
+      {isSidebarCollapsed ? (
+        <MenuOpenIcon fontSize="small" />
+      ) : (
+        <ChevronLeftIcon fontSize="small" />
+      )}
+    </IconButton>
+  );
+
+  return (
+    <>
+      {isMobile && (
+        <MobileAppBar
+          onMenuClick={handleDrawerToggle}
+          isDrawerOpen={isDesktopDrawerOpen}
+          isSidebarCollapsed={isSidebarCollapsed}
+          drawerWidth={DRAWER_WIDTH}
+          collapsedWidth={COLLAPSED_WIDTH}
+          zIndex={theme.zIndex.drawer - 1}
+        />
+      )}
+      <Box
+        component="nav"
+        sx={{
+          width: {
+            sm: isDesktopDrawerOpen
+              ? isSidebarCollapsed
+                ? COLLAPSED_WIDTH
+                : DRAWER_WIDTH
+              : 0,
+          },
+          flexShrink: { sm: 0 },
+          zIndex: theme.zIndex.drawer,
+          position: "relative",
+        }}
+      >
+        {collapseButton}
+        <Drawer
+          variant={isMobile ? "temporary" : "permanent"}
+          open={isMobile ? isMobileDrawerOpen : isDesktopDrawerOpen}
+          onClose={handleDrawerToggle}
+          sx={{
+            "& .MuiDrawer-paper": {
+              width: isSidebarCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
+              boxSizing: "border-box",
+              transition: theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+              overflowX: "hidden",
+              borderRight: `1px solid ${theme.palette.divider}`,
+            },
+          }}
+          ModalProps={{
+            keepMounted: true,
+          }}
+        >
+          {sidebarContent}
+        </Drawer>
+      </Box>
+    </>
   );
 }
