@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import type { ColDef, ValueFormatterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import type { IShipmentData } from "@/constants/dummy-data";
-import { dummyShipmentData } from "@/constants/dummy-data";
+import type { IPlanData } from "@/constants/dummy-data";
+import { dummyPlanData } from "@/constants/dummy-data";
 
 // Register AG-Grid Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -31,11 +31,22 @@ const currencyFormatter = (params: ValueFormatterParams): string => {
     : "";
 };
 
-export default function ShipmentGrid() {
-  const [rowData, setRowData] = useState<IShipmentData[]>([]);
+// 숫자 포맷터 (kg당)
+const perKgFormatter = (params: ValueFormatterParams): string => {
+  return params.value
+    ? new Intl.NumberFormat("ko-KR", {
+        style: "currency",
+        currency: "KRW",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(params.value) + "/kg"
+    : "";
+};
+
+export default function PlanGrid() {
+  const [rowData, setRowData] = useState<IPlanData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
   // 컬럼 정의
   const [columnDefs] = useState<ColDef[]>([
@@ -61,9 +72,20 @@ export default function ShipmentGrid() {
       width: 120,
     },
     {
-      field: "productName",
-      headerName: "제품명",
+      field: "contractParty",
+      headerName: "계약처",
+      width: 120,
+    },
+    {
+      field: "estimatedTimeArrival",
+      headerName: "ETA",
+      valueFormatter: dateFormatter,
       width: 150,
+    },
+    {
+      field: "arrivalPort",
+      headerName: "도착항",
+      width: 120,
     },
     {
       field: "itemName",
@@ -71,19 +93,9 @@ export default function ShipmentGrid() {
       width: 120,
     },
     {
-      field: "weight",
+      field: "contractTon",
       headerName: "무게",
       valueFormatter: (params) => `${params.value}톤`,
-      width: 100,
-    },
-    {
-      field: "containerCount",
-      headerName: "컨테이너 개수",
-      width: 120,
-    },
-    {
-      field: "packagingUnit",
-      headerName: "포장 단위",
       width: 100,
     },
     {
@@ -99,9 +111,38 @@ export default function ShipmentGrid() {
       width: 150,
     },
     {
-      field: "supplyPrice",
-      headerName: "수급가",
+      field: "paymentMethod",
+      headerName: "결제방식",
+      width: 100,
+    },
+    {
+      field: "warehouseEntryDate",
+      headerName: "입고일",
+      valueFormatter: dateFormatter,
+      width: 150,
+    },
+    {
+      field: "importCostPerKg",
+      headerName: "수입가/kg",
+      valueFormatter: perKgFormatter,
+      width: 130,
+    },
+    {
+      field: "supplyCostPerKg",
+      headerName: "수급가/kg",
+      valueFormatter: perKgFormatter,
+      width: 130,
+    },
+    {
+      field: "totalCost",
+      headerName: "총 비용",
       valueFormatter: currencyFormatter,
+      width: 150,
+    },
+    {
+      field: "totalCostPerKg",
+      headerName: "총 비용/kg",
+      valueFormatter: perKgFormatter,
       width: 130,
     },
     {
@@ -111,51 +152,15 @@ export default function ShipmentGrid() {
       width: 130,
     },
     {
-      field: "paymentMethod",
-      headerName: "결제방식",
+      field: "margin",
+      headerName: "마진",
+      valueFormatter: (params) => `${params.value}%`,
       width: 100,
     },
     {
-      field: "hsCode",
-      headerName: "HS CODE",
-      width: 120,
-    },
-    {
-      field: "blNumber",
-      headerName: "BL no.",
-      width: 120,
-    },
-    {
-      field: "departurePort",
-      headerName: "port(출발항)",
-      width: 120,
-    },
-    {
-      field: "etd",
-      headerName: "ETD",
-      valueFormatter: dateFormatter,
-      width: 150,
-    },
-    {
-      field: "arrivalPort",
-      headerName: "port(도착항)",
-      width: 120,
-    },
-    {
-      field: "eta",
-      headerName: "ETA",
-      valueFormatter: dateFormatter,
-      width: 150,
-    },
-    {
-      field: "contractParty",
-      headerName: "계약처",
-      width: 120,
-    },
-    {
-      field: "customsDate",
-      headerName: "통관일자",
-      valueFormatter: dateFormatter,
+      field: "totalProfit",
+      headerName: "총 이익",
+      valueFormatter: currencyFormatter,
       width: 150,
     },
   ]);
@@ -170,23 +175,12 @@ export default function ShipmentGrid() {
     [],
   );
 
-  // 검색어로 데이터 필터링
-  const filteredData = useMemo(() => {
-    if (!searchTerm) return rowData;
-    return rowData.filter((row) =>
-      Object.values(row).some(
-        (value) =>
-          value &&
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
-    );
-  }, [rowData, searchTerm]);
-
   // 더미 데이터 로딩
   useEffect(() => {
     try {
       setLoading(true);
-      setRowData(dummyShipmentData);
+      // 실제 API 호출 대신 더미 데이터 사용
+      setRowData(dummyPlanData);
       setError(null);
     } catch (err) {
       setError(
@@ -201,40 +195,29 @@ export default function ShipmentGrid() {
 
   if (error) {
     return (
-      <div className="w-full h-[800px] bg-white rounded-lg flex items-center justify-center">
+      <div className="w-full h-[800px] bg-white flex items-center justify-center">
         <p className="text-red-500">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[800px] bg-white rounded-lg overflow-hidden">
-      <div className="p-4 border-b">
-        <input
-          type="text"
-          placeholder="검색어를 입력하세요"
-          className="w-64 px-3 py-2 border rounded-lg"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+    <div className="w-full h-[800px] bg-white">
       {loading ? (
         <div className="w-full h-full flex items-center justify-center">
           <p>데이터를 불러오는 중...</p>
         </div>
       ) : (
-        <div className="w-full h-[calc(100%-60px)]">
-          <AgGridReact
-            rowData={filteredData}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            pagination={true}
-            paginationPageSize={15}
-            rowSelection="multiple"
-            suppressRowClickSelection={true}
-            className="ag-theme-alpine"
-          />
-        </div>
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          pagination={true}
+          paginationPageSize={15}
+          rowSelection="multiple"
+          suppressRowClickSelection={true}
+          className="ag-theme-alpine"
+        />
       )}
     </div>
   );

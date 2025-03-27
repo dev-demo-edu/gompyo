@@ -1,4 +1,152 @@
-export interface ShipmentData {
+export interface IShipmentData {
+  contractNumber: string;
+  progressStatus: string;
+  contractDate: string;
+  importer: string;
+  productName: string;
+  itemName: string;
+  weight: number;
+  containerCount: number;
+  packagingUnit: string;
+  unitPrice: number;
+  totalPrice: number;
+  supplyPrice: number;
+  sellingPrice: number;
+  paymentMethod: string;
+  hsCode: string;
+  blNumber: string;
+  departurePort: string;
+  etd: string;
+  arrivalPort: string;
+  eta: string;
+  contractParty: string;
+  customsDate: string;
+}
+
+export const dummyShipmentData: IShipmentData[] = [
+  {
+    contractNumber: "C-2024-001",
+    progressStatus: "입고",
+    contractDate: "2024-01-15",
+    importer: "미국곡물공사",
+    productName: "Hard Red Winter",
+    itemName: "밀가루",
+    weight: 500,
+    containerCount: 20,
+    packagingUnit: "Bulk",
+    unitPrice: 850000,
+    totalPrice: 425000000,
+    supplyPrice: 900000,
+    sellingPrice: 950000,
+    paymentMethod: "L/C",
+    hsCode: "1001.99-0000",
+    blNumber: "MAEU123456789",
+    departurePort: "포틀랜드",
+    etd: "2024-01-20",
+    arrivalPort: "부산항",
+    eta: "2024-02-20",
+    contractParty: "한국식품(주)",
+    customsDate: "2024-02-22",
+  },
+  {
+    contractNumber: "C-2024-002",
+    progressStatus: "예정",
+    contractDate: "2024-02-01",
+    importer: "태국쌀공사",
+    productName: "Thai Hom Mali Rice",
+    itemName: "쌀",
+    weight: 300,
+    containerCount: 12,
+    packagingUnit: "25kg/포대",
+    unitPrice: 920000,
+    totalPrice: 276000000,
+    supplyPrice: 980000,
+    sellingPrice: 1050000,
+    paymentMethod: "T/T",
+    hsCode: "1006.30-0000",
+    blNumber: "OOLU987654321",
+    departurePort: "방콕",
+    etd: "2024-02-10",
+    arrivalPort: "인천항",
+    eta: "2024-03-15",
+    contractParty: "대한식품(주)",
+    customsDate: "2024-03-17",
+  },
+  {
+    contractNumber: "C-2024-003",
+    progressStatus: "출고",
+    contractDate: "2024-01-20",
+    importer: "호주곡물공사",
+    productName: "Australian Premium White",
+    itemName: "보리",
+    weight: 400,
+    containerCount: 16,
+    packagingUnit: "Bulk",
+    unitPrice: 780000,
+    totalPrice: 312000000,
+    supplyPrice: 830000,
+    sellingPrice: 880000,
+    paymentMethod: "CAD",
+    hsCode: "1003.90-0000",
+    blNumber: "CMAU456789123",
+    departurePort: "시드니",
+    etd: "2024-01-25",
+    arrivalPort: "평택항",
+    eta: "2024-02-25",
+    contractParty: "서울식품(주)",
+    customsDate: "2024-02-27",
+  },
+  {
+    contractNumber: "C-2024-004",
+    progressStatus: "판매",
+    contractDate: "2024-01-10",
+    importer: "중국곡물공사",
+    productName: "Yellow Corn",
+    itemName: "옥수수",
+    weight: 600,
+    containerCount: 24,
+    packagingUnit: "Bulk",
+    unitPrice: 720000,
+    totalPrice: 432000000,
+    supplyPrice: 770000,
+    sellingPrice: 820000,
+    paymentMethod: "Usance",
+    hsCode: "1005.90-0000",
+    blNumber: "COSU234567891",
+    departurePort: "칭다오",
+    etd: "2024-01-15",
+    arrivalPort: "울산항",
+    eta: "2024-02-15",
+    contractParty: "부산식품(주)",
+    customsDate: "2024-02-17",
+  },
+  {
+    contractNumber: "C-2024-005",
+    progressStatus: "입고",
+    contractDate: "2024-02-05",
+    importer: "베트남곡물공사",
+    productName: "Black Soybean",
+    itemName: "콩",
+    weight: 350,
+    containerCount: 14,
+    packagingUnit: "30kg/포대",
+    unitPrice: 890000,
+    totalPrice: 311500000,
+    supplyPrice: 940000,
+    sellingPrice: 990000,
+    paymentMethod: "T/T",
+    hsCode: "1201.90-0000",
+    blNumber: "VNMU345678912",
+    departurePort: "호치민",
+    etd: "2024-02-08",
+    arrivalPort: "부산항",
+    eta: "2024-03-10",
+    contractParty: "광주식품(주)",
+    customsDate: "2024-03-12",
+  },
+];
+
+export interface IPlanData {
   contractNumber: string;
   progressStatus: string;
   contractDate: string;
@@ -21,7 +169,7 @@ export interface ShipmentData {
   totalProfit: number;
 }
 
-export const dummyShipmentData: ShipmentData[] = [
+export const dummyPlanData: IPlanData[] = [
   {
     contractNumber: "C-2024-001",
     progressStatus: "입고",
