@@ -3,7 +3,12 @@
 import { useEffect, useState, useMemo } from "react";
 import type { ColDef, ValueFormatterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  themeMaterial,
+} from "ag-grid-community";
 import type { IShipmentData } from "@/constants/dummy-data";
 import { dummyShipmentData } from "@/constants/dummy-data";
 import { FilterList as FilterListIcon } from "@mui/icons-material";
@@ -168,11 +173,14 @@ export default function ShipmentGrid() {
   const defaultColDef = useMemo(
     () => ({
       sortable: true,
-      filter: true,
       resizable: true,
+      minWidth: 100,
+      filter: true,
     }),
     [],
   );
+
+  const localeText = useMemo(() => AG_GRID_LOCALE_KR, []);
 
   // 검색어와 날짜로 데이터 필터링
   const filteredData = useMemo(() => {
@@ -319,13 +327,14 @@ export default function ShipmentGrid() {
         ) : (
           <div className="w-full h-full">
             <AgGridReact
+              theme={themeMaterial}
               rowData={filteredData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               pagination={true}
               paginationPageSize={15}
               rowSelection="multiple"
-              className="ag-theme-alpine"
+              localeText={localeText}
             />
           </div>
         )}
