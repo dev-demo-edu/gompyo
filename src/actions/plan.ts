@@ -8,10 +8,13 @@ import {
   items,
   costs,
   costDetails,
+  payments,
 } from "@/db/schema";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { contractSchema, cargoSchema } from "@/containers/plan";
+import { contractSchema, cargoSchema } from "@/containers/plan-button";
+import { eq } from "drizzle-orm";
+import { IPlanData } from "@/constants/dummy-data";
 
 type ContractData = z.infer<typeof contractSchema>;
 type CargoItem = z.infer<typeof cargoSchema>;
@@ -184,5 +187,115 @@ export async function createPlan(
       success: false,
       message: `계획 저장 중 오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
     };
+  }
+}
+
+export async function getPlanData(): Promise<IPlanData[]> {
+  try {
+    // 모든 계약 정보를 가져옵니다.
+    const result = await db
+      .select({
+        // 계약 정보
+        contractNumber: contracts.contractNumber,
+        contractDate: contracts.contractDate,
+        contractParty: contracts.contractParty,
+        importer: contracts.importer,
+        // 선적 정보
+        estimatedTimeArrival: shipments.estimatedTimeArrival,
+        arrivalPort: shipments.arrivalPort,
+        // 화물 정보
+        progressStatus: cargos.progressStatus,
+        contractTon: cargos.contractTon,
+        warehouseEntryDate: cargos.warehouseEntryDate,
+        sellingPrice: cargos.sellingPrice,
+        margin: cargos.margin,
+        totalProfit: cargos.totalProfit,
+        // 아이템 정보
+        itemName: items.itemName,
+        // 비용 정보
+        shippingCost: costs.shippingCost,
+        laborCost: costs.laborCost,
+        transportStorageFee: costs.transportStorageFee,
+        loadingUnloadingFee: costs.loadingUnloadingFee,
+        // 비용 상세 정보
+        unitPrice: costDetails.unitPrice,
+        exchangeRate: costDetails.exchangeRate,
+        customsTaxRate: costDetails.customsTaxRate,
+        customTaxAmount: costDetails.customTaxAmount,
+        customsFee: costDetails.customsFee,
+        inspectionFee: costDetails.inspectionFee,
+        // 결제 정보
+        paymentMethod: payments.paymentMethod,
+      })
+      .from(contracts)
+      .leftJoin(shipments, eq(shipments.contractId, contracts.id))
+      .leftJoin(cargos, eq(cargos.shipmentId, shipments.id))
+      .leftJoin(items, eq(cargos.itemsId, items.id))
+      .leftJoin(costs, eq(costs.cargoId, cargos.id))
+      .leftJoin(costDetails, eq(costDetails.costId, costs.id))
+      .leftJoin(payments, eq(payments.contractId, contracts.id));
+
+    // 데이터 가공
+    return result.map((row) => {
+      // 단가 * 무게 계산
+      const totalPrice = (row.unitPrice || 0) * (row.contractTon || 0);
+
+      // 수입 비용 계산 (관세 + 통관료 + 검역료 등)
+      const importCost =
+        (row.customTaxAmount || 0) +
+        (row.customsFee || 0) +
+        (row.inspectionFee || 0);
+
+      // kg당 수입 비용 계산
+      const importCostPerKg = row.contractTon
+        ? importCost / (row.contractTon * 1000)
+        : 0;
+
+      // 수급 비용 계산 (운송비 + 노무비 + 보관료 + 상하차료)
+      const supplyCost =
+        (row.shippingCost || 0) +
+        (row.laborCost || 0) +
+        (row.transportStorageFee || 0) +
+        (row.loadingUnloadingFee || 0);
+
+      // kg당 수급 비용 계산
+      const supplyCostPerKg = row.contractTon
+        ? supplyCost / (row.contractTon * 1000)
+        : 0;
+
+      // 총 비용 계산
+      const totalCost = importCost + supplyCost;
+
+      // kg당 총 비용 계산
+      const totalCostPerKg = row.contractTon
+        ? totalCost / (row.contractTon * 1000)
+        : 0;
+
+      return {
+        contractNumber: row.contractNumber || "",
+        progressStatus: row.progressStatus || "예정",
+        contractDate: row.contractDate || "",
+        importer: row.importer || "",
+        contractParty: row.contractParty || "",
+        estimatedTimeArrival: row.estimatedTimeArrival || "",
+        arrivalPort: row.arrivalPort || "",
+        itemName: row.itemName || "",
+        contractTon: row.contractTon || 0,
+        unitPrice: row.unitPrice || 0,
+        totalPrice: totalPrice,
+        paymentMethod: row.paymentMethod || "",
+        warehouseEntryDate: row.warehouseEntryDate || "",
+        importCostPerKg: importCostPerKg,
+        supplyCostPerKg: supplyCostPerKg,
+        totalCost: totalCost,
+        totalCostPerKg: totalCostPerKg,
+        sellingPrice: row.sellingPrice || 0,
+        margin: row.margin || 0,
+        totalProfit: row.totalProfit || 0,
+      };
+    });
+  } catch (error) {
+    console.error("Failed to fetch plan data:", error);
+    throw new Error("계획 데이터를 불러오는데 실패했습니다.");
   }
 }

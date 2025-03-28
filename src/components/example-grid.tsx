@@ -10,7 +10,16 @@ import type {
   RowSelectionOptions,
   ValueFormatterParams,
 } from "ag-grid-community";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  // themeAlpine,
+  // themeBalham,
+  // themeQuartz,
+  themeMaterial,
+} from "ag-grid-community";
+
+import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
 
 import type { CustomCellRendererProps } from "ag-grid-react";
 import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
@@ -87,11 +96,14 @@ export function GridExample() {
 
   const defaultColDef = useMemo(
     () => ({
-      filter: true,
       editable: true,
+      minWidth: 100,
+      filter: true,
     }),
     [],
   );
+
+  const localeText = useMemo(() => AG_GRID_LOCALE_KR, []);
 
   const [rowData, setRowData] = useState<IRow[]>([]);
   /* [
@@ -138,6 +150,7 @@ export function GridExample() {
     <div className="w-full h-full">
       {/* The AG Grid component, with Row Data & Column Definition props */}
       <AgGridReact
+        theme={themeMaterial}
         rowData={rowData}
         columnDefs={colDefs}
         defaultColDef={defaultColDef}
@@ -145,6 +158,7 @@ export function GridExample() {
         onCellValueChanged={onCellValueChanged}
         rowSelection={rowSelection}
         onSelectionChanged={onSelectionChanged}
+        localeText={localeText}
       />
     </div>
   );
