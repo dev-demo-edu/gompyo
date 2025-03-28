@@ -63,22 +63,30 @@ export default function Navbar() {
   };
 
   const navigationItems = [
-    { text: "대시보드", href: "/", icon: <DashboardIcon />, exact: true },
-    { text: "계획 관리", href: "/plan", icon: <ScheduleIcon />, exact: false },
+    {
+      text: "대시보드",
+      href: "/",
+      icon: <DashboardIcon />,
+    },
+    {
+      text: "계획 관리",
+      href: "/plan",
+      icon: <ScheduleIcon />,
+    },
     {
       text: "선적 관리",
       href: "/shipment",
       icon: <LocalShippingIcon />,
-      exact: false,
     },
-    { text: "테스트", href: "/test", icon: <ScienceIcon />, exact: false },
+    {
+      text: "테스트",
+      href: "/test",
+      icon: <ScienceIcon />,
+    },
   ];
 
-  const isActive = (item: { href: string; exact: boolean }) => {
-    if (item.exact) {
-      return pathname === item.href;
-    }
-    return pathname.startsWith(item.href);
+  const isActive = (item: { href: string }) => {
+    return pathname === item.href;
   };
 
   const sidebarContent = (
