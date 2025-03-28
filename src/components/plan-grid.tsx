@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
-import { IPlanData, dummyPlanData } from "@/constants/dummy-data";
+import { IPlanData } from "@/constants/dummy-data";
 import DataGrid, {
   dateFormatter,
   currencyFormatter,
   perKgFormatter,
 } from "./data-grid";
+import { getPlanData } from "@/actions/plan";
 
 export default function PlanGrid() {
   const [rowData, setRowData] = useState<IPlanData[]>([]);
@@ -134,22 +135,26 @@ export default function PlanGrid() {
     [],
   );
 
-  // 더미 데이터 로딩
+  // DB 데이터 로딩
   useEffect(() => {
-    try {
-      setLoading(true);
-      // 실제 API 호출 대신 더미 데이터 사용
-      setRowData(dummyPlanData);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "데이터를 불러오는데 실패했습니다.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await getPlanData();
+        setRowData(data);
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "데이터를 불러오는데 실패했습니다.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
