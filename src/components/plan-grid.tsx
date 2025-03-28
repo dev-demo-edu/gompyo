@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
-import { IPlanData } from "@/constants/dummy-data";
+import { IPlanData } from "@/types/grid-col";
 import DataGrid, {
   dateFormatter,
   currencyFormatter,

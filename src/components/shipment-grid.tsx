@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
-import { IShipmentData, dummyShipmentData } from "@/constants/dummy-data";
+import { IShipmentData } from "@/types/grid-col";
 import DataGrid, { dateFormatter, currencyFormatter } from "./data-grid";
+import { getShipmentData } from "@/actions/shipment";
 
 export default function ShipmentGrid() {
   const [rowData, setRowData] = useState<IShipmentData[]>([]);
@@ -136,21 +137,26 @@ export default function ShipmentGrid() {
     [],
   );
 
-  // 더미 데이터 로딩
+  // DB 데이터 로딩
   useEffect(() => {
-    try {
-      setLoading(true);
-      setRowData(dummyShipmentData);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "데이터를 불러오는데 실패했습니다.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await getShipmentData();
+        setRowData(data);
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "데이터를 불러오는데 실패했습니다.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
