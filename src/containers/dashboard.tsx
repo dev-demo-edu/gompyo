@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Card, Stack, Typography } from "@mui/material";
+import { Box, Card, Icon, Stack, Typography } from "@mui/material";
+import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 
 interface WidgetSummaryProps {
   title: string;
@@ -75,85 +76,104 @@ function ShipmentCard({
         borderRadius: "8px",
       }}
     >
-      <Stack spacing={1}>
-        <Typography
-          sx={{
-            fontFamily: "Inter",
-            fontWeight: 900,
-            fontSize: "16px",
-          }}
-        >
-          {title}
-        </Typography>
-        <Typography
-          sx={{
-            fontFamily: "Inter",
-            fontWeight: 500,
-            fontSize: "12px",
-          }}
-        >
-          {code}
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography
-            sx={{
-              fontFamily: "Inter",
-              fontWeight: 500,
-              fontSize: "12px",
-            }}
-          >
-            {origin}
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: "Inter",
-              fontWeight: 500,
-              fontSize: "12px",
-            }}
-          >
-            {destination}
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography
-            sx={{
-              fontFamily: "Inter",
-              fontWeight: 700,
-              fontSize: "12px",
-            }}
-          >
-            {originPort}
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: "Inter",
-              fontWeight: 700,
-              fontSize: "12px",
-            }}
-          >
-            {destinationPort}
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1, opacity: 0.6 }}>
-          <Typography
-            sx={{
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: "12px",
-            }}
-          >
-            생성일
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: "12px",
-            }}
-          >
-            {createdAt}
-          </Typography>
-        </Box>
+      <Stack spacing={50} width="100%">
+        <Stack direction="row" justifyContent="space-between">
+          <Stack>
+            <Typography
+              sx={{
+                fontFamily: "Inter",
+                fontWeight: 900,
+                fontSize: "16px",
+              }}
+            >
+              {title}
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "Inter",
+                fontWeight: 500,
+                fontSize: "12px",
+              }}
+            >
+              {code}
+            </Typography>
+          </Stack>
+          <Stack direction="row" justifyContent="space-between">
+            <DirectionsBoatIcon sx={{ mt: 2, mr: 1 }}></DirectionsBoatIcon>
+            <Stack spacing={1} sx={{ mt: -1 }}>
+              <Stack spacing={-0.5}>
+                <Box sx={{ display: "flex", gap: 0 }}>
+                  <Typography
+                    sx={{
+                      fontFamily: "Inter",
+                      fontWeight: 500,
+                      fontSize: "12px",
+                    }}
+                  >
+                    {origin}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", gap: 0 }}>
+                  <Typography
+                    sx={{
+                      fontFamily: "Inter",
+                      fontWeight: 700,
+                      fontSize: "12px",
+                    }}
+                  >
+                    {originPort}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Stack spacing={0}>
+                <Box sx={{ display: "flex", gap: 0 }}>
+                  <Typography
+                    sx={{
+                      fontFamily: "Inter",
+                      fontWeight: 500,
+                      fontSize: "12px",
+                    }}
+                  >
+                    {destination}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", gap: 0 }}>
+                  <Typography
+                    sx={{
+                      fontFamily: "Inter",
+                      fontWeight: 700,
+                      fontSize: "12px",
+                    }}
+                  >
+                    {destinationPort}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Stack>
+          </Stack>
+          <Stack direction="row">
+            <Box sx={{ display: "flex", gap: 1, opacity: 0.6 }}>
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "12px",
+                }}
+              >
+                생성일
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "12px",
+                }}
+              >
+                {createdAt}
+              </Typography>
+            </Box>
+          </Stack>
+        </Stack>
       </Stack>
     </Card>
   );
@@ -220,7 +240,7 @@ export default function Dashboard() {
             origin="India"
             destination="Korea, Republic of"
             originPort="[Port] Haldia"
-            destinationPort="[Port] Haldia"
+            destinationPort="[Port] Busan"
             createdAt="2025-02-25"
           />
           <ShipmentCard
@@ -229,7 +249,7 @@ export default function Dashboard() {
             origin="India"
             destination="Korea, Republic of"
             originPort="[Port] Haldia"
-            destinationPort="[Port] Haldia"
+            destinationPort="[Port] Busan"
             createdAt="2025-02-25"
           />
           <ShipmentCard
@@ -238,7 +258,7 @@ export default function Dashboard() {
             origin="India"
             destination="Korea, Republic of"
             originPort="[Port] Haldia"
-            destinationPort="[Port] Haldia"
+            destinationPort="[Port] Busan"
             createdAt="2025-02-25"
           />
         </Stack>
@@ -287,7 +307,7 @@ export default function Dashboard() {
             origin="India"
             destination="Korea, Republic of"
             originPort="[Port] Haldia"
-            destinationPort="[Port] Haldia"
+            destinationPort="[Port] Busan"
             createdAt="2025-02-25"
           />
           <ShipmentCard
@@ -296,7 +316,7 @@ export default function Dashboard() {
             origin="India"
             destination="Korea, Republic of"
             originPort="[Port] Haldia"
-            destinationPort="[Port] Haldia"
+            destinationPort="[Port] Busan"
             createdAt="2025-02-25"
           />
           <ShipmentCard
@@ -305,7 +325,7 @@ export default function Dashboard() {
             origin="India"
             destination="Korea, Republic of"
             originPort="[Port] Haldia"
-            destinationPort="[Port] Haldia"
+            destinationPort="[Port] Busan"
             createdAt="2025-02-25"
           />
         </Stack>
