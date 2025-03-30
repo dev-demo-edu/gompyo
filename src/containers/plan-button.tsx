@@ -22,6 +22,9 @@ import Popper from "@mui/material/Popper";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
+import { searchItemsByName } from "@/actions/item";
+import { Icon, IconButton, InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 // 계약 정보 스키마
 export const contractSchema = z.object({
@@ -250,8 +253,8 @@ export default function PlanButton() {
 
     setIsSearching(true);
     try {
-      const result = await searchItems(query);
-      setSearchResults(result.items || []);
+      const result = await searchItemsByName(query);
+      setSearchResults(result || []);
     } catch (error) {
       console.error("검색 오류:", error);
     } finally {
@@ -435,20 +438,27 @@ export default function PlanButton() {
         <Box className="p-6 flex flex-col gap-6">
           <Box className="flex flex-col gap-1 relative">
             <TextField
+              InputProps={{
+                endAdornment: isSearching ? (
+                  <CircularProgress
+                    size={20}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                  />
+                ) : (
+                  <InputAdornment position="start" sx={{ marginBottom: 2 }}>
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
               label="상품 검색"
               value={searchQuery}
               onChange={handleSearch}
               ref={searchInputRef}
+              variant="filled"
               placeholder="검색어를 입력하세요 (2글자 이상)"
               fullWidth
               className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
             />
-            {isSearching && (
-              <CircularProgress
-                size={20}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-              />
-            )}
             <Typography className="text-xs text-text-secondary">
               전에 등록하셨던 상품을 검색해서 자동으로 입력할 수 있습니다
             </Typography>
@@ -494,9 +504,9 @@ export default function PlanButton() {
                 >
                   <MenuList>
                     {searchResults.length > 0 ? (
-                      searchResults.map((item) => (
+                      searchResults.map((item, idx) => (
                         <MenuItem
-                          key={item.id}
+                          key={idx}
                           onClick={() => handleItemSelect(item)}
                           className="py-3 px-4 border-b last:border-b-0 border-gray-100 hover:bg-gray-50"
                         >
