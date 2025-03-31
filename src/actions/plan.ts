@@ -8,6 +8,8 @@ import {
   items,
   costs,
   costDetails,
+  payments,
+  paymentsTt,
 } from "@/db/schema";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -47,6 +49,42 @@ export async function createPlan(
       console.error("계약 정보 저장 중 오류:", error);
       throw new Error(
         `계약 정보 저장 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
+      );
+    }
+
+    // 결제 정보 저장 (기본값으로 T/T 결제 방식 설정)
+    try {
+      const paymentId = nanoid();
+      const [payment] = await db
+        .insert(payments)
+        .values({
+          id: paymentId,
+          paymentDueDate: contractData.contractDate, // 계약일을 결제일로 설정
+          paymentMethod: "T/T",
+          contractId: contractId,
+        })
+        .returning();
+      console.log("결제 정보 저장 완료:", payment);
+
+      // T/T 결제 상세 정보 저장
+      const [paymentTt] = await db
+        .insert(paymentsTt)
+        .values({
+          paymentId: paymentId,
+          advancePaymentDate: contractData.contractDate,
+          advancePaymentRatio: 0.3, // 기본값 30%
+          advancePaymentAmount: 0, // 나중에 계산
+          remainingPaymentDate: contractData.contractDate, // 계약일로 설정
+          remainingPaymentRatio: 0.7, // 기본값 70%
+          remainingPaymentAmount: 0, // 나중에 계산
+          counterpartBank: "", // 나중에 입력
+        })
+        .returning();
+      console.log("T/T 결제 상세 정보 저장 완료:", paymentTt);
+    } catch (error) {
+      console.error("결제 정보 저장 중 오류:", error);
+      throw new Error(
+        `결제 정보 저장 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
       );
     }
 

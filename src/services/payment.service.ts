@@ -9,8 +9,44 @@ export type NewPaymentTt = typeof paymentsTt.$inferInsert;
 export type PaymentUsance = typeof paymentsUsance.$inferSelect;
 export type NewPaymentUsance = typeof paymentsUsance.$inferInsert;
 
+export type CreatePaymentData = {
+  payment: NewPayment;
+  paymentTt?: NewPaymentTt;
+  paymentUsance?: NewPaymentUsance;
+};
+
 export class PaymentService {
   // Create
+  async createWithDetails(data: CreatePaymentData) {
+    try {
+      // 기본 결제 정보 생성
+      const [payment] = await db
+        .insert(payments)
+        .values(data.payment)
+        .returning();
+
+      // 결제 방식에 따른 상세 정보 생성
+      if (data.paymentTt) {
+        await this.createTt({
+          ...data.paymentTt,
+          paymentId: payment.id,
+        });
+      }
+
+      if (data.paymentUsance) {
+        await this.createUsance({
+          ...data.paymentUsance,
+          paymentId: payment.id,
+        });
+      }
+
+      return payment;
+    } catch (error) {
+      console.error("결제 정보 생성 중 오류 발생:", error);
+      throw error;
+    }
+  }
+
   async create(data: NewPayment) {
     const [payment] = await db.insert(payments).values(data).returning();
     return payment;
@@ -58,7 +94,7 @@ export class PaymentService {
     return await db.select().from(payments);
   }
 
-  async findByContractId(contractId: number) {
+  async findByContractId(contractId: string) {
     const [payment] = await db
       .select()
       .from(payments)

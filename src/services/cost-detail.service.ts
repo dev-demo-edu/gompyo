@@ -26,10 +26,11 @@ export class CostDetailService {
   }
 
   async findByCostId(costId: string) {
-    return await db
+    const [costDetail] = await db
       .select()
       .from(costDetails)
       .where(eq(costDetails.costId, costId));
+    return costDetail;
   }
 
   // Update
@@ -52,7 +53,9 @@ export class CostDetailService {
   }
 
   async deleteByCostId(costId: string) {
-    const costDetails = await this.findByCostId(costId);
-    await Promise.all(costDetails.map((detail) => this.delete(detail.id)));
+    const costDetail = await this.findByCostId(costId);
+    if (costDetail) {
+      await this.delete(costDetail.id);
+    }
   }
 }
