@@ -7,6 +7,7 @@ import DataGrid, {
   dateFormatter,
   currencyFormatter,
   perKgFormatter,
+  DetailButtonRenderer,
 } from "./data-grid";
 import { getPlanData } from "@/actions/plan";
 
@@ -130,6 +131,14 @@ export default function PlanGrid() {
         headerName: "총 이익",
         valueFormatter: currencyFormatter,
         width: 150,
+      },
+      {
+        headerName: "",
+        field: "detail",
+        cellRenderer: DetailButtonRenderer,
+        sortable: false,
+        filter: false,
+        width: 100,
       },
     ],
     [],

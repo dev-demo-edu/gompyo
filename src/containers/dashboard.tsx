@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Card, Icon, Stack, Typography } from "@mui/material";
+import { Box, Card, Stack, Typography } from "@mui/material";
 import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 
 interface WidgetSummaryProps {

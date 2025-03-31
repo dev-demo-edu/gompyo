@@ -14,7 +14,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { contractSchema, cargoSchema } from "@/containers/plan-button";
 import { eq } from "drizzle-orm";
-import { IPlanData } from "@/constants/dummy-data";
+import { IPlanData } from "@/types/grid-col";
 
 type ContractData = z.infer<typeof contractSchema>;
 type CargoItem = z.infer<typeof cargoSchema>;
@@ -196,6 +196,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
     const result = await db
       .select({
         // 계약 정보
+        id: contracts.id,
         contractNumber: contracts.contractNumber,
         contractDate: contracts.contractDate,
         contractParty: contracts.contractParty,
@@ -272,6 +273,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
         : 0;
 
       return {
+        id: row.id,
         contractNumber: row.contractNumber || "",
         progressStatus: row.progressStatus || "예정",
         contractDate: row.contractDate || "",
