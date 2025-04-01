@@ -5,49 +5,143 @@ import {
   Typography,
   TextField,
   IconButton,
-  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { Edit, Save } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface FieldConfig {
+  name: string;
+  label: string;
+  placeholder?: string;
+  gridSize?: number;
+  hasEditButton?: boolean;
+  type?: "text" | "select";
+  options?: { value: string; label: string }[];
+}
 
 interface DetailFormProps {
   title: string;
+  fields: FieldConfig[];
+  data?: Record<string, string>;
+  onSave?: (data: Record<string, string>) => void;
+  className?: string;
 }
 
-export default function DetailForm({ title }: DetailFormProps) {
+export default function DetailForm({
+  title,
+  fields,
+  data = {},
+  onSave,
+  className = "",
+}: DetailFormProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    contractNumber: "",
-    contractDate: "",
-    contractor: "",
-    importer: "",
-    departurePort: "",
-    arrivalPort: "",
-    etd: "",
-    eta: "",
-    blNumber: "",
-  });
+  const [formData, setFormData] = useState<Record<string, string>>(
+    Object.entries(data).reduce(
+      (acc, [key, value]) => {
+        acc[key] = value?.toString() || "";
+        return acc;
+      },
+      {} as Record<string, string>,
+    ),
+  );
+
+  useEffect(() => {
+    setFormData(
+      Object.entries(data).reduce(
+        (acc, [key, value]) => {
+          acc[key] = value?.toString() || "";
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
+    );
+  }, [data]);
 
   const handleEdit = () => {
     setIsEditing(true);
   };
 
   const handleSave = () => {
-    // TODO: API 호출하여 데이터 저장
-    console.log("저장할 데이터:", formData);
+    if (onSave) {
+      onSave(formData);
+    }
     setIsEditing(false);
   };
 
-  const handleChange =
+  const handleTextChange =
     (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = event.target.value;
       setFormData((prev) => ({
         ...prev,
-        [field]: event.target.value,
+        [field]: newValue,
       }));
     };
 
+  const handleSelectChange =
+    (field: string) => (event: SelectChangeEvent<string>) => {
+      const newValue = event.target.value;
+      setFormData((prev) => ({
+        ...prev,
+        [field]: newValue,
+      }));
+    };
+
+  const renderField = (field: FieldConfig) => {
+    if (field.type === "select" && field.options) {
+      return (
+        <FormControl fullWidth disabled={!isEditing}>
+          <InputLabel>{field.label}</InputLabel>
+          <Select
+            label={field.label}
+            value={formData[field.name] || ""}
+            onChange={handleSelectChange(field.name)}
+            disabled={!isEditing}
+            sx={{
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(145, 158, 171, 0.2)",
+              },
+            }}
+          >
+            {field.options.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    const textFieldProps = {
+      fullWidth: true,
+      label: field.label,
+      variant: "outlined" as const,
+      placeholder: field.placeholder || "입력해주세요.",
+      className: "bg-background-paper",
+      disabled: !isEditing,
+      value: formData[field.name] || "",
+      onChange: handleTextChange(field.name),
+      sx: {
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "rgba(145, 158, 171, 0.2)",
+          },
+        },
+      },
+    };
+    return <TextField {...textFieldProps} />;
+  };
+
   return (
-    <Paper className="w-full bg-background-paper rounded-2xl shadow-[0px_12px_24px_-4px_rgba(145,158,171,0.12)] shadow-[0px_0px_2px_0px_rgba(145,158,171,0.20)]">
+    <Paper
+      className={`bg-background-paper rounded-2xl shadow-[0px_12px_24px_-4px_rgba(145,158,171,0.12)] shadow-[0px_0px_2px_0px_rgba(145,158,171,0.20)] inline-flex flex-col justify-start items-end ${className}`}
+    >
       {/* 헤더 */}
       <Box className="self-stretch pl-6 pr-4 py-6 border-b border-[rgba(145,158,171,0.2)] flex justify-between items-center">
         <Typography variant="h6" className="text-text-primary font-semibold">
@@ -67,192 +161,14 @@ export default function DetailForm({ title }: DetailFormProps) {
       </Box>
 
       {/* 폼 컨텐츠 */}
-      <Box className="self-stretch p-6 flex flex-col gap-6">
-        {/* 계약 번호 */}
-        <TextField
-          fullWidth
-          label="계약 번호"
-          variant="outlined"
-          placeholder="입력해주세요."
-          className="bg-background-paper"
-          disabled={!isEditing}
-          value={formData.contractNumber}
-          onChange={handleChange("contractNumber")}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "rgba(145, 158, 171, 0.2)",
-              },
-            },
-          }}
-        />
-
-        {/* 계약 일자 */}
-        <TextField
-          fullWidth
-          label="계약 일자"
-          variant="outlined"
-          placeholder="입력해주세요."
-          className="bg-background-paper"
-          disabled={!isEditing}
-          value={formData.contractDate}
-          onChange={handleChange("contractDate")}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "rgba(145, 158, 171, 0.2)",
-              },
-            },
-          }}
-        />
-
-        {/* 계약자 */}
-        <TextField
-          fullWidth
-          label="계약자"
-          variant="outlined"
-          placeholder="입력해주세요."
-          className="bg-background-paper"
-          disabled={!isEditing}
-          value={formData.contractor}
-          onChange={handleChange("contractor")}
-          InputProps={{
-            endAdornment: (
-              <IconButton>
-                <Edit className="text-text-secondary" />
-              </IconButton>
-            ),
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "rgba(145, 158, 171, 0.2)",
-              },
-            },
-          }}
-        />
-
-        {/* 수입처 */}
-        <TextField
-          fullWidth
-          label="수입처"
-          variant="outlined"
-          placeholder="입력해주세요."
-          className="bg-background-paper"
-          disabled={!isEditing}
-          value={formData.importer}
-          onChange={handleChange("importer")}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "rgba(145, 158, 171, 0.2)",
-              },
-            },
-          }}
-        />
-
-        {/* 출발항, 도착항 */}
+      <Box className="self-stretch p-6">
         <Grid container spacing={3}>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="출발항"
-              variant="outlined"
-              placeholder="입력해주세요."
-              className="bg-background-paper"
-              disabled={!isEditing}
-              value={formData.departurePort}
-              onChange={handleChange("departurePort")}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "rgba(145, 158, 171, 0.2)",
-                  },
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="도착항"
-              variant="outlined"
-              placeholder="입력해주세요."
-              className="bg-background-paper"
-              disabled={!isEditing}
-              value={formData.arrivalPort}
-              onChange={handleChange("arrivalPort")}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "rgba(145, 158, 171, 0.2)",
-                  },
-                },
-              }}
-            />
-          </Grid>
+          {fields.map((field) => (
+            <Grid item xs={field.gridSize || 12} key={field.name}>
+              {renderField(field)}
+            </Grid>
+          ))}
         </Grid>
-
-        {/* ETD, ETA */}
-        <Grid container spacing={3}>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="ETD"
-              variant="outlined"
-              placeholder="입력해주세요."
-              className="bg-background-paper"
-              disabled={!isEditing}
-              value={formData.etd}
-              onChange={handleChange("etd")}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "rgba(145, 158, 171, 0.2)",
-                  },
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="ETA"
-              variant="outlined"
-              placeholder="입력해주세요."
-              className="bg-background-paper"
-              disabled={!isEditing}
-              value={formData.eta}
-              onChange={handleChange("eta")}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "rgba(145, 158, 171, 0.2)",
-                  },
-                },
-              }}
-            />
-          </Grid>
-        </Grid>
-
-        {/* B/L 번호 */}
-        <TextField
-          fullWidth
-          label="B/L 번호"
-          variant="outlined"
-          placeholder="입력해주세요."
-          className="bg-background-paper"
-          disabled={!isEditing}
-          value={formData.blNumber}
-          onChange={handleChange("blNumber")}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "rgba(145, 158, 171, 0.2)",
-              },
-            },
-          }}
-        />
       </Box>
     </Paper>
   );

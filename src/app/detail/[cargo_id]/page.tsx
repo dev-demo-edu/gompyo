@@ -1,22 +1,12 @@
-import {
-  Box,
-  Container,
-  Typography,
-  IconButton,
-  Avatar,
-  Badge,
-  Button,
-  Stack,
-} from "@mui/material";
-import { Search, Notifications, Settings, Help } from "@mui/icons-material";
-import DetailForm from "@/components/detail-form";
+import { Box, Container, Typography, Button, Stack } from "@mui/material";
+import CargoDetail from "@/containers/cargo-detail";
 
 export default async function DetailPage({
   params,
 }: {
   params: { cargo_id: string };
 }) {
-  const { cargo_id } = await params;
+  const { cargo_id } = params;
   console.log(cargo_id);
   return (
     <div className="min-h-screen bg-background-paper">
@@ -28,33 +18,6 @@ export default async function DetailPage({
         >
           상세보기
         </Typography>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Box className="h-9 pr-2 bg-grey-8% bg-opacity-10 rounded-[10px] flex items-center">
-            <IconButton size="small">
-              <Search />
-            </IconButton>
-            <Box className="h-6 px-1.5 bg-background-paper rounded-md shadow-sm">
-              <Typography variant="caption" className="text-text-primary">
-                ⌘K
-              </Typography>
-            </Box>
-          </Box>
-          <Badge badgeContent={1} color="error">
-            <IconButton>
-              <Notifications />
-            </IconButton>
-          </Badge>
-          <IconButton>
-            <Settings />
-          </IconButton>
-          <IconButton>
-            <Help />
-          </IconButton>
-          <Avatar
-            src="https://placehold.co/36x36"
-            className="w-10 h-10 outline-1 outline-primary-light"
-          />
-        </Stack>
       </Box>
 
       {/* 진행 상태 */}
@@ -84,7 +47,8 @@ export default async function DetailPage({
             </Button>
           </Stack>
         </Box>
-        <DetailForm title="계약 정보" />
+        <CargoDetail cargoId={cargo_id} />
+        <Box className="w-[1093px] h-[50px]" />
       </Container>
     </div>
   );

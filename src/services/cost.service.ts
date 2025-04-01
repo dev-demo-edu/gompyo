@@ -30,7 +30,11 @@ export class CostService {
   }
 
   async findByCargoId(cargoId: string) {
-    return await db.select().from(costs).where(eq(costs.cargoId, cargoId));
+    const [cost] = await db
+      .select()
+      .from(costs)
+      .where(eq(costs.cargoId, cargoId));
+    return cost;
   }
 
   // Update

@@ -15,7 +15,7 @@ export const payments = sqliteTable(
     id: text("id").primaryKey(),
     paymentDueDate: text("payment_due_date"), // SQLite stores DATE as TEXT
     paymentMethod: text("payment_method").notNull(),
-    contractId: integer("contract_id").notNull(),
+    contractId: text("contract_id").notNull(),
   },
   (table) => [
     check(
