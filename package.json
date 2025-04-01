@@ -15,6 +15,7 @@
     "drizzle:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@ag-grid-community/locale": "^33.2.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^4.1.3",

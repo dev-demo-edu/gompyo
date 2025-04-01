@@ -6,8 +6,8 @@ export default async function DetailPage({
 }: {
   params: { cargo_id: string };
 }) {
-  const { cargo_id } = await params;
-
+  const { cargo_id } = params;
+  console.log(cargo_id);
   return (
     <div className="min-h-screen bg-background-paper">
       {/* 헤더 */}
