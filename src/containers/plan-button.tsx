@@ -23,7 +23,7 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 import { searchItemsByName } from "@/actions/item";
-import { Icon, IconButton, InputAdornment } from "@mui/material";
+import { InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
 // 계약 정보 스키마

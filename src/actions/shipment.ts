@@ -11,7 +11,7 @@ import {
   payments,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { IShipmentData } from "@/constants/dummy-data";
+import { IShipmentData } from "@/types/grid-col";
 
 export async function getShipmentData(): Promise<IShipmentData[]> {
   try {
@@ -19,6 +19,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
     const result = await db
       .select({
         // 계약 정보
+        id: contracts.id,
         contractNumber: contracts.contractNumber,
         contractDate: contracts.contractDate,
         contractParty: contracts.contractParty,
@@ -60,6 +61,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
       const totalPrice = (row.unitPrice || 0) * (row.contractTon || 0);
 
       return {
+        id: row.id,
         contractNumber: row.contractNumber || "",
         progressStatus: row.progressStatus || "예정",
         contractDate: row.contractDate || "",

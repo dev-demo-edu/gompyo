@@ -8,11 +8,27 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   themeMaterial,
+  ICellRendererParams,
 } from "ag-grid-community";
 import { FilterList as FilterListIcon } from "@mui/icons-material";
+import Link from "next/link";
 
 // Register AG-Grid Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
+
+// 상세 페이지 이동 버튼 렌더러
+export const DetailButtonRenderer = (params: ICellRendererParams) => {
+  return (
+    <div className="flex justify-center items-center h-full">
+      <Link
+        href={`/detail/${params.data.id}`}
+        className="inline-block px-4 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium text-center"
+      >
+        상세보기
+      </Link>
+    </div>
+  );
+};
 
 // 날짜 포맷터
 export const dateFormatter = (params: ValueFormatterParams): string => {

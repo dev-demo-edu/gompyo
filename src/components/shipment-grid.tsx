@@ -3,7 +3,11 @@
 import { useEffect, useState, useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
 import { IShipmentData } from "@/types/grid-col";
-import DataGrid, { dateFormatter, currencyFormatter } from "./data-grid";
+import DataGrid, {
+  dateFormatter,
+  currencyFormatter,
+  DetailButtonRenderer,
+} from "./data-grid";
 import { getShipmentData } from "@/actions/shipment";
 
 export default function ShipmentGrid() {
@@ -132,6 +136,14 @@ export default function ShipmentGrid() {
         headerName: "통관일자",
         valueFormatter: dateFormatter,
         width: 150,
+      },
+      {
+        headerName: "",
+        field: "detail",
+        cellRenderer: DetailButtonRenderer,
+        sortable: false,
+        filter: false,
+        width: 100,
       },
     ],
     [],

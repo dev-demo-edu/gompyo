@@ -22,14 +22,14 @@ export class ItemService {
     const [item] = await db.select().from(items).where(eq(items.id, id));
     return item;
   }
-	
-	async searchItems(itemName: string) {
-		const itemsList = await db
-			.select()
-			.from(items)
-			.where(eq(items.itemName, itemName));
-		return itemsList;
-	}
+
+  async searchItems(itemName: string) {
+    const itemsList = await db
+      .select()
+      .from(items)
+      .where(eq(items.itemName, itemName));
+    return itemsList;
+  }
 
   async findAll() {
     return await db.select().from(items);

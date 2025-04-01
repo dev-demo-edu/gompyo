@@ -11,12 +11,12 @@ import {
 import { Search, Notifications, Settings, Help } from "@mui/icons-material";
 import DetailForm from "@/components/detail-form";
 
-export default function DetailPage({
+export default async function DetailPage({
   params,
 }: {
   params: { cargo_id: string };
 }) {
-  const { cargo_id } = params;
+  const { cargo_id } = await params;
   console.log(cargo_id);
   return (
     <div className="min-h-screen bg-background-paper">
