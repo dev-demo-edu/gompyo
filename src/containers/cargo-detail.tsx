@@ -1,9 +1,9 @@
 "use client";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import DetailForm from "@/components/detail-form";
 import { getCargoDetail, updateCargoDetail } from "@/actions/cargo-detail";
 import { useEffect, useState } from "react";
-import { CargoDetailData } from "@/actions/cargo-detail";
+import { CargoDetailData } from "@/types/cargo-detail";
 import { mapAndCalculateCargoDetails } from "@/services/cargo-calculator";
 import { useToast } from "@/hooks/use-toast";
 
@@ -69,17 +69,30 @@ const expenseFields = [
   { name: "totalProfit", label: "총이익" },
 ];
 
-export default function CargoDetail({ cargoId }: { cargoId: string }) {
-  const [data, setData] = useState<CargoDetailData | null>(null);
+export default function CargoDetail({
+  cargoId,
+  cargoData,
+}: {
+  cargoId: string;
+  cargoData: CargoDetailData | null;
+}) {
+  const [data, setData] = useState<CargoDetailData | null>(cargoData);
   const [mappedData, setMappedData] = useState<ReturnType<
     typeof mapAndCalculateCargoDetails
-  > | null>(null);
-  const [loading, setLoading] = useState(true);
+  > | null>(cargoData ? mapAndCalculateCargoDetails(cargoData) : null);
+  const [loading, setLoading] = useState(!cargoData);
   const [error, setError] = useState<string | null>(null);
   const { toast, ToastComponent } = useToast();
 
   useEffect(() => {
     async function fetchData() {
+      if (cargoData) {
+        setData(cargoData);
+        setMappedData(mapAndCalculateCargoDetails(cargoData));
+        setLoading(false);
+        return;
+      }
+
       try {
         const result = await getCargoDetail(cargoId);
         setData(result);
@@ -96,7 +109,7 @@ export default function CargoDetail({ cargoId }: { cargoId: string }) {
     }
 
     fetchData();
-  }, [cargoId]);
+  }, [cargoId, cargoData]);
 
   const handleDataUpdate = async (
     section: keyof ReturnType<typeof mapAndCalculateCargoDetails>,
@@ -164,7 +177,11 @@ export default function CargoDetail({ cargoId }: { cargoId: string }) {
   };
 
   if (loading) {
-    return <div>로딩 중...</div>;
+    return (
+      <Box className="w-full h-full flex items-center justify-center">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {

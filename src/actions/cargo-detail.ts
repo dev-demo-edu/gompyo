@@ -5,6 +5,7 @@ import { CostService } from "@/services/cost.service";
 import { CargoService } from "@/services/cargo.service";
 import { ShipmentService } from "@/services/shipment.service";
 import { CostDetailService } from "@/services/cost-detail.service";
+import { CargoDetailData } from "@/types/cargo-detail";
 
 const contractService = new ContractService();
 const paymentService = new PaymentService();
@@ -12,82 +13,6 @@ const costService = new CostService();
 const cargoService = new CargoService();
 const shipmentService = new ShipmentService();
 const costDetailService = new CostDetailService();
-
-type Contract = {
-  id: string;
-  contractNumber: string | null;
-  contractDate: string | null;
-  contractParty: string | null;
-  importer: string | null;
-  incoterms: string | null;
-};
-
-type Payment = {
-  id: string;
-  paymentDueDate: string | null;
-  paymentMethod: string;
-  contractId: string;
-};
-
-type CostDetail = {
-  id: string;
-  unitPrice: number | null;
-  exchangeRate: number | null;
-  customsTaxRate: number | null;
-  customTaxAmount: number | null;
-  customsFee: number | null;
-  inspectionFee: number | null;
-  doCharge: number | null;
-  otherCosts: number | null;
-  costId: string;
-};
-
-type ContractAmount = {
-  id: string;
-  supplyPrice: number | null;
-  shippingCost: number | null;
-  laborCost: number | null;
-  transportStorageFee: number | null;
-  loadingUnloadingFee: number | null;
-  cargoId: string;
-};
-
-type Expense = {
-  id: string;
-  itemsId: string;
-  shipmentId: string;
-  containerCount: number | null;
-  contractTon: number | null;
-  customsClearanceDate: string | null;
-  quarantineDate: string | null;
-  warehouseEntryDate: string | null;
-  progressStatus: string | null;
-  sellingPrice: number | null;
-  margin: number | null;
-  totalProfit: number | null;
-};
-
-export type CargoDetailData = {
-  contract: Contract;
-  payment: Payment;
-  costDetail: CostDetail;
-  cost: ContractAmount;
-  cargo: Expense;
-  shipment: Shipment;
-};
-
-export type Shipment = {
-  id: string;
-  contractId: string;
-  estimatedTimeArrival: string | null;
-  estimatedTimeDeparture: string | null;
-  arrivalPort: string | null;
-  shippingCompany: string | null;
-  departurePort: string | null;
-  blNumber: string | null;
-  palletOrderDate: string | null;
-  palletType: string | null;
-};
 
 export async function getCargoDetail(
   cargoId: string,
