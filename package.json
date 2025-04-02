@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ag-grid-community/locale": "^33.2.1",
+    "@aws-sdk/client-s3": "^3.779.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^4.1.3",
