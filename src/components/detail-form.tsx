@@ -28,7 +28,7 @@ interface FieldConfig {
 interface DetailFormProps {
   title: string;
   fields: FieldConfig[];
-  data?: Record<string, string | number>;
+  data?: Record<string, string>;
   onSave?: (data: Record<string, string>) => void;
   className?: string;
 }
