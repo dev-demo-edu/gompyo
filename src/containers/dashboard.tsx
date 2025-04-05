@@ -5,7 +5,6 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { BarDataItem } from "@/types/dashboard-data";
 import {
-  searchBarChartDataGroupingByCompany,
   searchBarChartDataGroupingByContractParty,
   searchBarChartDataGroupingByImporter,
   searchBarChartDataGroupingByItems,
@@ -81,9 +80,6 @@ function BarChart({
 }
 
 export default function Dashboard() {
-  const [companyChartData, setCompanyChartData] = useState<
-    BarDataItem[] | null
-  >(null);
   const [itemChartData, setItemChartData] = useState<BarDataItem[] | null>(
     null,
   );
@@ -100,10 +96,6 @@ export default function Dashboard() {
       const month = String(new Date().getMonth() + 1).padStart(2, "0");
 
       try {
-        const companyResult = await searchBarChartDataGroupingByCompany(
-          year,
-          month,
-        );
         const itemResult = await searchBarChartDataGroupingByItems(year, month);
         const contractPartyResult =
           await searchBarChartDataGroupingByContractParty(year, month);
@@ -111,11 +103,9 @@ export default function Dashboard() {
           year,
           month,
         );
-        setCompanyChartData(companyResult);
         setItemChartData(itemResult);
         setContractPartyChartData(contractPartyResult);
         setImporterChartData(importerResult);
-        console.log("companyChartData", companyResult);
         console.log("itemChartData", itemResult);
         console.log("contractPartyResult", contractPartyResult);
         console.log("importerResult", importerResult);
@@ -132,16 +122,6 @@ export default function Dashboard() {
       <Typography variant="h4" sx={{ marginBottom: 5 }}>
         대시보드
       </Typography>
-      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
-        <Typography variant="h4" sx={{ marginBottom: 2 }}>
-          사별 통계
-        </Typography>
-        <BarChart
-          propName={"사별 계약 톤수"}
-          propData={companyChartData}
-          propUnit="TON (톤)"
-        />
-      </Card>
       <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
         <Typography variant="h4" sx={{ marginBottom: 2 }}>
           품목별 통계
