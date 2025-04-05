@@ -4,7 +4,10 @@ import { Card, Stack, Typography } from "@mui/material";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { BarDataItem } from "@/types/dashboard-data";
-import { searchBarChartDataGroupingByCompany } from "@/actions/dashboard";
+import {
+  searchBarChartDataGroupingByCompany,
+  searchBarChartDataGroupingByItems,
+} from "@/actions/dashboard";
 import { useEffect, useState } from "react";
 
 function BarChart({
@@ -79,6 +82,9 @@ export default function Dashboard() {
   const [companyChartData, setCompanyChartData] = useState<
     BarDataItem[] | null
   >(null);
+  const [itemChartData, setItemChartData] = useState<BarDataItem[] | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -86,9 +92,15 @@ export default function Dashboard() {
       const month = String(new Date().getMonth() + 1).padStart(2, "0");
 
       try {
-        const result = await searchBarChartDataGroupingByCompany(year, month);
-        setCompanyChartData(result);
-        console.log("companyChartData", result);
+        const companyResult = await searchBarChartDataGroupingByCompany(
+          year,
+          month,
+        );
+        const itemResult = await searchBarChartDataGroupingByItems(year, month);
+        setCompanyChartData(companyResult);
+        setItemChartData(itemResult);
+        console.log("companyChartData", companyResult);
+        console.log("itemChartData", itemResult);
       } catch (error) {
         console.error("차트 데이터 불러오기 실패:", error);
       }
@@ -117,14 +129,9 @@ export default function Dashboard() {
           품목별 통계
         </Typography>
         <BarChart
-          propName={"이름"}
-          propData={[
-            { value: 1000, category: "A회사" },
-            { value: 2000, category: "B회사" },
-            { value: 3000, category: "C회사" },
-            { value: 4000, category: "D회사" },
-          ]}
-          propUnit="₩ (원)"
+          propName={"품목별 톤수"}
+          propData={itemChartData}
+          propUnit="TON (톤)"
         />
       </Card>
       <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
@@ -139,7 +146,7 @@ export default function Dashboard() {
             { value: 3000, category: "C회사" },
             { value: 4000, category: "D회사" },
           ]}
-          propUnit="₩ (원)"
+          propUnit="TON (톤)"
         />
       </Card>
       <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
@@ -154,7 +161,7 @@ export default function Dashboard() {
             { value: 3000, category: "C회사" },
             { value: 4000, category: "D회사" },
           ]}
-          propUnit="₩ (원)"
+          propUnit="TON (톤)"
         />
       </Card>
     </Stack>
