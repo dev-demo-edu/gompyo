@@ -6,6 +6,8 @@ import { ApexOptions } from "apexcharts";
 import { BarDataItem } from "@/types/dashboard-data";
 import {
   searchBarChartDataGroupingByCompany,
+  searchBarChartDataGroupingByContractParty,
+  searchBarChartDataGroupingByImporter,
   searchBarChartDataGroupingByItems,
 } from "@/actions/dashboard";
 import { useEffect, useState } from "react";
@@ -85,6 +87,12 @@ export default function Dashboard() {
   const [itemChartData, setItemChartData] = useState<BarDataItem[] | null>(
     null,
   );
+  const [contractPartyChartData, setContractPartyChartData] = useState<
+    BarDataItem[] | null
+  >(null);
+  const [importerChartData, setImporterChartData] = useState<
+    BarDataItem[] | null
+  >(null);
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -97,10 +105,20 @@ export default function Dashboard() {
           month,
         );
         const itemResult = await searchBarChartDataGroupingByItems(year, month);
+        const contractPartyResult =
+          await searchBarChartDataGroupingByContractParty(year, month);
+        const importerResult = await searchBarChartDataGroupingByImporter(
+          year,
+          month,
+        );
         setCompanyChartData(companyResult);
         setItemChartData(itemResult);
+        setContractPartyChartData(contractPartyResult);
+        setImporterChartData(importerResult);
         console.log("companyChartData", companyResult);
         console.log("itemChartData", itemResult);
+        console.log("contractPartyResult", contractPartyResult);
+        console.log("importerResult", importerResult);
       } catch (error) {
         console.error("차트 데이터 불러오기 실패:", error);
       }
@@ -139,13 +157,8 @@ export default function Dashboard() {
           계약자별 통계
         </Typography>
         <BarChart
-          propName={"이름"}
-          propData={[
-            { value: 1000, category: "A회사" },
-            { value: 2000, category: "B회사" },
-            { value: 3000, category: "C회사" },
-            { value: 4000, category: "D회사" },
-          ]}
+          propName={"계약자별 톤수"}
+          propData={contractPartyChartData}
           propUnit="TON (톤)"
         />
       </Card>
@@ -154,13 +167,8 @@ export default function Dashboard() {
           수입처별 통계
         </Typography>
         <BarChart
-          propName={"이름"}
-          propData={[
-            { value: 1000, category: "A회사" },
-            { value: 2000, category: "B회사" },
-            { value: 3000, category: "C회사" },
-            { value: 4000, category: "D회사" },
-          ]}
+          propName={"수입처별 톤수"}
+          propData={importerChartData}
           propUnit="TON (톤)"
         />
       </Card>
