@@ -23,6 +23,7 @@
     "@mui/material": "^6.4.8",
     "ag-grid-community": "^33.2.1",
     "ag-grid-react": "^33.2.1",
+    "apexcharts": "^4.5.0",
     "better-sqlite3": "^11.9.1",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.5",
@@ -30,6 +31,7 @@
     "nanoid": "^5.1.5",
     "next": "15.2.3",
     "react": "^19.0.0",
+    "react-apexcharts": "^1.7.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "zod": "^3.24.2"
