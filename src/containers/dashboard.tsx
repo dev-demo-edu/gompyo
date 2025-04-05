@@ -1,335 +1,157 @@
 "use client";
 
-import { Box, Card, Stack, Typography } from "@mui/material";
-import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
+import { Card, Stack, Typography } from "@mui/material";
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
+import { BarDataItem } from "@/types/dashboard-data";
+import {
+  searchBarChartDataGroupingByContractParty,
+  searchBarChartDataGroupingByImporter,
+  searchBarChartDataGroupingByItems,
+} from "@/actions/dashboard";
+import { useEffect, useState } from "react";
 
-interface WidgetSummaryProps {
-  title: string;
-  total: number;
-}
+function BarChart({
+  propName,
+  propData,
+  propUnit,
+}: {
+  propName: string;
+  propData: BarDataItem[] | null;
+  propUnit: string;
+}) {
+  const series = [
+    {
+      name: propName,
+      data: propData?.map((item) => item.value) ?? [],
+    },
+  ];
 
-function WidgetSummary({ title, total }: WidgetSummaryProps) {
+  const categories = propData?.map((item) => item.category) ?? [];
+
+  const options: ApexOptions = {
+    chart: {
+      type: "bar",
+      height: 350,
+    },
+    colors: ["#43BD9D"],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "50%",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ["transparent"],
+    },
+    xaxis: {
+      categories: categories,
+    },
+    yaxis: {
+      title: {
+        text: propUnit,
+      },
+    },
+    fill: {
+      opacity: 1,
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number) => `₩${val.toLocaleString()}`,
+      },
+    },
+  };
+
   return (
-    <Card
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-        padding: "0 24px",
-        width: { xs: "100%", sm: "134px" },
-        boxShadow:
-          "0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.2)",
-        borderRadius: "16px",
-      }}
-    >
-      <Typography
-        variant="subtitle2"
-        sx={{
-          color: "#636363",
-          fontWeight: 600,
-          fontSize: "14px",
-          lineHeight: 1.57,
-        }}
-      >
-        {title}
-      </Typography>
-      <Typography
-        variant="h5"
-        sx={{
-          color: "#1C252E",
-          fontWeight: 700,
-          fontSize: "20px",
-          lineHeight: 1.5,
-          textAlign: "center",
-        }}
-      >
-        {total}
-      </Typography>
-    </Card>
-  );
-}
-
-interface ShipmentCardProps {
-  title: string;
-  code: string;
-  origin: string;
-  destination: string;
-  originPort: string;
-  destinationPort: string;
-  createdAt: string;
-}
-
-function ShipmentCard({
-  title,
-  code,
-  origin,
-  destination,
-  originPort,
-  destinationPort,
-  createdAt,
-}: ShipmentCardProps) {
-  return (
-    <Card
-      sx={{
-        p: 2,
-        boxShadow: "1px 1px 5px 0px rgba(0, 0, 0, 0.25)",
-        borderRadius: "8px",
-      }}
-    >
-      <Stack spacing={50} width="100%">
-        <Stack direction="row" justifyContent="space-between">
-          <Stack>
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 900,
-                fontSize: "16px",
-              }}
-            >
-              {title}
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 500,
-                fontSize: "12px",
-              }}
-            >
-              {code}
-            </Typography>
-          </Stack>
-          <Stack direction="row" justifyContent="space-between">
-            <DirectionsBoatIcon sx={{ mt: 2, mr: 1 }}></DirectionsBoatIcon>
-            <Stack spacing={1} sx={{ mt: -1 }}>
-              <Stack spacing={-0.5}>
-                <Box sx={{ display: "flex", gap: 0 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: "Inter",
-                      fontWeight: 500,
-                      fontSize: "12px",
-                    }}
-                  >
-                    {origin}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", gap: 0 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: "Inter",
-                      fontWeight: 700,
-                      fontSize: "12px",
-                    }}
-                  >
-                    {originPort}
-                  </Typography>
-                </Box>
-              </Stack>
-              <Stack spacing={0}>
-                <Box sx={{ display: "flex", gap: 0 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: "Inter",
-                      fontWeight: 500,
-                      fontSize: "12px",
-                    }}
-                  >
-                    {destination}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", gap: 0 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: "Inter",
-                      fontWeight: 700,
-                      fontSize: "12px",
-                    }}
-                  >
-                    {destinationPort}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Stack>
-          </Stack>
-          <Stack direction="row">
-            <Box sx={{ display: "flex", gap: 1, opacity: 0.6 }}>
-              <Typography
-                sx={{
-                  fontFamily: "Inter",
-                  fontWeight: 600,
-                  fontSize: "12px",
-                }}
-              >
-                생성일
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: "Inter",
-                  fontWeight: 600,
-                  fontSize: "12px",
-                }}
-              >
-                {createdAt}
-              </Typography>
-            </Box>
-          </Stack>
-        </Stack>
-      </Stack>
-    </Card>
+    <div id="chart">
+      <ReactApexChart
+        options={options}
+        series={series}
+        type="bar"
+        height={350}
+      />
+    </div>
   );
 }
 
 export default function Dashboard() {
+  const [itemChartData, setItemChartData] = useState<BarDataItem[] | null>(
+    null,
+  );
+  const [contractPartyChartData, setContractPartyChartData] = useState<
+    BarDataItem[] | null
+  >(null);
+  const [importerChartData, setImporterChartData] = useState<
+    BarDataItem[] | null
+  >(null);
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      const year = new Date().getFullYear().toString();
+      const month = String(new Date().getMonth() + 1).padStart(2, "0");
+
+      try {
+        const itemResult = await searchBarChartDataGroupingByItems(year, month);
+        const contractPartyResult =
+          await searchBarChartDataGroupingByContractParty(year, month);
+        const importerResult = await searchBarChartDataGroupingByImporter(
+          year,
+          month,
+        );
+        setItemChartData(itemResult);
+        setContractPartyChartData(contractPartyResult);
+        setImporterChartData(importerResult);
+        console.log("itemChartData", itemResult);
+        console.log("contractPartyResult", contractPartyResult);
+        console.log("importerResult", importerResult);
+      } catch (error) {
+        console.error("차트 데이터 불러오기 실패:", error);
+      }
+    };
+
+    fetchChartData();
+  }, []);
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "24px",
-        padding: "80px 40px",
-      }}
-    >
-      {/* 계획 현황 섹션 */}
-      <Stack direction="row" alignItems="flex-end" spacing={1} width="100%">
-        <Typography
-          variant="h4"
-          sx={{
-            color: "#484848",
-            fontWeight: 700,
-            fontSize: "24px",
-            lineHeight: 1.5,
-          }}
-        >
-          계획 현황
+    <Stack sx={{ width: "100%", height: "100%", padding: 10 }} spacing={2}>
+      <Typography variant="h4" sx={{ marginBottom: 5 }}>
+        대시보드
+      </Typography>
+      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
+        <Typography variant="h4" sx={{ marginBottom: 2 }}>
+          품목별 통계
         </Typography>
-        <Typography
-          sx={{
-            color: "#484848",
-            fontWeight: 600,
-            fontSize: "14px",
-            lineHeight: 1.57,
-          }}
-        >
-          (최근 1개월)
+        <BarChart
+          propName={"품목별 톤수"}
+          propData={itemChartData}
+          propUnit="TON (톤)"
+        />
+      </Card>
+      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
+        <Typography variant="h4" sx={{ marginBottom: 2 }}>
+          계약자별 통계
         </Typography>
-      </Stack>
-
-      {/* 계획 현황 위젯 */}
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={3}
-        width="100%"
-        sx={{ height: { xs: "auto", sm: "60px" } }}
-      >
-        <WidgetSummary title="검토중" total={0} />
-        <WidgetSummary title="계약중" total={0} />
-        <WidgetSummary title="입항전" total={0} />
-        <WidgetSummary title="통관전" total={0} />
-        <WidgetSummary title="통관후" total={0} />
-        <WidgetSummary title="판매중" total={0} />
-        <WidgetSummary title="판매완료" total={0} />
-      </Stack>
-
-      {/* 계획 현황 리스트 */}
-      <Stack direction="row" spacing={3} width="100%" height="320px">
-        <Stack spacing={3} width="100%">
-          <ShipmentCard
-            title="남해 병아리콩"
-            code="10000-100000-1000"
-            origin="India"
-            destination="Korea, Republic of"
-            originPort="[Port] Haldia"
-            destinationPort="[Port] Busan"
-            createdAt="2025-02-25"
-          />
-          <ShipmentCard
-            title="남해 병아리콩"
-            code="10000-100000-1000"
-            origin="India"
-            destination="Korea, Republic of"
-            originPort="[Port] Haldia"
-            destinationPort="[Port] Busan"
-            createdAt="2025-02-25"
-          />
-          <ShipmentCard
-            title="남해 병아리콩"
-            code="10000-100000-1000"
-            origin="India"
-            destination="Korea, Republic of"
-            originPort="[Port] Haldia"
-            destinationPort="[Port] Busan"
-            createdAt="2025-02-25"
-          />
-        </Stack>
-      </Stack>
-
-      {/* 선적 현황 섹션 */}
-      <Stack direction="row" alignItems="flex-end" spacing={1} width="100%">
-        <Typography
-          variant="h4"
-          sx={{
-            color: "#484848",
-            fontWeight: 700,
-            fontSize: "24px",
-            lineHeight: 1.5,
-          }}
-        >
-          선적 현황
+        <BarChart
+          propName={"계약자별 톤수"}
+          propData={contractPartyChartData}
+          propUnit="TON (톤)"
+        />
+      </Card>
+      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
+        <Typography variant="h4" sx={{ marginBottom: 2 }}>
+          수입처별 통계
         </Typography>
-        <Typography
-          sx={{
-            color: "#484848",
-            fontWeight: 600,
-            fontSize: "14px",
-            lineHeight: 1.57,
-          }}
-        >
-          (최근 1개월)
-        </Typography>
-      </Stack>
-
-      {/* 선적 현황 위젯 */}
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={3} width="100%">
-        <WidgetSummary title="선적 준비" total={0} />
-        <WidgetSummary title="진행중" total={0} />
-        <WidgetSummary title="입항 및 통관" total={0} />
-        <WidgetSummary title="운송" total={0} />
-        <WidgetSummary title="거래 완료" total={0} />
-      </Stack>
-
-      {/* 선적 현황 리스트 */}
-      <Stack direction="row" spacing={3} width="100%" height="320px">
-        <Stack spacing={3} width="100%">
-          <ShipmentCard
-            title="남해 병아리콩"
-            code="10000-100000-1000"
-            origin="India"
-            destination="Korea, Republic of"
-            originPort="[Port] Haldia"
-            destinationPort="[Port] Busan"
-            createdAt="2025-02-25"
-          />
-          <ShipmentCard
-            title="남해 병아리콩"
-            code="10000-100000-1000"
-            origin="India"
-            destination="Korea, Republic of"
-            originPort="[Port] Haldia"
-            destinationPort="[Port] Busan"
-            createdAt="2025-02-25"
-          />
-          <ShipmentCard
-            title="남해 병아리콩"
-            code="10000-100000-1000"
-            origin="India"
-            destination="Korea, Republic of"
-            originPort="[Port] Haldia"
-            destinationPort="[Port] Busan"
-            createdAt="2025-02-25"
-          />
-        </Stack>
-      </Stack>
-    </Box>
+        <BarChart
+          propName={"수입처별 톤수"}
+          propData={importerChartData}
+          propUnit="TON (톤)"
+        />
+      </Card>
+    </Stack>
   );
 }
