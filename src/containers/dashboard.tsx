@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   Button,
   ButtonGroup,
@@ -8,7 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import ReactApexChart from "react-apexcharts";
+const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import { ApexOptions } from "apexcharts";
 import { BarDataItem } from "@/types/dashboard-data";
 import {
@@ -76,12 +77,7 @@ function BarChart({
 
   return (
     <div id="chart">
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="bar"
-        height={350}
-      />
+      <ApexChart options={options} series={series} type="bar" height={350} />
     </div>
   );
 }

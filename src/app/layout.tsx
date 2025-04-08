@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Noto_Sans_KR } from "next/font/google";
-import Navbar from "@/containers/navbar";
 import "./globals.css";
 import ThemeRegistry from "@/components/ThemeRegistry";
+import { LayoutWrapper } from "@/containers/LayoutWrapper";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 const notoSans = Noto_Sans_KR({
   variable: "--font-noto-sans",
@@ -26,12 +27,11 @@ export default function RootLayout({
       <body
         className={`${notoSans.variable} antialiased flex flex-col sm:flex-row min-h-screen`}
       >
-        <ThemeRegistry>
-          <Navbar />
-          <main className="flex-1 w-full min-h-screen bg-gray-50 pt-16 sm:pt-0 sm:pl-0 overflow-x-hidden">
-            <div className="container-fluid h-full">{children}</div>
-          </main>
-        </ThemeRegistry>
+        <AppRouterCacheProvider>
+          <ThemeRegistry>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </ThemeRegistry>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
