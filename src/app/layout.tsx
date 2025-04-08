@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import ThemeRegistry from "@/components/ThemeRegistry";
-import { LayoutWrapper } from "@/components/LayoutWrapper";
+import { LayoutWrapper } from "@/containers/LayoutWrapper";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 const notoSans = Noto_Sans_KR({
