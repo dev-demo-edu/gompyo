@@ -1,23 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import {
-  Button,
-  ButtonGroup,
-  TextField,
-  Card,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Button, TextField, Card, Stack, Typography } from "@mui/material";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import { ApexOptions } from "apexcharts";
-import { BarDataItem } from "@/types/dashboard-data";
-import {
-  searchBarChartDataGroupingByContractParty,
-  searchBarChartDataGroupingByImporter,
-  searchBarChartDataGroupingByItems,
-} from "@/actions/dashboard";
+import { BarDataItem, selectDataItem } from "@/types/dashboard-data";
 import { useEffect, useState } from "react";
+import { getPlanData } from "@/actions/plan";
+import { IShipmentData } from "@/types/grid-col";
+import { dummyShipmentData } from "@/constants/dummy-data";
 
 function BarChart({
   propName,
@@ -83,156 +74,218 @@ function BarChart({
 }
 
 export default function Dashboard() {
-  // 차트 데이터 종류 관리
-  const [chartType, setChartType] = useState("톤");
+  const [filters, setFilters] = useState({
+    contracter: "계약처",
+    importer: "수입처",
+    item: "품목",
+    exchangeRate: 1400,
+  });
 
-  const chartDataTypes = [
-    [
-      { label: "품목별 톤수", unit: "TON (톤)" },
-      { label: "계약자별 톤수", unit: "TON (톤)" },
-      { label: "수입처별 톤수", unit: "TON (톤)" },
-    ],
-    [
-      { label: "품목별 달러", unit: "$ (달러)" },
-      { label: "계약자별 달러", unit: "$ (달러)" },
-      { label: "수입처별 달러", unit: "$ (달러)" },
-    ],
-    [
-      { label: "품목별 원", unit: "₩ (원)" },
-      { label: "계약자별 원", unit: "₩ (원)" },
-      { label: "수입처별 원", unit: "₩ (원)" },
-    ],
-  ];
+  const [chartData, setChartData] = useState({
+    tonnage: [] as BarDataItem[],
+    dollar: [] as BarDataItem[],
+    won: [] as BarDataItem[],
+  });
 
-  const chartTypeIndexMap: { [key: string]: number } = {
-    톤: 0,
-    달러: 1,
-    원: 2,
-  };
-
-  const selectedChartData = chartDataTypes[chartTypeIndexMap[chartType]];
-
-  // 환율 상태 관리
-  const [exchangeRate, setExchangeRate] = useState<number | null>(1400);
-
-  // 차트 데이터 상태 관리
-  const [itemChartData, setItemChartData] = useState<BarDataItem[] | null>(
-    null,
-  );
-  const [contractPartyChartData, setContractPartyChartData] = useState<
-    BarDataItem[] | null
-  >(null);
-  const [importerChartData, setImporterChartData] = useState<
-    BarDataItem[] | null
-  >(null);
+  const [totalData, setTotalData] = useState<IShipmentData[]>([]);
+  const [selectOptions, setSelectOptions] = useState<selectDataItem>({
+    contracter: ["계약처1", "계약처2"],
+    importer: ["수입처1", "수입처2"],
+    item: ["아이템1", "아이템2"],
+  });
 
   useEffect(() => {
-    const fetchChartData = async () => {
-      const year = new Date().getFullYear().toString();
-      const month = String(new Date().getMonth() + 1).padStart(2, "0");
-
+    const fetchData = async () => {
       try {
-        const itemResult = await searchBarChartDataGroupingByItems(
-          year,
-          month,
-          chartType,
-        );
-        const contractPartyResult =
-          await searchBarChartDataGroupingByContractParty(
-            year,
-            month,
-            chartType,
-          );
-        const importerResult = await searchBarChartDataGroupingByImporter(
-          year,
-          month,
-          chartType,
-        );
-        setItemChartData(applyExchangeRate(itemResult));
-        setContractPartyChartData(applyExchangeRate(contractPartyResult));
-        setImporterChartData(applyExchangeRate(importerResult));
+        // const fetchedTotalData = await getPlanData(); //주석 풀고 밑에 코드 지우기
+        const fetchedTotalData = dummyShipmentData;
+        setTotalData(fetchedTotalData);
+
+        // 옵션 자동 생성
+        setSelectOptions({
+          contracter: [
+            "계약처",
+            ...new Set(fetchedTotalData.map((data) => data.contractParty)),
+          ],
+          importer: [
+            "수입처",
+            ...new Set(fetchedTotalData.map((data) => data.importer)),
+          ],
+          item: [
+            "품목",
+            ...new Set(fetchedTotalData.map((data) => data.itemName)),
+          ],
+        });
+
+        // 초기 데이터로 차트 로드
+        filterData(fetchedTotalData);
       } catch (error) {
-        console.error("차트 데이터 불러오기 실패:", error);
+        console.error("Error fetching plan data:", error);
       }
     };
+    fetchData();
+  }, []);
 
-    fetchChartData();
-  }, [chartType, exchangeRate]);
-
-  const applyExchangeRate = (data: BarDataItem[] | null) => {
-    if (!data || chartType !== "원" || !exchangeRate) return data;
-    return data.map((item) => ({
-      ...item,
-      value: item.value != null ? item.value * exchangeRate : 0,
-    }));
+  // 필터 변경 핸들러
+  const handleFilterChange = (
+    key: keyof typeof filters,
+    value: string | number,
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
+
+  // 데이터 필터링 함수
+  const filterData = (data: IShipmentData[] = totalData) => {
+    const { contracter, importer, item, exchangeRate } = filters;
+
+    // 날짜 기준 최근 3개월 데이터 필터링
+    const monthNames = ["3개월 전", "2개월 전", "1개월 전"];
+
+    const aggregateMonthlyData = (
+      getValue: (item: IShipmentData) => number,
+    ) => {
+      return [2, 1, 0].map((monthsAgo, index) => {
+        // 특정 월의 시작과 끝 계산
+        const now = new Date(2025, 3, 1); // 데이터의 최신 날짜 기준
+        const targetMonth = new Date(
+          now.getFullYear(),
+          now.getMonth() - monthsAgo,
+          1,
+        );
+        const nextMonth = new Date(
+          now.getFullYear(),
+          now.getMonth() - monthsAgo + 1,
+          1,
+        );
+
+        // 해당 월의 데이터 필터링 및 집계
+        const monthData = data.filter((monthItem) => {
+          const itemDate = new Date(monthItem.contractDate);
+          return (
+            itemDate >= targetMonth &&
+            itemDate < nextMonth &&
+            (contracter === "계약처" ||
+              monthItem.contractParty === contracter) &&
+            (importer === "수입처" || monthItem.importer === importer) &&
+            (item === "품목" || monthItem.itemName === item)
+          );
+        });
+
+        return {
+          category: monthNames[index],
+          value: monthData.reduce((sum, item) => sum + getValue(item), 0),
+        };
+      });
+    };
+
+    // 차트 데이터 업데이트
+    setChartData({
+      tonnage: aggregateMonthlyData((item) => item.weight),
+      dollar: aggregateMonthlyData((item) => item.totalPrice),
+      won: aggregateMonthlyData(
+        (item) => item.totalPrice * (exchangeRate || 1400),
+      ),
+    });
+  };
+
+  const chartDataTypes = [
+    { label: "톤수", unit: "TON (톤)" },
+    { label: "달러가격", unit: "DOLLAR (달러)" },
+    { label: "원가격", unit: "WON (원)" },
+  ];
 
   return (
     <Stack sx={{ width: "100%", height: "100%", padding: 10 }} spacing={2}>
-      <Typography variant="h4" sx={{ marginBottom: 5 }}>
+      <Typography variant="h4" sx={{ marginBottom: 10 }}>
         대시보드
       </Typography>
-      <Stack direction="row" spacing={2}>
-        <ButtonGroup variant="contained" sx={{ height: 35 }}>
-          <Button
-            onClick={() => setChartType("톤")}
-            color={chartType === "톤" ? "primary" : "inherit"}
+      <h2 className="font-bold w-[50%]">검색</h2>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={2}
+        className="w-full md:w-[100%]"
+      >
+        {/* 계약처 셀렉트 */}
+        <div className="border border-[#D6D6D6] rounded-[5px] w-full flex items-center p-2">
+          <select
+            className="w-full px-2 border-none outline-none"
+            value={filters.contracter}
+            onChange={(e) => handleFilterChange("contracter", e.target.value)}
           >
-            톤
-          </Button>
-          <Button
-            onClick={() => setChartType("달러")}
-            color={chartType === "달러" ? "primary" : "inherit"}
+            {selectOptions.contracter.map((item, idx) => (
+              <option key={item} value={item} disabled={idx === 0}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* 수입처 셀렉트 */}
+        <div className="border border-[#D6D6D6] rounded-[5px] w-full flex items-center p-2">
+          <select
+            className="w-full px-2 border-none outline-none"
+            value={filters.importer}
+            onChange={(e) => handleFilterChange("importer", e.target.value)}
           >
-            달러
-          </Button>
-          <Button
-            onClick={() => setChartType("원")}
-            color={chartType === "원" ? "primary" : "inherit"}
+            {selectOptions.importer.map((item, idx) => (
+              <option key={item} value={item} disabled={idx === 0}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* 품목 셀렉트 */}
+        <div className="border border-[#D6D6D6] rounded-[5px] w-full flex items-center p-2">
+          <select
+            className="w-full px-2 border-none outline-none"
+            value={filters.item}
+            onChange={(e) => handleFilterChange("item", e.target.value)}
           >
-            원
-          </Button>
-        </ButtonGroup>
-      </Stack>
-      {chartType === "원" && (
+            {selectOptions.item.map((item, idx) => (
+              <option key={item} value={item} disabled={idx === 0}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* 환율 입력 */}
         <TextField
           label="환율 입력"
           type="number"
-          value={exchangeRate ?? ""}
-          onChange={(e) => setExchangeRate(Number(e.target.value))}
-          sx={{ width: 200, height: 100 }}
+          value={filters.exchangeRate ?? ""}
+          onChange={(e) =>
+            handleFilterChange("exchangeRate", Number(e.target.value))
+          }
+          className="w-full"
         />
-      )}
-      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
-        <Typography variant="h4" sx={{ marginBottom: 2 }}>
-          품목별 통계 {"(" + chartType + ")"}
-        </Typography>
-        <BarChart
-          propName={selectedChartData[0].label}
-          propData={itemChartData}
-          propUnit={selectedChartData[0].unit}
-        />
-      </Card>
-      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
-        <Typography variant="h4" sx={{ marginBottom: 2 }}>
-          계약자별 통계 {"(" + chartType + ")"}
-        </Typography>
-        <BarChart
-          propName={selectedChartData[1].label}
-          propData={contractPartyChartData}
-          propUnit={selectedChartData[1].unit}
-        />
-      </Card>
-      <Card sx={{ width: "100%", height: "100%", padding: 5 }}>
-        <Typography variant="h4" sx={{ marginBottom: 2 }}>
-          수입처별 통계 {"(" + chartType + ")"}
-        </Typography>
-        <BarChart
-          propName={selectedChartData[2].label}
-          propData={importerChartData}
-          propUnit={selectedChartData[2].unit}
-        />
-      </Card>
+
+        <Button
+          className="w-[50%] flex items-center p-2"
+          variant="contained"
+          onClick={() => filterData()}
+        >
+          적용하기
+        </Button>
+      </Stack>
+
+      {[
+        { title: "톤 통계", type: "tonnage", index: 0 },
+        { title: "달러가격 통계", type: "dollar", index: 1 },
+        { title: "원가격 통계", type: "won", index: 2 },
+      ].map(({ title, type, index }) => (
+        <Card key={type} sx={{ width: "100%", height: "100%", padding: 5 }}>
+          <Typography variant="h4" sx={{ marginBottom: 2 }}>
+            {title}
+          </Typography>
+          <BarChart
+            propName={chartDataTypes[index].label}
+            propData={chartData[type as keyof typeof chartData]}
+            propUnit={chartDataTypes[index].unit}
+          />
+        </Card>
+      ))}
     </Stack>
   );
 }
