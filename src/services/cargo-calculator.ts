@@ -245,12 +245,8 @@ export class CargoCalculator {
       contract: this.mapContract(this.data.contract, this.data.shipment),
       payment: this.mapPayment(this.data.payment),
       costDetail: this.mapAndCalculateCostDetail(this.data.costDetail),
-      cost: this.mapAndCalculateContractAmount(
-        this.data.costDetail,
-        this.data.cargo,
-        this.data.cost,
-      ),
-      cargo: this.mapAndCalculateExpense(this.data.cargo, this.data.costDetail),
+      cost: this.mapAndCalculateContractAmount(this.data.cargo, this.data.cost),
+      cargo: this.mapAndCalculateExpense(this.data.cargo),
       item: this.mapItem(this.data.item),
       shipment: this.mapShipment(this.data.shipment),
     };
