@@ -211,7 +211,7 @@ export const cargos = sqliteTable(
   (table) => [
     check(
       "progress_status_check",
-      sql`${table.progressStatus} IN ('예정', '입고', '출고', '판매')`,
+      sql`${table.progressStatus} IN ('REVIEW', 'CONTRACTING', 'BEFORE_LC', 'BEFORE_ARRIVAL', 'WAREHOUSE_MOVING', 'BEFORE_QUARANTINE', 'QUARANTINING', 'CUSTOMS_DECLARING', 'BEFORE_CUSTOMS', 'AFTER_CUSTOMS', 'SELLING')`,
     ),
   ],
 );

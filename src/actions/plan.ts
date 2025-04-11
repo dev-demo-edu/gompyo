@@ -161,7 +161,7 @@ export async function createPlan(
             shipmentId: shipmentId,
             containerCount: 1,
             contractTon: cargo.contractTon,
-            progressStatus: "예정",
+            progressStatus: "REVIEW",
             sellingPrice: cargo.sellingPrice,
             margin: cargo.sellingPrice - supplyPrice,
             totalProfit:
