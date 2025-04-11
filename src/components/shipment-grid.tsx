@@ -3,11 +3,8 @@
 import { useEffect, useState, useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
 import { IShipmentData } from "@/types/grid-col";
-import DataGrid, {
-  dateFormatter,
-  currencyFormatter,
-  DetailButtonRenderer,
-} from "./data-grid";
+import DataGrid, { DetailButtonRenderer } from "./data-grid";
+import { dateFormatter, currencyFormatter } from "@/utils/formatter";
 import { getShipmentData } from "@/actions/shipment";
 
 export default function ShipmentGrid() {

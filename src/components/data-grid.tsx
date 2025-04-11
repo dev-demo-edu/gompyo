@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { ColDef, ValueFormatterParams } from "ag-grid-community";
+import type {
+  ColDef,
+  DragStartedEvent,
+  DragStoppedEvent,
+} from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
 import {
@@ -13,7 +17,6 @@ import {
 import { FilterList as FilterListIcon } from "@mui/icons-material";
 import Link from "next/link";
 
-// Register AG-Grid Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // 상세 페이지 이동 버튼 렌더러
@@ -30,44 +33,13 @@ export const DetailButtonRenderer = (params: ICellRendererParams) => {
   );
 };
 
-// 날짜 포맷터
-export const dateFormatter = (params: ValueFormatterParams): string => {
-  return params.value
-    ? new Date(params.value).toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "";
-};
-
-// 숫자 포맷터 (원화)
-export const currencyFormatter = (params: ValueFormatterParams): string => {
-  return params.value
-    ? new Intl.NumberFormat("ko-KR", {
-        style: "currency",
-        currency: "KRW",
-      }).format(params.value)
-    : "";
-};
-
-// 숫자 포맷터 (kg당)
-export const perKgFormatter = (params: ValueFormatterParams): string => {
-  return params.value
-    ? new Intl.NumberFormat("ko-KR", {
-        style: "currency",
-        currency: "KRW",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(params.value) + "/kg"
-    : "";
-};
-
 interface DataGridProps<T> {
   columnDefs: ColDef[];
   data: T[];
   loading?: boolean;
   error?: string | null;
+  onDragStarted?: (event: DragStartedEvent) => void;
+  onDragStopped?: (event: DragStoppedEvent) => void;
 }
 
 export default function DataGrid<T>({
@@ -75,6 +47,8 @@ export default function DataGrid<T>({
   data,
   loading = false,
   error = null,
+  onDragStarted,
+  onDragStopped,
 }: DataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -236,6 +210,8 @@ export default function DataGrid<T>({
               paginationPageSize={15}
               rowSelection="multiple"
               localeText={localeText}
+              onDragStarted={onDragStarted}
+              onDragStopped={onDragStopped}
             />
           </div>
         )}
