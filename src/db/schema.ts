@@ -91,6 +91,7 @@ export const costDetails = sqliteTable("cost_details", {
   inspectionFee: real("inspection_fee"),
   doCharge: real("do_charge"),
   otherCosts: real("other_costs"),
+  transferFee: real("transfer_fee"),
   costId: text("cost_id").notNull(),
 });
 
@@ -201,6 +202,7 @@ export const cargos = sqliteTable(
     sellingPrice: real("selling_price"),
     margin: real("margin"),
     totalProfit: real("total_profit"),
+    purchaseFeeRate: real("purchase_fee_rate"),
   },
   (table) => [
     check(

@@ -61,7 +61,7 @@ export default function ShipmentGrid() {
         width: 120,
       },
       {
-        field: "packagingUnit",
+        field: "packingUnit",
         headerName: "포장 단위",
         width: 100,
       },

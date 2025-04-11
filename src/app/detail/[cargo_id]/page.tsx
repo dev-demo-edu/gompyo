@@ -2,10 +2,11 @@
 
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useState, useEffect } from "react";
-import CargoDetail from "@/containers/cargo-detail";
+import CargoDetail from "@/containers/detail-view/entire";
+import CargoInfo from "@/containers/detail-view/cargo";
 import { useParams } from "next/navigation";
-import { getCargoDetail } from "@/actions/cargo-detail";
-import { CargoDetailData } from "@/types/cargo-detail";
+import { useAtom } from "jotai";
+import { cargoDetailAtom } from "@/states/detail";
 
 const statusOrder = ["예정", "입고", "출고", "판매"]; // TODO: 상태 순서 수정 추가 필요
 
@@ -14,53 +15,60 @@ export default function DetailPage() {
   const [activeTab, setActiveTab] = useState<
     "entire" | "document" | "cargo" | "history"
   >("entire");
-  const [currentStatus, setCurrentStatus] = useState<string>("예정");
-  const [cargoData, setCargoData] = useState<CargoDetailData | null>(null);
+  const [mappedData, setMappedData] = useAtom(cargoDetailAtom);
 
   useEffect(() => {
     async function fetchCargoData() {
-      try {
-        const cargoDetail = await getCargoDetail(params.cargo_id as string);
-        setCargoData(cargoDetail);
-        setCurrentStatus(cargoDetail.cargo.progressStatus || "예정");
-      } catch (error) {
-        console.error("화물 정보 조회 중 오류 발생:", error);
-      }
+      if (mappedData) return;
+      await setMappedData(params.cargo_id as string);
     }
 
     fetchCargoData();
-  }, [params.cargo_id]);
+  }, [params.cargo_id, mappedData, setMappedData]);
 
   const renderContent = () => {
     switch (activeTab) {
       case "entire":
-        return (
-          <CargoDetail
-            cargoId={params.cargo_id as string}
-            cargoData={cargoData}
-          />
-        );
-      // TODO: 구현 필요
+        return <CargoDetail cargoId={params.cargo_id as string} />;
       // case "document":
-      //   return <DocumentInfo cargoId={cargo_id} cargoData={cargoData} />;
-      // case "cargo":
-      //   return <CargoInfo cargoId={cargo_id} cargoData={cargoData} />;
+      //   return (
+      //     <DocumentInfo
+      //       cargoId={params.cargo_id as string}
+      //       cargoData={detailData}
+      //     />
+      //   );
+      case "cargo":
+        return <CargoInfo cargoId={params.cargo_id as string} />;
       // case "history":
-      //   return <HistoryInfo cargoId={cargo_id} cargoData={cargoData} />;
+      //   return (
+      //     <HistoryInfo
+      //       cargoId={params.cargo_id as string}
+      //       cargoData={detailData}
+      //     />
+      //   );
       // default:
-      //   return <ShippingInfo cargoId={cargo_id} cargoData={cargoData} />;
+      //   return (
+      //     <ShippingInfo
+      //       cargoId={params.cargo_id as string}
+      //       cargoData={detailData}
+      //     />
+      //   );
     }
   };
 
   const getProgressBarWidth = () => {
-    const currentIndex = statusOrder.indexOf(currentStatus);
+    const currentIndex = statusOrder.indexOf(
+      mappedData?.cargo.progressStatus || "예정",
+    );
     const totalSteps = statusOrder.length;
     const progressWidth = (currentIndex / (totalSteps - 1)) * 100;
     return `${progressWidth}%`;
   };
 
-  const getStatusPosition = (status: string) => {
-    const index = statusOrder.indexOf(status);
+  const getStatusPosition = () => {
+    const index = statusOrder.indexOf(
+      mappedData?.cargo.progressStatus || "예정",
+    );
     const totalSteps = statusOrder.length;
     const position = (index / (totalSteps - 1)) * 100;
     return `${position}%`;
@@ -95,7 +103,7 @@ export default function DetailPage() {
             <Box
               className="absolute"
               style={{
-                left: `calc(${getStatusPosition(currentStatus)} + 16px)`,
+                left: `calc(${getStatusPosition()} + 16px)`,
                 top: "50%",
                 transform: "translate(-50%, -50%)",
               }}
@@ -105,12 +113,12 @@ export default function DetailPage() {
             <Typography
               className="absolute text-sm font-normal font-['Public_Sans'] text-emerald-600 whitespace-nowrap"
               style={{
-                left: `calc(${getStatusPosition(currentStatus)} + 16px)`,
+                left: `calc(${getStatusPosition()} + 16px)`,
                 top: "calc(50% + 20px)",
                 transform: "translateX(-50%)",
               }}
             >
-              {currentStatus}
+              {mappedData?.cargo.progressStatus}
             </Typography>
           </Box>
         </Container>
@@ -125,7 +133,7 @@ export default function DetailPage() {
               color={activeTab === "entire" ? "primary" : "inherit"}
               onClick={() => setActiveTab("entire")}
             >
-              선적정보
+              전체정보
             </Button>
             <Button
               variant="contained"

@@ -27,6 +27,7 @@
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.5",
     "drizzle-orm": "^0.41.0",
+    "jotai": "^2.12.2",
     "nanoid": "^5.1.5",
     "next": "15.2.3",
     "react": "^19.0.0",

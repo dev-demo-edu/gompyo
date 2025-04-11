@@ -1,18 +1,21 @@
 "use server";
+
+import { CargoService } from "@/services/cargo.service";
 import { ContractService } from "@/services/contract.service";
 import { PaymentService } from "@/services/payment.service";
-import { CostService } from "@/services/cost.service";
-import { CargoService } from "@/services/cargo.service";
 import { ShipmentService } from "@/services/shipment.service";
-import { CostDetailService } from "@/services/cost-detail.service";
 import { CargoDetailData } from "@/types/cargo-detail";
+import { CostDetailService } from "@/services/cost-detail.service";
+import { CostService } from "@/services/cost.service";
+import { ItemsService } from "@/services/items.service";
 
+const cargoService = new CargoService();
+const shipmentService = new ShipmentService();
 const contractService = new ContractService();
 const paymentService = new PaymentService();
 const costService = new CostService();
-const cargoService = new CargoService();
-const shipmentService = new ShipmentService();
 const costDetailService = new CostDetailService();
+const itemsService = new ItemsService();
 
 export async function getCargoDetail(
   cargoId: string,
@@ -53,6 +56,11 @@ export async function getCargoDetail(
       throw new Error("세부 가격 정보를 찾을 수 없습니다.");
     }
 
+    const item = await itemsService.findById(cargo.itemsId);
+    if (!item) {
+      throw new Error("상품 정보를 찾을 수 없습니다.");
+    }
+
     return {
       contract,
       payment,
@@ -60,6 +68,7 @@ export async function getCargoDetail(
       costDetail,
       cargo,
       shipment,
+      item,
     };
   } catch (error) {
     console.error("화물 상세 정보 조회 중 오류 발생:", error);
@@ -103,6 +112,12 @@ export async function updateCargoDetail(
     // 선적 정보 업데이트
     if (updateData.shipment) {
       await shipmentService.update(updateData.shipment.id, updateData.shipment);
+    }
+
+    // 상품 정보 업데이트
+    // TODO: 상품정보가 달라졌을시 모든 상품정보를 업데이트 해야하는건지 새롭게 해야하는건지 처리 필요
+    if (updateData.item) {
+      await itemsService.update(updateData.item.id, updateData.item);
     }
 
     // 업데이트된 전체 데이터 반환

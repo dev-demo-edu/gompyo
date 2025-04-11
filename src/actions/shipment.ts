@@ -70,7 +70,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
         itemName: row.itemName || "",
         weight: row.contractTon || 0,
         containerCount: row.containerCount || 0,
-        packagingUnit: row.packingUnit || "",
+        packingUnit: row.packingUnit || "",
         unitPrice: row.unitPrice || 0,
         totalPrice: totalPrice,
         supplyPrice: row.supplyPrice || 0,

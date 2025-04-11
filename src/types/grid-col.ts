@@ -7,7 +7,7 @@ export interface IShipmentData {
   itemName: string;
   weight: number;
   containerCount: number;
-  packagingUnit: string;
+  packingUnit: string;
   unitPrice: number;
   totalPrice: number;
   supplyPrice: number;
