@@ -2,7 +2,8 @@
 
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useState, useEffect } from "react";
-import CargoDetail from "@/containers/cargo-detail";
+import CargoDetail from "@/containers/detail-view/cargo-detail";
+import Documents from "@/containers/detail-view/documents";
 import { useParams } from "next/navigation";
 import { getCargoDetail } from "@/actions/cargo-detail";
 import { CargoDetailData } from "@/types/cargo-detail";
@@ -40,9 +41,14 @@ export default function DetailPage() {
             cargoData={cargoData}
           />
         );
+      case "document":
+        return (
+          <Documents
+            cargoId={params.cargo_id as string}
+            cargoData={cargoData}
+          />
+        );
       // TODO: 구현 필요
-      // case "document":
-      //   return <DocumentInfo cargoId={cargo_id} cargoData={cargoData} />;
       // case "cargo":
       //   return <CargoInfo cargoId={cargo_id} cargoData={cargoData} />;
       // case "history":
