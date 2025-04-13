@@ -1,12 +1,14 @@
+"use client";
+
 import { atom } from "jotai";
-import { CargoDetailData } from "@/types/cargo-detail";
+import { CargoDetailData, Shipment } from "@/types/cargo-detail";
 import { FieldValue } from "@/constants/entire";
 import {
   getCargoDetail,
   updateCargoDetail,
 } from "@/actions/detail-view/common";
 import { mapAndCalculateCargoDetails } from "@/services/cargo-calculator";
-
+import { createNewShipmentAndUpdateCargo } from "@/actions/detail-view/entire";
 // 원본 데이터는 private atom으로 관리
 const privateCargoDetailAtom = atom<CargoDetailData | null>(null);
 
@@ -64,9 +66,10 @@ export const updateCargoAtom = atom(
     update: {
       formData: Record<string, FieldValue>;
       cargoId: string;
+      option?: "all" | "single";
     },
   ) => {
-    const { formData, cargoId } = update;
+    const { formData, cargoId, option } = update;
     const originalData = get(privateCargoDetailAtom);
 
     if (!originalData) return;
@@ -74,13 +77,34 @@ export const updateCargoAtom = atom(
     try {
       const updateData: Partial<CargoDetailData> = {};
 
+      // 일반적인 업데이트
       updateData.cargo = { ...originalData.cargo, ...formData };
       updateData.costDetail = { ...originalData.costDetail, ...formData };
       updateData.cost = { ...originalData.cost, ...formData };
       updateData.payment = { ...originalData.payment, ...formData };
       updateData.contract = { ...originalData.contract, ...formData };
-      updateData.shipment = { ...originalData.shipment, ...formData };
       updateData.item = { ...originalData.item, ...formData };
+
+      // B/L 번호가 변경되었고, 특정 화물만 업데이트하는 경우
+      if (
+        formData.blNumber &&
+        option === "single" &&
+        formData.blNumber !== originalData.shipment.blNumber
+      ) {
+        // 서버 액션을 통해 업데이트
+        const newShipment = await createNewShipmentAndUpdateCargo(
+          cargoId,
+          formData,
+          option,
+        );
+        updateData.shipment = { ...newShipment } as Shipment;
+        if (newShipment) {
+          updateData.cargo.shipmentId = newShipment.id;
+        }
+      } else {
+        updateData.shipment = { ...originalData.shipment, ...formData };
+      }
+
       // 서버 업데이트
       const updatedData = await updateCargoDetail(cargoId, updateData);
       set(privateCargoDetailAtom, updatedData);

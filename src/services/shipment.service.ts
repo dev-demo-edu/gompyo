@@ -3,8 +3,9 @@ import { shipments } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { CargoService } from "./cargo.service";
 
-export type Shipment = typeof shipments.$inferSelect;
 export type NewShipment = typeof shipments.$inferInsert;
+
+import { Shipment } from "@/types/cargo-detail";
 
 export class ShipmentService {
   private cargoService: CargoService;
@@ -14,7 +15,7 @@ export class ShipmentService {
   }
 
   // Create
-  async create(data: NewShipment) {
+  async create(data: Shipment) {
     const [shipment] = await db.insert(shipments).values(data).returning();
     return shipment;
   }

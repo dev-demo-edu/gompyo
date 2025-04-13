@@ -2,7 +2,7 @@
 import { Box, CircularProgress } from "@mui/material";
 import DetailForm from "@/components/detail-form";
 import { FieldValue } from "@/constants/entire";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAtom, useSetAtom } from "jotai";
 import {
@@ -18,6 +18,7 @@ import {
   contractAmountFields,
   expenseFields,
 } from "@/constants/entire";
+import { BlNumberUpdateModal } from "@/components/bl-number-update-modal";
 
 interface EntireViewProps {
   cargoId: string;
@@ -29,6 +30,12 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const setError = useSetAtom(cargoErrorAtom);
   const [, updateCargo] = useAtom(updateCargoAtom);
   const { toast, ToastComponent } = useToast();
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<Record<
+    string,
+    FieldValue
+  > | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -58,10 +65,26 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const handleDataUpdate = async (formData: Record<string, FieldValue>) => {
     if (!mappedData) return;
 
+    // B/L 번호 변경 여부 확인
+    if (formData.blNumber !== mappedData.contract.blNumber) {
+      setPendingFormData(formData);
+      setModalOpen(true);
+      return;
+    }
+
+    // B/L 번호가 변경되지 않은 경우 바로 업데이트
+    await performUpdate(formData);
+  };
+
+  const performUpdate = async (
+    formData: Record<string, FieldValue>,
+    option?: "all" | "single",
+  ) => {
     try {
       await updateCargo({
         formData,
         cargoId,
+        option,
       });
 
       toast({
@@ -80,6 +103,14 @@ export default function EntireView({ cargoId }: EntireViewProps) {
     }
   };
 
+  const handleModalSelect = async (option: "all" | "single") => {
+    setModalOpen(false);
+    if (pendingFormData) {
+      await performUpdate(pendingFormData, option);
+      setPendingFormData(null);
+    }
+  };
+
   if (loading) {
     return (
       <Box className="w-full h-full flex items-center justify-center">
@@ -95,6 +126,11 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   return (
     <>
       <ToastComponent />
+      <BlNumberUpdateModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSelect={handleModalSelect}
+      />
       <Box className="w-full mx-auto inline-flex justify-start items-start gap-6 flex-wrap content-start">
         {/* 계약 정보 */}
         <DetailForm

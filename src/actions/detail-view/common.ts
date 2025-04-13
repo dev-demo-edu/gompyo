@@ -78,7 +78,7 @@ export async function getCargoDetail(
 
 export async function updateCargoDetail(
   cargoId: string,
-  updateData: Partial<CargoDetailData>,
+  updateData: Partial<CargoDetailData> & { option?: "all" | "single" },
 ) {
   try {
     // 계약 정보 업데이트

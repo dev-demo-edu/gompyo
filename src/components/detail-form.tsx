@@ -45,6 +45,7 @@ export default function DetailForm({
   className = "",
 }: DetailFormProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [savedData, setSavedData] = useState<Record<string, string | null>>({});
   const [formData, setFormData] = useState<Record<string, string | null>>(
     Object.entries(data).reduce(
       (acc, [key, value]) => {
@@ -69,6 +70,8 @@ export default function DetailForm({
   }, [data]);
 
   const handleEdit = () => {
+    // 수정 모드로 들어갈 때 현재 상태를 저장
+    setSavedData({ ...formData });
     setIsEditing(true);
   };
 
@@ -106,8 +109,10 @@ export default function DetailForm({
   };
 
   const handleCancel = () => {
-    cancelEdit();
+    // 저장된 상태로 되돌림
+    setFormData({ ...savedData });
     setIsEditing(false);
+    cancelEdit();
   };
 
   const handleTextChange =
@@ -195,6 +200,7 @@ export default function DetailForm({
 
   return (
     <Paper
+      key={isEditing ? "editing" : "viewing"}
       className={`bg-background-paper rounded-2xl shadow-[0px_12px_24px_-4px_rgba(145,158,171,0.12)] shadow-[0px_0px_2px_0px_rgba(145,158,171,0.20)] inline-flex flex-col justify-start items-end ${className}`}
     >
       {/* 헤더 */}
