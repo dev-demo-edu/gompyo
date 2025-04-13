@@ -2,17 +2,19 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { db } from "@/db";
 import { documents } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export type Document = typeof documents.$inferSelect;
 export type NewDocument = typeof documents.$inferInsert;
 
 export class DocumentService {
-  private s3Client: S3Client;
+  public s3Client: S3Client;
   private BUCKET_NAME: string;
 
   constructor() {
@@ -63,14 +65,20 @@ export class DocumentService {
   }
 
   async getDocuments(relatedId: string, category: "contract" | "shipment") {
-    return db.query.documents.findMany({
-      where: (documents, { and, eq }) =>
-        and(
-          eq(documents.relatedId, relatedId),
-          eq(documents.documentCategory, category),
-        ),
-      orderBy: (documents, { desc }) => [desc(documents.uploadDate)],
-    });
+    try {
+      const result = await db.query.documents.findMany({
+        where: (documents, { and, eq }) =>
+          and(
+            eq(documents.relatedId, relatedId),
+            eq(documents.documentCategory, category),
+          ),
+        orderBy: (documents, { desc }) => [desc(documents.uploadDate)],
+      });
+      return result;
+    } catch (error) {
+      console.error("DB 쿼리 중 오류 발생:", error);
+      throw error;
+    }
   }
 
   async deleteDocument(documentId: string) {
@@ -124,5 +132,13 @@ export class DocumentService {
       .where(eq(documents.id, id))
       .returning();
     return document;
+  }
+
+  async getSignedUrl(key: string, expiresIn: number = 900) {
+    const command = new GetObjectCommand({
+      Bucket: this.BUCKET_NAME,
+      Key: key,
+    });
+    return getSignedUrl(this.s3Client, command, { expiresIn });
   }
 }

@@ -86,3 +86,19 @@ export async function getDocuments(
     return { success: false, error: "문서 목록 조회에 실패했습니다." };
   }
 }
+
+export async function getSignedDownloadUrl(documentId: string) {
+  try {
+    const [document] = await documentService.getDocumentById(documentId);
+    if (!document) {
+      return { success: false, error: "문서를 찾을 수 없습니다." };
+    }
+
+    const key = document.s3Url.split(".com/")[1];
+    const signedUrl = await documentService.getSignedUrl(key);
+    return { success: true, url: signedUrl };
+  } catch (error) {
+    console.error("다운로드 URL 생성 중 오류 발생:", error);
+    return { success: false, error: "다운로드 URL 생성에 실패했습니다." };
+  }
+}

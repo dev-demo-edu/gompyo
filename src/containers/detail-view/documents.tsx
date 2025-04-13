@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
 } from "@mui/material";
 import {
@@ -23,15 +24,22 @@ import {
 } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import { CargoDetailData } from "@/types/cargo-detail";
-
-interface Document {
-  id: string;
-  name: string;
-  url: string;
-  type: string;
-  createdAt: string;
-  category: "contract" | "shipment";
-}
+import {
+  getDocuments,
+  uploadDocuments,
+  getSignedDownloadUrl,
+  deleteDocument,
+} from "@/actions/document-actions";
+import { useToast } from "@/hooks/use-toast";
+import { useAtom, useAtomValue } from "jotai";
+import {
+  getDocumentsAtom,
+  getCurrentDocuments,
+  getIsLoading,
+  shouldFetchDocuments,
+  Document,
+} from "@/states/document-state";
+import { CircularProgress } from "@mui/material";
 
 interface DocumentsProps {
   cargoId: string;
@@ -159,26 +167,75 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
   );
 }
 
-export default function Documents({ cargoId, cargoData }: DocumentsProps) {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function Documents({ cargoId }: DocumentsProps) {
   const [activeTab, setActiveTab] = useState<"contract" | "shipment">(
     "contract",
   );
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(
+    null,
+  );
+  const { toast } = useToast();
+
+  const [, setDocuments] = useAtom(getDocumentsAtom);
+  const getCurrentDocs = useAtomValue(getCurrentDocuments);
+  const getLoadingState = useAtomValue(getIsLoading);
+  const shouldFetch = useAtomValue(shouldFetchDocuments);
+
+  const currentDocuments = getCurrentDocs(cargoId, activeTab);
+  const isLoading = getLoadingState(cargoId, activeTab);
 
   useEffect(() => {
-    fetchDocuments();
-  }, [cargoId]);
+    if (shouldFetch(cargoId, activeTab)) {
+      fetchDocuments();
+    }
+  }, [cargoId, activeTab, shouldFetch]);
 
   const fetchDocuments = async () => {
     try {
-      console.log(cargoData); // For Lint
-      // TODO: API 호출로 문서 목록 가져오기
-      setIsLoading(false);
+      setDocuments({
+        cargoId,
+        category: activeTab,
+        documents: currentDocuments,
+        isLoading: true,
+      });
+
+      const result = await getDocuments(cargoId, activeTab);
+      if (result.success && result.documents) {
+        setDocuments({
+          cargoId,
+          category: activeTab,
+          documents: result.documents as Document[],
+          isLoading: false,
+        });
+      } else {
+        console.error("문서 목록 조회 실패:", result.error);
+        toast({
+          title: "오류",
+          description: result.error || "문서 목록을 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+        setDocuments({
+          cargoId,
+          category: activeTab,
+          documents: currentDocuments,
+          isLoading: false,
+        });
+      }
     } catch (error) {
       console.error("문서 목록 조회 중 오류 발생:", error);
-      setIsLoading(false);
+      toast({
+        title: "오류",
+        description: "문서 목록을 불러오는 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+      setDocuments({
+        cargoId,
+        category: activeTab,
+        documents: currentDocuments,
+        isLoading: false,
+      });
     }
   };
 
@@ -187,37 +244,103 @@ export default function Documents({ cargoId, cargoData }: DocumentsProps) {
     category: "contract" | "shipment",
   ) => {
     try {
-      // TODO: S3 업로드 API 호출
-      console.log("파일 업로드:", files, "카테고리:", category);
+      const formData = new FormData();
+      files.forEach((file) => formData.append("files", file));
+
+      const result = await uploadDocuments(formData, cargoId, category);
+      if (result.success) {
+        await fetchDocuments();
+      } else {
+        console.error("파일 업로드 실패:", result.error);
+        toast({
+          title: "오류",
+          description: result.error || "파일 업로드에 실패했습니다.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("파일 업로드 중 오류 발생:", error);
+      toast({
+        title: "오류",
+        description: "파일 업로드 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleDownload = async (document: Document) => {
     try {
-      // TODO: S3 다운로드 API 호출
-      window.open(document.url, "_blank");
+      const result = await getSignedDownloadUrl(document.id);
+      if (result.success) {
+        window.open(result.url, "_blank");
+      } else {
+        toast({
+          title: "오류",
+          description: result.error || "파일 다운로드에 실패했습니다.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("파일 다운로드 중 오류 발생:", error);
+      toast({
+        title: "오류",
+        description: "파일 다운로드 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDelete = async (documentId: string) => {
+  const handleDelete = async (document: Document) => {
+    setDocumentToDelete(document);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!documentToDelete) return;
+
     try {
-      // TODO: S3 삭제 API 호출
-      setDocuments(documents.filter((doc) => doc.id !== documentId));
+      const result = await deleteDocument(documentToDelete.id, cargoId);
+      if (result.success) {
+        await fetchDocuments();
+        toast({
+          title: "성공",
+          description: "문서가 삭제되었습니다.",
+        });
+      } else {
+        toast({
+          title: "오류",
+          description: result.error || "문서 삭제에 실패했습니다.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      console.error("파일 삭제 중 오류 발생:", error);
+      console.error("문서 삭제 중 오류 발생:", error);
+      toast({
+        title: "오류",
+        description: "문서 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setDocumentToDelete(null);
     }
   };
 
-  const filteredDocuments = documents.filter(
-    (doc) => doc.category === activeTab,
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setDocumentToDelete(null);
+  };
+
+  const filteredDocuments = currentDocuments.filter(
+    (doc) => doc.documentCategory === activeTab,
   );
 
   if (isLoading) {
-    return <Typography>로딩 중...</Typography>;
+    return (
+      <Box className="flex justify-center items-center h-full">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
@@ -276,7 +399,7 @@ export default function Documents({ cargoId, cargoData }: DocumentsProps) {
                       <IconButton
                         edge="end"
                         aria-label="delete"
-                        onClick={() => handleDelete(document.id)}
+                        onClick={() => handleDelete(document)}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -284,9 +407,9 @@ export default function Documents({ cargoId, cargoData }: DocumentsProps) {
                   }
                 >
                   <ListItemText
-                    primary={document.name}
+                    primary={document.documentName}
                     secondary={new Date(
-                      document.createdAt,
+                      document.uploadDate,
                     ).toLocaleDateString()}
                   />
                 </ListItem>
@@ -302,6 +425,27 @@ export default function Documents({ cargoId, cargoData }: DocumentsProps) {
         onUpload={handleUpload}
         category={activeTab}
       />
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">문서 삭제 확인</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            {documentToDelete?.documentName} 문서를 삭제하시겠습니까? 이 작업은
+            되돌릴 수 없습니다.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>취소</Button>
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+            삭제
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
