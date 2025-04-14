@@ -8,50 +8,7 @@ export default function Plan() {
         <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
           계획 현황
         </h1>
-        {/* 통계 정보 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-2 sm:gap-4 mb-4 sm:mb-6">
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              검토중
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              계약중
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              입항전
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              통관전
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              통관후
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              판매중
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
-            <div className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">
-              판매완료
-            </div>
-            <div className="text-lg sm:text-2xl font-bold">0</div>
-          </div>
+        <div className="w-full flex justify-end mb-4 sm:mb-6">
           <PlanButton />
         </div>
         {/* 그리드 */}

@@ -1,4 +1,4 @@
-import { CargoDetailData } from "@/actions/cargo-detail";
+import type { CargoDetailData } from "@/types/cargo-detail";
 
 // TODO: 계산 로직 자세하게 구현하는것 추가 및 수정 필요
 type MappedContract = {
