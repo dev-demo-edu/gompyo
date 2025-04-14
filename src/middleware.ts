@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // 로그인이 필요하지 않은 경로들
-const publicPaths = ["/login"];
+const publicPaths = ["/login", "/logo.png"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
