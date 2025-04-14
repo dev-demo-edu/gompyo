@@ -4,9 +4,12 @@ import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useState, useEffect } from "react";
 import CargoDetail from "@/containers/detail-view/cargo-detail";
 import Documents from "@/containers/detail-view/documents";
+import History from "@/containers/detail-view/history";
 import { useParams } from "next/navigation";
 import { getCargoDetail } from "@/actions/cargo-detail";
 import { CargoDetailData } from "@/types/cargo-detail";
+import { HistoryData } from "@/types/history";
+import { nanoid } from "nanoid";
 
 const statusOrder = ["예정", "입고", "출고", "판매"]; // TODO: 상태 순서 수정 추가 필요
 
@@ -48,13 +51,62 @@ export default function DetailPage() {
             cargoData={cargoData}
           />
         );
-      // TODO: 구현 필요
+      case "history":
+        if (!cargoData) {
+          return (
+            <Box className="w-full h-full flex items-center justify-center">
+              <Typography>데이터가 없습니다.</Typography>
+            </Box>
+          );
+        }
+
+        const historyData: HistoryData = {
+          orderTime: cargoData.contract.contractDate || "N/A",
+          paymentTime: cargoData.payment.paymentDueDate || "N/A",
+          deliveryTime: cargoData.shipment.estimatedTimeDeparture || "N/A",
+          completionTime: cargoData.shipment.estimatedTimeArrival || "N/A",
+          historyItems: [
+            {
+              id: nanoid(),
+              title: "화물 계약 체결",
+              description: "계약이 성공적으로 체결되었습니다.",
+              time: cargoData.contract.contractDate || "N/A",
+              isActive: true,
+              type: "contract",
+            },
+            {
+              id: nanoid(),
+              title: "결제 완료",
+              description: "결제가 정상적으로 완료되었습니다.",
+              time: cargoData.payment.paymentDueDate || "N/A",
+              isActive: !!cargoData.payment.paymentDueDate,
+              type: "payment",
+            },
+            {
+              id: nanoid(),
+              title: "화물 출발",
+              description: "화물이 출발했습니다.",
+              time: cargoData.shipment.estimatedTimeDeparture || "N/A",
+              isActive: !!cargoData.shipment.estimatedTimeDeparture,
+              type: "shipment",
+            },
+            {
+              id: nanoid(),
+              title: "화물 도착",
+              description: "화물이 안전하게 도착했습니다.",
+              time: cargoData.shipment.estimatedTimeArrival || "N/A",
+              isActive: !!cargoData.shipment.estimatedTimeArrival,
+              type: "completion",
+            },
+          ],
+        };
+
+        return <History data={historyData} />;
+      // TODO: cargo 케이스 구현 필요
       // case "cargo":
       //   return <CargoInfo cargoId={cargo_id} cargoData={cargoData} />;
-      // case "history":
-      //   return <HistoryInfo cargoId={cargo_id} cargoData={cargoData} />;
-      // default:
-      //   return <ShippingInfo cargoId={cargo_id} cargoData={cargoData} />;
+      default:
+        return null;
     }
   };
 

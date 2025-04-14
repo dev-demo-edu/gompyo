@@ -6,7 +6,7 @@ const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import { ApexOptions } from "apexcharts";
 import { BarDataItem, selectDataItem } from "@/types/dashboard-data";
 import { useEffect, useState } from "react";
-import { getPlanData } from "@/actions/plan";
+// import { getPlanData } from "@/actions/plan";
 import { IShipmentData } from "@/types/grid-col";
 import { dummyShipmentData } from "@/constants/dummy-data";
 
