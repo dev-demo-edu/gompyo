@@ -99,7 +99,36 @@ export class PaymentService {
       .select()
       .from(payments)
       .where(eq(payments.contractId, contractId));
-    return payment;
+
+    if (!payment) {
+      return null;
+    }
+
+    const [paymentTt] = await db
+      .select()
+      .from(paymentsTt)
+      .where(eq(paymentsTt.paymentId, payment.id));
+
+    const [paymentUsance] = await db
+      .select()
+      .from(paymentsUsance)
+      .where(eq(paymentsUsance.paymentId, payment.id));
+
+    return {
+      ...payment,
+      paymentDueDate: payment.paymentDueDate,
+      // T/T 관련 필드
+      advancePaymentDate: paymentTt?.advancePaymentDate ?? null,
+      advancePaymentRatio: paymentTt?.advancePaymentRatio ?? null,
+      advancePaymentAmount: paymentTt?.advancePaymentAmount ?? null,
+      remainingPaymentDate: paymentTt?.remainingPaymentDate ?? null,
+      remainingPaymentRatio: paymentTt?.remainingPaymentRatio ?? null,
+      remainingPaymentAmount: paymentTt?.remainingPaymentAmount ?? null,
+      counterpartBank: paymentTt?.counterpartBank ?? null,
+      // Usance 관련 필드
+      paymentTerm: paymentUsance?.paymentTerm ?? null,
+      contractExchangeRate: paymentUsance?.contractExchangeRate ?? null,
+    };
   }
 
   // Update

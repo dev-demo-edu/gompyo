@@ -17,6 +17,8 @@ import {
   costFields,
   contractAmountFields,
   expenseFields,
+  paymentMethodFields,
+  FieldValueType,
 } from "@/constants/entire";
 import { BlNumberUpdateModal } from "@/components/bl-number-update-modal";
 
@@ -36,6 +38,50 @@ export default function EntireView({ cargoId }: EntireViewProps) {
     string,
     FieldValue
   > | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("");
+
+  // 결제 정보 필드 상태 관리
+  const [currentPaymentFields, setCurrentPaymentFields] = useState(() => {
+    console.log("Initializing currentPaymentFields");
+    return paymentFields;
+  });
+
+  // mappedData가 변경될 때마다 결제 방식 설정
+  useEffect(() => {
+    console.log(
+      "mappedData effect triggered, paymentMethod:",
+      mappedData?.payment?.paymentMethod,
+    );
+    if (mappedData?.payment?.paymentMethod) {
+      const paymentMethod = mappedData.payment.paymentMethod as string;
+      setSelectedPaymentMethod(paymentMethod);
+    }
+  }, [mappedData?.payment?.paymentMethod]);
+
+  // 결제 방식이 변경될 때 호출되는 함수
+  const handlePaymentMethodChange = (method: string) => {
+    console.log("handlePaymentMethodChange called with:", method);
+    setSelectedPaymentMethod(method);
+  };
+
+  // 결제 방식에 따른 필드 설정
+  useEffect(() => {
+    if (!selectedPaymentMethod) {
+      setCurrentPaymentFields(paymentFields);
+      return;
+    }
+
+    const methodFields = paymentMethodFields[selectedPaymentMethod] || [];
+    setCurrentPaymentFields([...paymentFields, ...methodFields]);
+  }, [selectedPaymentMethod]);
+
+  // DetailForm에 전달할 데이터
+  const paymentData = {
+    ...mappedData?.payment,
+    paymentMethod: selectedPaymentMethod || mappedData?.payment?.paymentMethod,
+    exchangeRate: mappedData?.costDetail?.exchangeRate,
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -57,35 +103,35 @@ export default function EntireView({ cargoId }: EntireViewProps) {
         setLoading(false);
       }
     }
+    console.log(mappedData);
 
     fetchData();
-    console.log(mappedData);
   }, [cargoId, mappedData, setMappedData, setLoading, setError]);
 
   const handleDataUpdate = async (formData: Record<string, FieldValue>) => {
     if (!mappedData) return;
 
-    // B/L 번호 변경 여부 확인
-    if (formData.blNumber !== mappedData.contract.blNumber) {
-      setPendingFormData(formData);
+    // 결제 방식에 따른 데이터 변환
+    const transformedFormData = { ...formData };
+
+    // B/L 번호 변경 여부 확인 (contract 필드에서만 확인)
+    if (
+      transformedFormData.blNumber &&
+      transformedFormData.blNumber !== mappedData.contract.blNumber
+    ) {
+      setPendingFormData(transformedFormData);
       setModalOpen(true);
       return;
     }
 
-    // B/L 번호가 변경되지 않은 경우 바로 업데이트
-    await performUpdate(formData);
-  };
-
-  const performUpdate = async (
-    formData: Record<string, FieldValue>,
-    option?: "all" | "single",
-  ) => {
     try {
       await updateCargo({
-        formData,
+        formData: transformedFormData,
         cargoId,
-        option,
       });
+
+      // 데이터 갱신
+      await setMappedData(cargoId);
 
       toast({
         title: "성공",
@@ -106,7 +152,30 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const handleModalSelect = async (option: "all" | "single") => {
     setModalOpen(false);
     if (pendingFormData) {
-      await performUpdate(pendingFormData, option);
+      try {
+        await updateCargo({
+          formData: pendingFormData,
+          cargoId,
+          option,
+        });
+
+        // 데이터 갱신
+        await setMappedData(cargoId);
+
+        toast({
+          title: "성공",
+          description: "데이터가 성공적으로 저장되었습니다.",
+        });
+      } catch (err) {
+        toast({
+          title: "오류",
+          description:
+            err instanceof Error
+              ? err.message
+              : "데이터 저장 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
       setPendingFormData(null);
     }
   };
@@ -144,10 +213,15 @@ export default function EntireView({ cargoId }: EntireViewProps) {
         {/* 결제 정보 */}
         <DetailForm
           title="결제 정보"
-          fields={paymentFields}
+          fields={currentPaymentFields}
           className="w-full"
-          data={mappedData.payment}
+          data={paymentData}
           onSave={(formData) => handleDataUpdate(formData)}
+          onFieldChange={(fieldName: string, value: FieldValueType) => {
+            if (fieldName === "paymentMethod") {
+              handlePaymentMethodChange(value as string);
+            }
+          }}
         />
 
         {/* 원가 정보 */}

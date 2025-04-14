@@ -34,6 +34,7 @@ interface DetailFormProps {
   // 필드 이름을 키로 하고, 해당하는 값 타입을 가지는 레코드
   data?: Partial<Record<string, FieldValue>>;
   onSave?: (data: Record<string, FieldValue>) => void;
+  onFieldChange?: (fieldName: string, value: FieldValueType) => void;
   className?: string;
 }
 
@@ -42,36 +43,26 @@ export default function DetailForm({
   fields,
   data = {},
   onSave,
+  onFieldChange,
   className = "",
 }: DetailFormProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [savedData, setSavedData] = useState<Record<string, string | null>>({});
-  const [formData, setFormData] = useState<Record<string, string | null>>(
-    Object.entries(data).reduce(
+  const [formData, setFormData] = useState<Record<string, string | null>>({});
+  const [, cancelEdit] = useAtom(cancelEditAtom);
+
+  // 초기 데이터 설정
+  useEffect(() => {
+    const initialData = Object.entries(data).reduce(
       (acc, [key, value]) => {
         acc[key] = value?.toString() ?? null;
         return acc;
       },
       {} as Record<string, string | null>,
-    ),
-  );
-  const [, cancelEdit] = useAtom(cancelEditAtom);
-
-  useEffect(() => {
-    setFormData(
-      Object.entries(data).reduce(
-        (acc, [key, value]) => {
-          acc[key] = value?.toString() ?? null;
-          return acc;
-        },
-        {} as Record<string, string | null>,
-      ),
     );
+    setFormData(initialData);
   }, [data]);
 
   const handleEdit = () => {
-    // 수정 모드로 들어갈 때 현재 상태를 저장
-    setSavedData({ ...formData });
     setIsEditing(true);
   };
 
@@ -93,7 +84,6 @@ export default function DetailForm({
 
   const handleSave = () => {
     if (onSave) {
-      // 각 필드의 타입에 맞게 데이터 변환
       const convertedData = fields.reduce(
         (acc, field) => {
           const value = formData[field.name];
@@ -102,15 +92,21 @@ export default function DetailForm({
         },
         {} as Record<string, FieldValue>,
       );
-
       onSave(convertedData);
     }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    // 저장된 상태로 되돌림
-    setFormData({ ...savedData });
+    // 원래 데이터로 되돌림
+    const initialData = Object.entries(data).reduce(
+      (acc, [key, value]) => {
+        acc[key] = value?.toString() ?? null;
+        return acc;
+      },
+      {} as Record<string, string | null>,
+    );
+    setFormData(initialData);
     setIsEditing(false);
     cancelEdit();
   };
@@ -122,6 +118,9 @@ export default function DetailForm({
         ...prev,
         [field]: newValue,
       }));
+      if (onFieldChange) {
+        onFieldChange(field, newValue as FieldValueType);
+      }
     };
 
   const renderField = (field: FieldConfig) => {
@@ -140,19 +139,26 @@ export default function DetailForm({
               null
             }
             onChange={(_, newValue) => {
+              const value =
+                typeof newValue === "string"
+                  ? newValue
+                  : newValue?.value || null;
               setFormData((prev) => ({
                 ...prev,
-                [field.name]:
-                  typeof newValue === "string"
-                    ? newValue
-                    : newValue?.value || null,
+                [field.name]: value,
               }));
+              if (onFieldChange) {
+                onFieldChange(field.name, value as FieldValueType);
+              }
             }}
             onInputChange={(_, newInputValue) => {
               setFormData((prev) => ({
                 ...prev,
                 [field.name]: newInputValue,
               }));
+              if (onFieldChange) {
+                onFieldChange(field.name, newInputValue as FieldValueType);
+              }
             }}
             disabled={!isEditing || field.disabled}
             renderInput={(params) => (
@@ -166,11 +172,14 @@ export default function DetailForm({
                 }}
               />
             )}
-            renderOption={(props, option) => (
-              <li {...props}>
-                {typeof option === "string" ? option : option.label}
-              </li>
-            )}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              return (
+                <li key={key} {...otherProps}>
+                  {typeof option === "string" ? option : option.label}
+                </li>
+              );
+            }}
           />
         </FormControl>
       );
@@ -200,7 +209,6 @@ export default function DetailForm({
 
   return (
     <Paper
-      key={isEditing ? "editing" : "viewing"}
       className={`bg-background-paper rounded-2xl shadow-[0px_12px_24px_-4px_rgba(145,158,171,0.12)] shadow-[0px_0px_2px_0px_rgba(145,158,171,0.20)] inline-flex flex-col justify-start items-end ${className}`}
     >
       {/* 헤더 */}

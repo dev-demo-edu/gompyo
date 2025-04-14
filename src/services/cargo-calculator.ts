@@ -19,12 +19,14 @@ export type CalculatedContract = typeof contracts.$inferSelect & {
 };
 
 export type CalculatedPayment = typeof payments.$inferSelect & {
-  depositDate: string;
-  balanceDate: string;
-  depositRatio: number;
-  balanceRatio: number;
-  depositAmount: number;
-  balanceAmount: number;
+  advancePaymentDate: string;
+  advancePaymentRatio: number;
+  advancePaymentAmount: number;
+  remainingPaymentDate: string;
+  remainingPaymentRatio: number;
+  remainingPaymentAmount: number;
+  counterpartBank: string;
+  paymentTerm: string;
 };
 
 export type CalculatedCostDetail = typeof costDetails.$inferSelect & {
@@ -169,14 +171,18 @@ export class CargoCalculator {
     return {
       id: payment.id,
       paymentDueDate: payment.paymentDueDate || "",
-      paymentMethod: payment.paymentMethod,
+      paymentMethod: payment.paymentMethod || "",
       contractId: payment.contractId,
-      depositDate: payment.paymentDueDate || "",
-      balanceDate: payment.paymentDueDate || "", // TODO: 실제 잔금일 계산
-      depositRatio: 0.3, // TODO: paymentTt에서 가져오기
-      balanceRatio: 0.7, // TODO: paymentTt에서 가져오기
-      depositAmount: 0, // TODO: 실제 계산
-      balanceAmount: 0, // TODO: 실제 계산
+      // T/T 관련 필드
+      advancePaymentDate: payment.advancePaymentDate || "",
+      advancePaymentRatio: payment.advancePaymentRatio || 0,
+      advancePaymentAmount: payment.advancePaymentAmount || 0,
+      remainingPaymentDate: payment.remainingPaymentDate || "",
+      remainingPaymentRatio: payment.remainingPaymentRatio || 0,
+      remainingPaymentAmount: payment.remainingPaymentAmount || 0,
+      counterpartBank: payment.counterpartBank || "",
+      // Usance 관련 필드
+      paymentTerm: payment.paymentTerm || "",
     };
   }
 

@@ -60,6 +60,15 @@ export const contractFields: BaseField[] = [
   { name: "blNumber", label: "B/L 번호", valueType: "string" },
 ];
 
+// 결제 방식 매핑 상수
+export const PAYMENT_METHOD_DISPLAY = {
+  "T/T": "T/T",
+  CAD: "CAD",
+  "L/C": "L/C at sight",
+  Usance: "Payment Usance",
+} as const;
+
+// 기본 결제 필드 정의
 export const paymentFields: BaseField[] = [
   {
     name: "paymentMethod",
@@ -67,51 +76,115 @@ export const paymentFields: BaseField[] = [
     valueType: "string",
     type: "select",
     options: [
-      { value: "1", label: "T/T" },
-      { value: "2", label: "CAD" },
-      { value: "3", label: "L/C at sight" },
-      { value: "4", label: "Payment Usance" },
+      { value: "T/T", label: "T/T" },
+      { value: "CAD", label: "CAD" },
+      { value: "L/C", label: "L/C at sight" },
+      { value: "Usance", label: "Payment Usance" },
     ],
   },
-  {
-    name: "depositDate",
-    label: "선급금 날짜",
-    gridSize: 6,
-    valueType: "string",
-    type: "date",
-  },
-  {
-    name: "balanceDate",
-    label: "잔금 날짜",
-    gridSize: 6,
-    valueType: "string",
-    type: "date",
-  },
-  {
-    name: "depositRatio",
-    label: "선급금 비율",
-    gridSize: 6,
-    valueType: "number",
-  },
-  {
-    name: "balanceRatio",
-    label: "잔금 비율",
-    gridSize: 6,
-    valueType: "number",
-  },
-  {
-    name: "depositAmount",
-    label: "선급금 금액",
-    gridSize: 6,
-    valueType: "number",
-  },
-  {
-    name: "balanceAmount",
-    label: "잔금 금액",
-    gridSize: 6,
-    valueType: "number",
-  },
 ];
+
+// 결제 방식별 필드 정의
+export const paymentMethodFields: Record<string, BaseField[]> = {
+  "T/T": [
+    // T/T
+    {
+      name: "exchangeRate",
+      label: "환율",
+      valueType: "number",
+    },
+    {
+      name: "counterpartBank",
+      label: "상대방 은행",
+      valueType: "string",
+    },
+    {
+      name: "advancePaymentDate",
+      label: "선급금 날짜",
+      gridSize: 6,
+      valueType: "string",
+      type: "date",
+    },
+    {
+      name: "remainingPaymentDate",
+      label: "잔금 날짜",
+      gridSize: 6,
+      valueType: "string",
+      type: "date",
+    },
+    {
+      name: "advancePaymentRatio",
+      label: "선급금 비율",
+      gridSize: 6,
+      valueType: "number",
+    },
+    {
+      name: "remainingPaymentRatio",
+      label: "잔금 비율",
+      gridSize: 6,
+      valueType: "number",
+    },
+    {
+      name: "advancePaymentAmount",
+      label: "선급금 금액",
+      gridSize: 6,
+      valueType: "number",
+    },
+    {
+      name: "remainingPaymentAmount",
+      label: "잔금 금액",
+      gridSize: 6,
+      valueType: "number",
+    },
+  ],
+  CAD: [
+    // CAD
+    {
+      name: "exchangeRate",
+      label: "환율",
+      valueType: "number",
+    },
+    {
+      name: "paymentDueDate",
+      label: "대금 결제일",
+      valueType: "string",
+      type: "date",
+    },
+  ],
+  "L/C": [
+    // L/C
+    {
+      name: "exchangeRate",
+      label: "환율",
+      valueType: "number",
+    },
+    {
+      name: "paymentDueDate",
+      label: "대금 결제일",
+      valueType: "string",
+      type: "date",
+    },
+  ],
+  Usance: [
+    // Usance
+    {
+      name: "paymentTerm",
+      label: "결제 기간",
+      valueType: "string",
+    },
+    {
+      name: "exchangeRate",
+      label: "환율",
+      valueType: "number",
+    },
+    {
+      name: "paymentDueDate",
+      label: "대금 결제일",
+      valueType: "string",
+      type: "date",
+    },
+  ],
+};
 
 export const costFields: BaseField[] = [
   { name: "unitPrice", label: "단가 MT / $", valueType: "number" },
