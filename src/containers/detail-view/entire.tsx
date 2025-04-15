@@ -103,7 +103,6 @@ export default function EntireView({ cargoId }: EntireViewProps) {
         setLoading(false);
       }
     }
-    console.log(mappedData);
 
     fetchData();
   }, [cargoId, mappedData, setMappedData, setLoading, setError]);
@@ -111,6 +110,12 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const handleDataUpdate = async (formData: Record<string, FieldValue>) => {
     if (!mappedData) return;
 
+    if (formData.paymentMethod === "T/T") {
+      formData.totalContractAmount =
+        (mappedData.costDetail.unitPrice || 0) *
+        (mappedData.costDetail.exchangeRate || 0) *
+        (mappedData.cargo.contractTon || 0);
+    }
     // 결제 방식에 따른 데이터 변환
     const transformedFormData = { ...formData };
 
@@ -216,7 +221,9 @@ export default function EntireView({ cargoId }: EntireViewProps) {
           fields={currentPaymentFields}
           className="w-full"
           data={paymentData}
-          onSave={(formData) => handleDataUpdate(formData)}
+          onSave={(formData) => {
+            handleDataUpdate(formData);
+          }}
           onFieldChange={(fieldName: string, value: FieldValueType) => {
             if (fieldName === "paymentMethod") {
               handlePaymentMethodChange(value as string);

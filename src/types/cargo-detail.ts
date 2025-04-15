@@ -21,6 +21,7 @@ type Payment = {
   counterpartBank: string | null;
   paymentTerm: string | null;
   contractExchangeRate: string | null;
+  totalContractAmount: number | null;
 };
 
 type CostDetail = {

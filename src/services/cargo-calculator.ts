@@ -27,6 +27,7 @@ export type CalculatedPayment = typeof payments.$inferSelect & {
   remainingPaymentAmount: number;
   counterpartBank: string;
   paymentTerm: string;
+  totalContractAmount: number;
 };
 
 export type CalculatedCostDetail = typeof costDetails.$inferSelect & {
@@ -183,6 +184,7 @@ export class CargoCalculator {
       counterpartBank: payment.counterpartBank || "",
       // Usance 관련 필드
       paymentTerm: payment.paymentTerm || "",
+      totalContractAmount: this.calculatedValues.totalContractPrice,
     };
   }
 

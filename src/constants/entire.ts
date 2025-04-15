@@ -129,12 +129,14 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       label: "선급금 금액",
       gridSize: 6,
       valueType: "number",
+      disabled: true,
     },
     {
       name: "remainingPaymentAmount",
       label: "잔금 금액",
       gridSize: 6,
       valueType: "number",
+      disabled: true,
     },
   ],
   CAD: [
