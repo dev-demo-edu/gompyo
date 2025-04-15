@@ -830,7 +830,8 @@ export default function PlanButton() {
   );
 
   return (
-    <div className="w-full">
+    // 오른쪽 끝으로 설정하기 위해서 flex justify-end 추가
+    <div className="w-full flex justify-end">
       <Button
         variant="contained"
         onClick={handleOpen}

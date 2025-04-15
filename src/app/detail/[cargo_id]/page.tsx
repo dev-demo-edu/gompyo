@@ -9,6 +9,10 @@ import { useAtom } from "jotai";
 import { cargoDetailAtom } from "@/states/detail";
 import { updateCargoStatusInfo } from "@/actions/detail-view/cargo";
 import { useToast } from "@/hooks/use-toast";
+import Documents from "@/containers/detail-view/documents";
+import History from "@/containers/detail-view/history";
+import { HistoryData } from "@/types/history";
+import { nanoid } from "nanoid";
 
 // 화물 상태 enum 정의
 export enum CargoStatus {
@@ -79,29 +83,63 @@ export default function DetailPage() {
     switch (activeTab) {
       case "entire":
         return <CargoDetail cargoId={params.cargo_id as string} />;
-      // case "document":
-      //   return (
-      //     <DocumentInfo
-      //       cargoId={params.cargo_id as string}
-      //       cargoData={detailData}
-      //     />
-      //   );
+      case "document":
+        return <Documents cargoId={params.cargo_id as string} />;
       case "cargo":
         return <CargoInfo cargoId={params.cargo_id as string} />;
-      // case "history":
-      //   return (
-      //     <HistoryInfo
-      //       cargoId={params.cargo_id as string}
-      //       cargoData={detailData}
-      //     />
-      //   );
-      // default:
-      //   return (
-      //     <ShippingInfo
-      //       cargoId={params.cargo_id as string}
-      //       cargoData={detailData}
-      //     />
-      //   );
+      case "history":
+        if (!mappedData) {
+          return (
+            <Box className="w-full h-full flex items-center justify-center">
+              <Typography>데이터가 없습니다.</Typography>
+            </Box>
+          );
+        }
+
+        const historyData: HistoryData = {
+          orderTime: mappedData.contract.contractDate || "N/A",
+          paymentTime: mappedData.payment.paymentDueDate || "N/A",
+          deliveryTime: mappedData.shipment.estimatedTimeDeparture || "N/A",
+          completionTime: mappedData.shipment.estimatedTimeArrival || "N/A",
+          historyItems: [
+            {
+              id: nanoid(),
+              title: "화물 계약 체결",
+              description: "계약이 성공적으로 체결되었습니다.",
+              time: mappedData.contract.contractDate || "N/A",
+              isActive: true,
+              type: "contract",
+            },
+            {
+              id: nanoid(),
+              title: "결제 완료",
+              description: "결제가 정상적으로 완료되었습니다.",
+              time: mappedData.payment.paymentDueDate || "N/A",
+              isActive: !!mappedData.payment.paymentDueDate,
+              type: "payment",
+            },
+            {
+              id: nanoid(),
+              title: "화물 출발",
+              description: "화물이 출발했습니다.",
+              time: mappedData.shipment.estimatedTimeDeparture || "N/A",
+              isActive: !!mappedData.shipment.estimatedTimeDeparture,
+              type: "shipment",
+            },
+            {
+              id: nanoid(),
+              title: "화물 도착",
+              description: "화물이 안전하게 도착했습니다.",
+              time: mappedData.shipment.estimatedTimeArrival || "N/A",
+              isActive: !!mappedData.shipment.estimatedTimeArrival,
+              type: "completion",
+            },
+          ],
+        };
+
+        return <History data={historyData} />;
+      default:
+        return null;
     }
   };
 

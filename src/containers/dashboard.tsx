@@ -1,14 +1,23 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Button, TextField, Card, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Card,
+  Stack,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import { ApexOptions } from "apexcharts";
 import { BarDataItem, selectDataItem } from "@/types/dashboard-data";
 import { useEffect, useState } from "react";
-// import { getPlanData } from "@/actions/plan";
-import { IShipmentData } from "@/types/grid-col";
-import { dummyShipmentData } from "@/constants/dummy-data";
+import { getPlanData } from "@/actions/plan";
+import { IPlanData } from "@/types/grid-col";
 
 function BarChart({
   propName,
@@ -75,9 +84,9 @@ function BarChart({
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({
-    contracter: "계약처",
-    importer: "수입처",
-    item: "품목",
+    contracter: "전체보기",
+    importer: "전체보기",
+    item: "전체보기",
     exchangeRate: 1400,
   });
 
@@ -87,32 +96,31 @@ export default function Dashboard() {
     won: [] as BarDataItem[],
   });
 
-  const [totalData, setTotalData] = useState<IShipmentData[]>([]);
+  const [totalData, setTotalData] = useState<IPlanData[]>([]);
   const [selectOptions, setSelectOptions] = useState<selectDataItem>({
-    contracter: ["계약처1", "계약처2"],
-    importer: ["수입처1", "수입처2"],
-    item: ["아이템1", "아이템2"],
+    contracter: ["전체보기"],
+    importer: ["전체보기"],
+    item: ["전체보기"],
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const fetchedTotalData = await getPlanData(); //주석 풀고 밑에 코드 지우기
-        const fetchedTotalData = dummyShipmentData;
+        const fetchedTotalData = await getPlanData();
         setTotalData(fetchedTotalData);
 
         // 옵션 자동 생성
         setSelectOptions({
           contracter: [
-            "계약처",
+            "전체보기",
             ...new Set(fetchedTotalData.map((data) => data.contractParty)),
           ],
           importer: [
-            "수입처",
+            "전체보기",
             ...new Set(fetchedTotalData.map((data) => data.importer)),
           ],
           item: [
-            "품목",
+            "전체보기",
             ...new Set(fetchedTotalData.map((data) => data.itemName)),
           ],
         });
@@ -126,6 +134,11 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  // DEBUG
+  useEffect(() => {
+    console.log(totalData);
+  }, [totalData]);
+
   // 필터 변경 핸들러
   const handleFilterChange = (
     key: keyof typeof filters,
@@ -135,15 +148,13 @@ export default function Dashboard() {
   };
 
   // 데이터 필터링 함수
-  const filterData = (data: IShipmentData[] = totalData) => {
+  const filterData = (data: IPlanData[] = totalData) => {
     const { contracter, importer, item, exchangeRate } = filters;
 
     // 날짜 기준 최근 3개월 데이터 필터링
     const monthNames = ["3개월 전", "2개월 전", "1개월 전"];
 
-    const aggregateMonthlyData = (
-      getValue: (item: IShipmentData) => number,
-    ) => {
+    const aggregateMonthlyData = (getValue: (item: IPlanData) => number) => {
       return [2, 1, 0].map((monthsAgo, index) => {
         // 특정 월의 시작과 끝 계산
         const now = new Date(2025, 3, 1); // 데이터의 최신 날짜 기준
@@ -164,10 +175,10 @@ export default function Dashboard() {
           return (
             itemDate >= targetMonth &&
             itemDate < nextMonth &&
-            (contracter === "계약처" ||
+            (contracter === "전체보기" ||
               monthItem.contractParty === contracter) &&
-            (importer === "수입처" || monthItem.importer === importer) &&
-            (item === "품목" || monthItem.itemName === item)
+            (importer === "전체보기" || monthItem.importer === importer) &&
+            (item === "전체보기" || monthItem.itemName === item)
           );
         });
 
@@ -180,7 +191,7 @@ export default function Dashboard() {
 
     // 차트 데이터 업데이트
     setChartData({
-      tonnage: aggregateMonthlyData((item) => item.weight),
+      tonnage: aggregateMonthlyData((item) => item.contractTon),
       dollar: aggregateMonthlyData((item) => item.totalPrice),
       won: aggregateMonthlyData(
         (item) => item.totalPrice * (exchangeRate || 1400),
@@ -206,49 +217,52 @@ export default function Dashboard() {
         className="w-full md:w-[100%]"
       >
         {/* 계약처 셀렉트 */}
-        <div className="border border-[#D6D6D6] rounded-[5px] w-full flex items-center p-2">
-          <select
-            className="w-full px-2 border-none outline-none"
+        <FormControl fullWidth>
+          <InputLabel>계약처</InputLabel>
+          <Select
             value={filters.contracter}
+            label="계약처"
             onChange={(e) => handleFilterChange("contracter", e.target.value)}
           >
-            {selectOptions.contracter.map((item, idx) => (
-              <option key={item} value={item} disabled={idx === 0}>
+            {selectOptions.contracter.map((item) => (
+              <MenuItem key={item} value={item}>
                 {item}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FormControl>
 
         {/* 수입처 셀렉트 */}
-        <div className="border border-[#D6D6D6] rounded-[5px] w-full flex items-center p-2">
-          <select
-            className="w-full px-2 border-none outline-none"
+        <FormControl fullWidth>
+          <InputLabel>수입처</InputLabel>
+          <Select
             value={filters.importer}
+            label="수입처"
             onChange={(e) => handleFilterChange("importer", e.target.value)}
           >
-            {selectOptions.importer.map((item, idx) => (
-              <option key={item} value={item} disabled={idx === 0}>
+            {selectOptions.importer.map((item) => (
+              <MenuItem key={item} value={item}>
                 {item}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FormControl>
 
         {/* 품목 셀렉트 */}
-        <div className="border border-[#D6D6D6] rounded-[5px] w-full flex items-center p-2">
-          <select
-            className="w-full px-2 border-none outline-none"
+        <FormControl fullWidth>
+          <InputLabel>품목</InputLabel>
+          <Select
             value={filters.item}
+            label="품목"
             onChange={(e) => handleFilterChange("item", e.target.value)}
           >
-            {selectOptions.item.map((item, idx) => (
-              <option key={item} value={item} disabled={idx === 0}>
+            {selectOptions.item.map((item) => (
+              <MenuItem key={item} value={item}>
                 {item}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FormControl>
 
         {/* 환율 입력 */}
         <TextField

@@ -25,7 +25,7 @@ export const DetailButtonRenderer = (params: ICellRendererParams) => {
     <div className="flex justify-center items-center h-full">
       <Link
         href={`/detail/${params.data.id}`}
-        className="inline-block px-4 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium text-center"
+        className="inline-block px-4 py-1.5 bg-[#22C55E] text-white rounded-lg hover:bg-[#16A34A] transition-colors text-sm font-medium text-center"
       >
         상세보기
       </Link>
@@ -188,13 +188,13 @@ export default function DataGrid<T>({
         {loading ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+              <div className="w-3 h-3 bg-[#22C55E] rounded-full animate-bounce"></div>
               <div
-                className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"
+                className="w-3 h-3 bg-[#22C55E] rounded-full animate-bounce"
                 style={{ animationDelay: "0.1s" }}
               ></div>
               <div
-                className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"
+                className="w-3 h-3 bg-[#22C55E] rounded-full animate-bounce"
                 style={{ animationDelay: "0.2s" }}
               ></div>
             </div>
