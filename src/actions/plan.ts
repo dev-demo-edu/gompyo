@@ -303,6 +303,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
           sellingPrice: cargo?.sellingPrice || 0,
           margin: cargo?.margin || 0,
           totalProfit: cargo?.totalProfit || 0,
+          purchaseFeeRate: cargo?.purchaseFeeRate || 0,
         },
         cost: {
           id: cost?.id || "",
@@ -324,12 +325,30 @@ export async function getPlanData(): Promise<IPlanData[]> {
           inspectionFee: costDetail?.inspectionFee || 0,
           doCharge: costDetail?.doCharge || 0,
           otherCosts: costDetail?.otherCosts || 0,
+          transferFee: costDetail?.transferFee || 0,
         },
         payment: {
           id: payment?.id || "",
           contractId: contract?.id || "",
           paymentMethod: payment?.paymentMethod || "",
           paymentDueDate: payment?.paymentDueDate || "",
+          advancePaymentDate: payment?.advancePaymentDate || "",
+          advancePaymentRatio: payment?.advancePaymentRatio || 0,
+          advancePaymentAmount: payment?.advancePaymentAmount || 0,
+          remainingPaymentDate: payment?.remainingPaymentDate || "",
+          remainingPaymentRatio: payment?.remainingPaymentRatio || 0,
+          remainingPaymentAmount: payment?.remainingPaymentAmount || 0,
+          counterpartBank: payment?.counterpartBank || "",
+          paymentTerm: payment?.paymentTerm || "",
+          totalContractAmount: payment?.totalContractAmount || 0,
+        },
+        item: {
+          id: item?.id || "",
+          itemName: item?.itemName || "",
+          itemVariety: item?.itemVariety || "",
+          packingUnit: item?.packingUnit || "",
+          originCountry: item?.originCountry || "",
+          hsCode: item?.hsCode || "",
         },
       };
 
@@ -337,7 +356,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       const calculatedData = mapAndCalculateCargoDetails(cargoDetailData);
 
       return {
-        id: cargo.id || "",
+        id: cargo?.id || "",
         contractNumber: contract?.contractNumber || "",
         progressStatus: cargo?.progressStatus || "예정",
         contractDate: contract?.contractDate || "",
@@ -347,19 +366,17 @@ export async function getPlanData(): Promise<IPlanData[]> {
         arrivalPort: shipment?.arrivalPort || "",
         itemName: item?.itemName || "",
         contractTon: cargo?.contractTon || 0,
-        unitPrice: calculatedData.costDetail.unitPrice,
-        totalPrice: calculatedData.costDetail.totalContractPrice,
+        unitPrice: calculatedData.costDetail.unitPrice || 0,
+        totalPrice: calculatedData.costDetail.totalContractPrice || 0,
         paymentMethod: payment?.paymentMethod || "",
         warehouseEntryDate: cargo?.warehouseEntryDate || "",
-        importCostPerKg: calculatedData.costDetail.costPerKg,
-        supplyCostPerKg:
-          calculatedData.cost.SupplyPrice / (cargo?.contractTon || 1),
-        totalCost: calculatedData.cargo.totalCost,
-        totalCostPerKg:
-          calculatedData.cargo.totalCost / (cargo?.contractTon || 1),
-        sellingPrice: calculatedData.cargo.sellingPrice,
-        margin: calculatedData.cargo.margin,
-        totalProfit: calculatedData.cargo.totalProfit,
+        importCostPerKg: calculatedData.costDetail.costPerKg || 0,
+        supplyCostPerKg: calculatedData.cost.supplyPrice || 0,
+        totalCost: calculatedData.cost.contractorCost || 0,
+        totalCostPerKg: calculatedData.costDetail.costPerKg || 0,
+        sellingPrice: calculatedData.cargo.sellingPrice || 0,
+        margin: calculatedData.cargo.margin || 0,
+        totalProfit: calculatedData.cargo.totalProfit || 0,
       };
     });
   } catch (error) {

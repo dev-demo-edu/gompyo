@@ -112,7 +112,47 @@ export class PaymentService {
   }
 
   async findAll() {
-    return await db.select().from(payments);
+    const paymentList = await db.select().from(payments);
+
+    const result = await Promise.all(
+      paymentList.map(async (payment: Payment) => {
+        const [paymentTt] = await db
+          .select()
+          .from(paymentsTt)
+          .where(eq(paymentsTt.paymentId, payment.id));
+
+        const [paymentUsance] = await db
+          .select()
+          .from(paymentsUsance)
+          .where(eq(paymentsUsance.paymentId, payment.id));
+
+        // 계약금액 계산
+        const totalContractAmount = paymentTt
+          ? (paymentTt.advancePaymentAmount || 0) +
+            (paymentTt.remainingPaymentAmount || 0)
+          : 0;
+
+        return {
+          ...payment,
+          paymentDueDate: payment.paymentDueDate,
+          // T/T 관련 필드
+          advancePaymentDate: paymentTt?.advancePaymentDate ?? null,
+          advancePaymentRatio: paymentTt?.advancePaymentRatio ?? null,
+          advancePaymentAmount: paymentTt?.advancePaymentAmount ?? null,
+          remainingPaymentDate: paymentTt?.remainingPaymentDate ?? null,
+          remainingPaymentRatio: paymentTt?.remainingPaymentRatio ?? null,
+          remainingPaymentAmount: paymentTt?.remainingPaymentAmount ?? null,
+          counterpartBank: paymentTt?.counterpartBank ?? null,
+          // Usance 관련 필드
+          paymentTerm: paymentUsance?.paymentTerm ?? null,
+          contractExchangeRate: paymentUsance?.contractExchangeRate ?? null,
+          // 계약금액
+          totalContractAmount,
+        };
+      }),
+    );
+
+    return result;
   }
 
   async findByContractId(contractId: string) {

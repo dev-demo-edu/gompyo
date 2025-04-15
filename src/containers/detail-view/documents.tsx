@@ -23,7 +23,6 @@ import {
   CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
-import { CargoDetailData } from "@/types/cargo-detail";
 import {
   getDocuments,
   uploadDocuments,
@@ -43,7 +42,6 @@ import { CircularProgress } from "@mui/material";
 
 interface DocumentsProps {
   cargoId: string;
-  cargoData: CargoDetailData | null;
 }
 
 interface UploadModalProps {

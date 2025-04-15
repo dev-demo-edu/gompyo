@@ -20,7 +20,7 @@ type Payment = {
   remainingPaymentAmount: number | null;
   counterpartBank: string | null;
   paymentTerm: string | null;
-  contractExchangeRate: string | null;
+  // contractExchangeRate: string | null;
   totalContractAmount: number | null;
 };
 
