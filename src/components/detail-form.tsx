@@ -5,15 +5,15 @@ import {
   Typography,
   TextField,
   IconButton,
-  Select,
-  MenuItem,
   FormControl,
-  InputLabel,
-  SelectChangeEvent,
+  Autocomplete,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { Edit, Save } from "@mui/icons-material";
+import { Edit, Save, Close } from "@mui/icons-material";
 import { useState, useEffect } from "react";
+import { FieldValue, FieldValueType } from "@/constants/entire";
+import { useAtom } from "jotai";
+import { cancelEditAtom } from "@/states/detail";
 
 interface FieldConfig {
   name: string;
@@ -21,15 +21,20 @@ interface FieldConfig {
   placeholder?: string;
   gridSize?: number;
   hasEditButton?: boolean;
-  type?: "text" | "select";
+  type?: "text" | "select" | "number" | "date";
   options?: { value: string; label: string }[];
+  valueType: FieldValueType;
+  disabled?: boolean;
+  endAdornment?: string;
 }
 
 interface DetailFormProps {
   title: string;
   fields: FieldConfig[];
-  data?: Record<string, string>;
-  onSave?: (data: Record<string, string>) => void;
+  // 필드 이름을 키로 하고, 해당하는 값 타입을 가지는 레코드
+  data?: Partial<Record<string, FieldValue>>;
+  onSave?: (data: Record<string, FieldValue>) => void;
+  onFieldChange?: (fieldName: string, value: FieldValueType) => void;
   className?: string;
 }
 
@@ -38,82 +43,144 @@ export default function DetailForm({
   fields,
   data = {},
   onSave,
+  onFieldChange,
   className = "",
 }: DetailFormProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>(
-    Object.entries(data).reduce(
+  const [formData, setFormData] = useState<Record<string, string | null>>({});
+  const [, cancelEdit] = useAtom(cancelEditAtom);
+
+  // 초기 데이터 설정
+  useEffect(() => {
+    const initialData = Object.entries(data).reduce(
       (acc, [key, value]) => {
-        acc[key] = value?.toString() || "";
+        acc[key] = value?.toString() ?? null;
         return acc;
       },
-      {} as Record<string, string>,
-    ),
-  );
-
-  useEffect(() => {
-    setFormData(
-      Object.entries(data).reduce(
-        (acc, [key, value]) => {
-          acc[key] = value?.toString() || "";
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
+      {} as Record<string, string | null>,
     );
+    setFormData(initialData);
   }, [data]);
 
   const handleEdit = () => {
     setIsEditing(true);
   };
 
+  const convertValue = (
+    value: string | null,
+    valueType: FieldValueType,
+  ): FieldValue => {
+    if (value === null) return null;
+
+    switch (valueType) {
+      case "number":
+        return value === "" ? null : Number(value);
+      case "date":
+        return value === "" ? null : value;
+      case "string":
+        return value;
+    }
+  };
+
   const handleSave = () => {
     if (onSave) {
-      onSave(formData);
+      const convertedData = fields.reduce(
+        (acc, field) => {
+          const value = formData[field.name];
+          acc[field.name] = convertValue(value, field.valueType);
+          return acc;
+        },
+        {} as Record<string, FieldValue>,
+      );
+      onSave(convertedData);
     }
     setIsEditing(false);
   };
 
+  const handleCancel = () => {
+    // 원래 데이터로 되돌림
+    const initialData = Object.entries(data).reduce(
+      (acc, [key, value]) => {
+        acc[key] = value?.toString() ?? null;
+        return acc;
+      },
+      {} as Record<string, string | null>,
+    );
+    setFormData(initialData);
+    setIsEditing(false);
+    cancelEdit();
+  };
+
   const handleTextChange =
     (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = event.target.value;
+      const newValue = event.target.value || null;
       setFormData((prev) => ({
         ...prev,
         [field]: newValue,
       }));
-    };
-
-  const handleSelectChange =
-    (field: string) => (event: SelectChangeEvent<string>) => {
-      const newValue = event.target.value;
-      setFormData((prev) => ({
-        ...prev,
-        [field]: newValue,
-      }));
+      if (onFieldChange) {
+        onFieldChange(field, newValue as FieldValueType);
+      }
     };
 
   const renderField = (field: FieldConfig) => {
     if (field.type === "select" && field.options) {
       return (
-        <FormControl fullWidth disabled={!isEditing}>
-          <InputLabel>{field.label}</InputLabel>
-          <Select
-            label={field.label}
-            value={formData[field.name] || ""}
-            onChange={handleSelectChange(field.name)}
-            disabled={!isEditing}
-            sx={{
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(145, 158, 171, 0.2)",
-              },
+        <FormControl fullWidth disabled={!isEditing || field.disabled}>
+          <Autocomplete
+            freeSolo
+            options={field.options}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.label
+            }
+            value={
+              field.options.find((opt) => opt.value === formData[field.name]) ||
+              formData[field.name] ||
+              null
+            }
+            onChange={(_, newValue) => {
+              const value =
+                typeof newValue === "string"
+                  ? newValue
+                  : newValue?.value || null;
+              setFormData((prev) => ({
+                ...prev,
+                [field.name]: value,
+              }));
+              if (onFieldChange) {
+                onFieldChange(field.name, value as FieldValueType);
+              }
             }}
-          >
-            {field.options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
+            onInputChange={(_, newInputValue) => {
+              setFormData((prev) => ({
+                ...prev,
+                [field.name]: newInputValue,
+              }));
+              if (onFieldChange) {
+                onFieldChange(field.name, newInputValue as FieldValueType);
+              }
+            }}
+            disabled={!isEditing || field.disabled}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={field.label}
+                sx={{
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(145, 158, 171, 0.2)",
+                  },
+                }}
+              />
+            )}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              return (
+                <li key={key} {...otherProps}>
+                  {typeof option === "string" ? option : option.label}
+                </li>
+              );
+            }}
+          />
         </FormControl>
       );
     }
@@ -124,8 +191,9 @@ export default function DetailForm({
       variant: "outlined" as const,
       placeholder: field.placeholder || "입력해주세요.",
       className: "bg-background-paper",
-      disabled: !isEditing,
-      value: formData[field.name] || "",
+      disabled: !isEditing || field.disabled,
+      value: formData[field.name] ?? "",
+      type: field.type,
       onChange: handleTextChange(field.name),
       sx: {
         "& .MuiOutlinedInput-root": {
@@ -134,6 +202,7 @@ export default function DetailForm({
           },
         },
       },
+      InputLabelProps: field.type === "date" ? { shrink: true } : undefined,
     };
     return <TextField {...textFieldProps} />;
   };
@@ -149,9 +218,14 @@ export default function DetailForm({
         </Typography>
         <Box>
           {isEditing ? (
-            <IconButton onClick={handleSave} color="primary">
-              <Save />
-            </IconButton>
+            <>
+              <IconButton onClick={handleSave} color="primary">
+                <Save />
+              </IconButton>
+              <IconButton onClick={handleCancel} color="primary">
+                <Close />
+              </IconButton>
+            </>
           ) : (
             <IconButton onClick={handleEdit}>
               <Edit className="text-action-disabled opacity-80" />

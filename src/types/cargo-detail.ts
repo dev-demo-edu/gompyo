@@ -12,6 +12,16 @@ type Payment = {
   paymentDueDate: string | null;
   paymentMethod: string;
   contractId: string;
+  advancePaymentDate: string | null;
+  advancePaymentRatio: number | null;
+  advancePaymentAmount: number | null;
+  remainingPaymentDate: string | null;
+  remainingPaymentRatio: number | null;
+  remainingPaymentAmount: number | null;
+  counterpartBank: string | null;
+  paymentTerm: string | null;
+  // contractExchangeRate: string | null;
+  totalContractAmount: number | null;
 };
 
 type CostDetail = {
@@ -24,6 +34,7 @@ type CostDetail = {
   inspectionFee: number | null;
   doCharge: number | null;
   otherCosts: number | null;
+  transferFee: number | null;
   costId: string;
 };
 
@@ -37,7 +48,7 @@ type ContractAmount = {
   cargoId: string;
 };
 
-type Expense = {
+type Cargo = {
   id: string;
   itemsId: string;
   shipmentId: string;
@@ -50,6 +61,7 @@ type Expense = {
   sellingPrice: number | null;
   margin: number | null;
   totalProfit: number | null;
+  purchaseFeeRate: number | null;
 };
 
 export type CargoDetailData = {
@@ -57,8 +69,9 @@ export type CargoDetailData = {
   payment: Payment;
   costDetail: CostDetail;
   cost: ContractAmount;
-  cargo: Expense;
+  cargo: Cargo;
   shipment: Shipment;
+  item: Item;
 };
 
 export type Shipment = {
@@ -72,4 +85,13 @@ export type Shipment = {
   blNumber: string | null;
   palletOrderDate: string | null;
   palletType: string | null;
+};
+
+export type Item = {
+  id: string;
+  itemName: string | null;
+  itemVariety: string | null;
+  originCountry: string | null;
+  hsCode: string | null;
+  packingUnit: string | null;
 };

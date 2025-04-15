@@ -79,6 +79,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
           sellingPrice: cargo?.sellingPrice || 0,
           margin: cargo?.margin || 0,
           totalProfit: cargo?.totalProfit || 0,
+          purchaseFeeRate: cargo?.purchaseFeeRate || 0,
         },
         cost: {
           id: cost?.id || "",
@@ -100,12 +101,30 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
           inspectionFee: costDetail?.inspectionFee || 0,
           doCharge: costDetail?.doCharge || 0,
           otherCosts: costDetail?.otherCosts || 0,
+          transferFee: costDetail?.transferFee || 0,
         },
         payment: {
           id: payment?.id || "",
           contractId: contract?.id || "",
           paymentMethod: payment?.paymentMethod || "",
           paymentDueDate: payment?.paymentDueDate || "",
+          advancePaymentDate: payment?.advancePaymentDate || "",
+          advancePaymentRatio: payment?.advancePaymentRatio || 0,
+          advancePaymentAmount: payment?.advancePaymentAmount || 0,
+          remainingPaymentDate: payment?.remainingPaymentDate || "",
+          remainingPaymentRatio: payment?.remainingPaymentRatio || 0,
+          remainingPaymentAmount: payment?.remainingPaymentAmount || 0,
+          counterpartBank: payment?.counterpartBank || "",
+          paymentTerm: payment?.paymentTerm || "",
+          totalContractAmount: payment?.totalContractAmount || 0,
+        },
+        item: {
+          id: item?.id || "",
+          itemName: item?.itemName || "",
+          itemVariety: item?.itemVariety || "",
+          packingUnit: item?.packingUnit || "",
+          originCountry: item?.originCountry || "",
+          hsCode: item?.hsCode || "",
         },
       };
 
@@ -123,10 +142,10 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
         weight: cargo?.contractTon || 0,
         containerCount: cargo?.containerCount || 0,
         packagingUnit: item?.packingUnit || "",
-        unitPrice: calculatedData.costDetail.unitPrice,
-        totalPrice: calculatedData.costDetail.totalContractPrice,
-        supplyPrice: calculatedData.cost.SupplyPrice,
-        sellingPrice: calculatedData.cargo.sellingPrice,
+        unitPrice: calculatedData.costDetail.unitPrice || 0,
+        totalPrice: calculatedData.costDetail.totalContractPrice || 0,
+        supplyPrice: calculatedData.cost.supplyPrice || 0,
+        sellingPrice: calculatedData.cargo.sellingPrice || 0,
         paymentMethod: payment?.paymentMethod || "",
         hsCode: item?.hsCode || "",
         blNumber: shipment?.blNumber || "",
@@ -136,6 +155,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
         eta: shipment?.estimatedTimeArrival || "",
         contractParty: contract?.contractParty || "",
         customsDate: cargo?.customsClearanceDate || "",
+        packingUnit: item?.packingUnit || "",
       };
     });
   } catch (error) {
