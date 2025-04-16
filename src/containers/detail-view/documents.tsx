@@ -35,7 +35,6 @@ import {
   getDocumentsAtom,
   getCurrentDocuments,
   getIsLoading,
-  shouldFetchDocuments,
   Document,
 } from "@/states/document-state";
 import { CircularProgress } from "@mui/material";
@@ -179,61 +178,62 @@ export default function Documents({ cargoId }: DocumentsProps) {
   const [, setDocuments] = useAtom(getDocumentsAtom);
   const getCurrentDocs = useAtomValue(getCurrentDocuments);
   const getLoadingState = useAtomValue(getIsLoading);
-  const shouldFetch = useAtomValue(shouldFetchDocuments);
+  // const shouldFetch = useAtomValue(shouldFetchDocuments);
 
   const currentDocuments = getCurrentDocs(cargoId, activeTab);
   const isLoading = getLoadingState(cargoId, activeTab);
 
   useEffect(() => {
-    if (shouldFetch(cargoId, activeTab)) {
-      fetchDocuments();
-    }
-  }, [cargoId, activeTab, shouldFetch]);
+    fetchDocuments();
+  }, [cargoId]);
 
   const fetchDocuments = async () => {
-    try {
-      setDocuments({
-        cargoId,
-        category: activeTab,
-        documents: currentDocuments,
-        isLoading: true,
-      });
-
-      const result = await getDocuments(cargoId, activeTab);
-      if (result.success && result.documents) {
+    const categories: ("contract" | "shipment")[] = ["contract", "shipment"];
+    for (const category of categories) {
+      try {
         setDocuments({
           cargoId,
-          category: activeTab,
-          documents: result.documents as Document[],
-          isLoading: false,
+          category,
+          documents: [],
+          isLoading: true,
         });
-      } else {
-        console.error("문서 목록 조회 실패:", result.error);
+
+        const result = await getDocuments(cargoId, category);
+        if (result.success && result.documents) {
+          setDocuments({
+            cargoId,
+            category,
+            documents: result.documents as Document[],
+            isLoading: false,
+          });
+        } else {
+          console.error("문서 목록 조회 실패:", result.error);
+          toast({
+            title: "오류",
+            description: result.error || "문서 목록을 불러오는데 실패했습니다.",
+            variant: "destructive",
+          });
+          setDocuments({
+            cargoId,
+            category,
+            documents: [],
+            isLoading: false,
+          });
+        }
+      } catch (error) {
+        console.error("문서 목록 조회 중 오류 발생:", error);
         toast({
           title: "오류",
-          description: result.error || "문서 목록을 불러오는데 실패했습니다.",
+          description: "문서 목록을 불러오는 중 오류가 발생했습니다.",
           variant: "destructive",
         });
         setDocuments({
           cargoId,
-          category: activeTab,
-          documents: currentDocuments,
+          category,
+          documents: [],
           isLoading: false,
         });
       }
-    } catch (error) {
-      console.error("문서 목록 조회 중 오류 발생:", error);
-      toast({
-        title: "오류",
-        description: "문서 목록을 불러오는 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-      setDocuments({
-        cargoId,
-        category: activeTab,
-        documents: currentDocuments,
-        isLoading: false,
-      });
     }
   };
 

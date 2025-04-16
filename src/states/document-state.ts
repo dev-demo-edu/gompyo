@@ -70,20 +70,20 @@ export const getIsLoading = atom((get) => {
   };
 });
 
-export const shouldFetchDocuments = atom((get) => {
-  const state = get(documentsStateAtom);
-  return (cargoId: string, category: "contract" | "shipment") => {
-    const key = `${cargoId}-${category}`;
-    const currentState = state[key];
+// export const shouldFetchDocuments = atom((get) => {
+//   const state = get(documentsStateAtom);
+//   return (cargoId: string, category: "contract" | "shipment") => {
+//     const key = `${cargoId}-${category}`;
+//     const currentState = state[key];
 
-    // 상태가 없거나 마지막 fetch 이후 5분이 지났으면 fetch
-    if (
-      !currentState ||
-      Date.now() - currentState.lastFetched > 5 * 60 * 1000
-    ) {
-      return true;
-    }
+//     // 상태가 없거나 마지막 fetch 이후 5분이 지났으면 fetch
+//     if (
+//       !currentState ||
+//       Date.now() - currentState.lastFetched > 5 * 60 * 1000
+//     ) {
+//       return true;
+//     }
 
-    return false;
-  };
-});
+//     return false;
+//   };
+// });
