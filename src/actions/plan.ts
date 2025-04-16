@@ -82,10 +82,10 @@ export async function createPlan(
         .values({
           paymentId: paymentId,
           advancePaymentDate: contractData.contractDate,
-          advancePaymentRatio: 0.3, // 기본값 30%
+          advancePaymentRatio: 30, // 기본값 30%
           advancePaymentAmount: 0, // 나중에 계산
           remainingPaymentDate: contractData.contractDate, // 계약일로 설정
-          remainingPaymentRatio: 0.7, // 기본값 70%
+          remainingPaymentRatio: 70, // 기본값 70%
           remainingPaymentAmount: 0, // 나중에 계산
           counterpartBank: "", // 나중에 입력
         })
@@ -174,6 +174,7 @@ export async function createPlan(
             margin: cargo.sellingPrice - supplyPrice,
             totalProfit:
               (cargo.sellingPrice - supplyPrice) * cargo.contractTon * 1000,
+            purchaseFeeRate: cargo.purchaseFeeRate,
           })
           .returning();
         console.log("화물 정보 저장 완료:", cargoResult);
@@ -185,7 +186,6 @@ export async function createPlan(
             id: costId,
             cargoId: cargoId,
             supplyPrice: cargo.unitPrice,
-            shippingCost: cargo.shippingCost,
             laborCost: 0,
             transportStorageFee: 0,
             loadingUnloadingFee: 0,

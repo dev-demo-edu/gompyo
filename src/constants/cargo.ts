@@ -84,6 +84,7 @@ export const packagingFields: BaseField[] = [
     gridSize: 12,
     endAdornment: "톤",
     valueType: "number",
+    type: "number",
   },
   {
     name: "containerCount",
@@ -91,6 +92,7 @@ export const packagingFields: BaseField[] = [
     gridSize: 12,
     endAdornment: "개",
     valueType: "number",
+    type: "number",
   },
 ];
 
@@ -106,24 +108,28 @@ export const statusFields: BaseField[] = [
     label: "통관일",
     gridSize: 12,
     valueType: "string",
+    type: "date",
   },
   {
     name: "warehouseEntryDate",
     label: "입고일",
     gridSize: 12,
     valueType: "string",
+    type: "date",
   },
   {
     name: "quarantineDate",
     label: "검역일",
     gridSize: 12,
     valueType: "string",
+    type: "date",
   },
   {
     name: "palletOrderDate",
     label: "파레트 주문일",
     gridSize: 12,
     valueType: "string",
+    type: "date",
   },
   {
     name: "palletType",
