@@ -1,5 +1,7 @@
 import { atom } from "jotai";
 
+export const refreshPlanAtom = atom(false);
+
 export interface Document {
   id: string;
   documentName: string;

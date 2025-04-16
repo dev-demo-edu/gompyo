@@ -12,6 +12,8 @@ import {
 } from "../utils/formatter";
 import { getUserColumnOrder, saveUserColumnOrder } from "@/actions/user";
 import useDragColumnChange from "@/hooks/useDragColumnChange";
+import { useAtomValue } from "jotai";
+import { refreshPlanAtom } from "@/states/document-state";
 
 // 컬럼 드래그 커스텀 훅
 
@@ -180,6 +182,7 @@ export default function PlanGrid() {
     useDragColumnChange(handleColumnDragSave);
 
   // DB 데이터 로딩
+  const refreshTrigger = useAtomValue(refreshPlanAtom);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -201,7 +204,7 @@ export default function PlanGrid() {
     };
 
     fetchData();
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <DataGrid

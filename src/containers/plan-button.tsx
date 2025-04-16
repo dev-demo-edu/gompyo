@@ -25,6 +25,8 @@ import MenuList from "@mui/material/MenuList";
 import { searchItemsByName } from "@/actions/item";
 import { InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { useSetAtom } from "jotai";
+import { refreshPlanAtom } from "@/states/document-state";
 
 // 계약 정보 스키마
 export const contractSchema = z.object({
@@ -202,6 +204,8 @@ export default function PlanButton() {
     setStep(1);
   };
 
+  const setRefresh = useSetAtom(refreshPlanAtom);
+
   const handleSubmit = async () => {
     if (!contractData) {
       alert("계약 정보를 입력해주세요.");
@@ -218,6 +222,7 @@ export default function PlanButton() {
       console.log("제출할 데이터:", { contractData, cargoItems });
       const result = await createPlan(contractData, cargoItems);
       if (result.success) {
+        setRefresh((prev) => !prev);
         handleClose();
       } else {
         alert(result.message);
