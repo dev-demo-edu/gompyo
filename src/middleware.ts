@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // 로그인이 필요하지 않은 경로들
-const publicPaths = ["/login", "/logo.png"];
+const publicPaths = ["/login"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname === "/logo.png") {
+    return NextResponse.next();
+  }
 
   // 쿠키에서 사용자 ID 확인
   const userId = request.cookies.get("userId")?.value;
