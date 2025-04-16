@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { items } from "@/db/schema";
+import { items, cargos } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -46,13 +46,28 @@ export class ItemsService {
   }
 
   // Update
-  async update(id: string, data: Partial<NewItem>) {
-    const [item] = await db
-      .update(items)
-      .set(data)
-      .where(eq(items.id, id))
-      .returning();
-    return item;
+  private async isItemReferencedInCargo(itemId: string): Promise<boolean> {
+    const cargoList = await db
+      .select()
+      .from(cargos)
+      .where(eq(cargos.itemsId, itemId));
+    return cargoList.length >= 2;
+  }
+
+  async update(itemId: string, data: Partial<NewItem>) {
+    // 새로운 상품 생성
+    const newItem = await this.create({
+      ...data,
+      id: nanoid(),
+    });
+
+    // 기존 상품이 cargo에서 참조되지 않는 경우에만 삭제
+    const isReferenced = await this.isItemReferencedInCargo(itemId);
+    if (!isReferenced) {
+      await this.delete(itemId);
+    }
+
+    return newItem;
   }
 
   // Delete

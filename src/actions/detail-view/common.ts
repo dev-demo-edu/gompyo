@@ -117,7 +117,13 @@ export async function updateCargoDetail(
     // 상품 정보 업데이트
     // TODO: 상품정보가 달라졌을시 모든 상품정보를 업데이트 해야하는건지 새롭게 해야하는건지 처리 필요
     if (updateData.item) {
-      await itemsService.update(updateData.item.id, updateData.item);
+      const newItem = await itemsService.update(
+        updateData.item.id,
+        updateData.item,
+      );
+      await cargoService.update(cargoId, {
+        itemsId: newItem.id,
+      });
     }
 
     // 업데이트된 전체 데이터 반환
