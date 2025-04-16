@@ -63,8 +63,8 @@ body {
 /* Responsive Utilities */
 .container-fluid {
   width: 100%;
-  padding-right: 1rem;
-  padding-left: 1rem;
+  padding-right: 0rem;
+  padding-left: 0rem;
   margin-right: auto;
   margin-left: auto;
 }
