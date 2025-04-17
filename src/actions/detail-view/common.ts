@@ -8,6 +8,7 @@ import { CargoDetailData } from "@/types/cargo-detail";
 import { CostDetailService } from "@/services/cost-detail.service";
 import { CostService } from "@/services/cost.service";
 import { ItemsService } from "@/services/items.service";
+import { CalculatedPayment } from "@/services/cargo-calculator";
 
 const cargoService = new CargoService();
 const shipmentService = new ShipmentService();
@@ -88,7 +89,10 @@ export async function updateCargoDetail(
 
     // 결제 정보 업데이트
     if (updateData.payment) {
-      await paymentService.update(updateData.payment.id, updateData.payment);
+      await paymentService.update(
+        updateData.payment.id,
+        updateData.payment as CalculatedPayment,
+      );
     }
 
     // 원가 상세 정보 업데이트

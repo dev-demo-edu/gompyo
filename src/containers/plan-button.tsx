@@ -326,9 +326,7 @@ export default function PlanButton() {
           error={!!contractErrors.contractDate}
           helperText={contractErrors.contractDate?.message}
           fullWidth
-          slotProps={{
-            inputLabel: { shrink: true },
-          }}
+          InputLabelProps={{ shrink: true }}
           className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
         />
 
@@ -391,9 +389,7 @@ export default function PlanButton() {
             error={!!contractErrors.estimatedTimeDeparture}
             helperText={contractErrors.estimatedTimeDeparture?.message}
             fullWidth
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+            InputLabelProps={{ shrink: true }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
           <TextField
@@ -403,9 +399,7 @@ export default function PlanButton() {
             error={!!contractErrors.estimatedTimeArrival}
             helperText={contractErrors.estimatedTimeArrival?.message}
             fullWidth
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+            InputLabelProps={{ shrink: true }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
         </Box>
@@ -544,9 +538,7 @@ export default function PlanButton() {
             helperText={cargoErrors.itemName?.message}
             placeholder="입력해주세요."
             fullWidth
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+            InputLabelProps={{ shrink: true }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
@@ -557,9 +549,7 @@ export default function PlanButton() {
             helperText={cargoErrors.itemVariety?.message}
             placeholder="입력해주세요."
             fullWidth
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+            InputLabelProps={{ shrink: true }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
@@ -570,9 +560,7 @@ export default function PlanButton() {
             helperText={cargoErrors.hsCode?.message}
             placeholder="입력해주세요."
             fullWidth
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+            InputLabelProps={{ shrink: true }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
@@ -594,9 +582,7 @@ export default function PlanButton() {
             helperText={cargoErrors.packingUnit?.message}
             placeholder="입력해주세요."
             fullWidth
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+            InputLabelProps={{ shrink: true }}
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
         </Box>

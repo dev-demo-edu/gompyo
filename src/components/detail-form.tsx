@@ -173,9 +173,8 @@ export default function DetailForm({
               />
             )}
             renderOption={(props, option) => {
-              const { key, ...otherProps } = props;
               return (
-                <li key={key} {...otherProps}>
+                <li {...props}>
                   {typeof option === "string" ? option : option.label}
                 </li>
               );
