@@ -98,7 +98,7 @@ export default function DetailForm({
 
       switch (field.valueType) {
         case "number":
-          schema = z.coerce.number({
+          schema = z.string({
             message: "숫자를 입력해주세요",
           });
           break;
@@ -266,6 +266,19 @@ export default function DetailForm({
       },
       InputLabelProps: field.type === "date" ? { shrink: true } : undefined,
     };
+    if (field.valueType === "number") {
+      if (
+        !isFinite(Number(textFieldProps.value)) ||
+        isNaN(Number(textFieldProps.value))
+      ) {
+        textFieldProps.value = "0";
+      } else {
+        const num = Number(textFieldProps.value);
+        if (!Number.isInteger(num)) {
+          textFieldProps.value = Math.floor(num).toString();
+        }
+      }
+    }
     return <TextField {...textFieldProps} />;
   };
 
