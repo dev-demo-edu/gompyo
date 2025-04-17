@@ -19,14 +19,14 @@ export type CalculatedContract = typeof contracts.$inferSelect & {
 };
 
 export type CalculatedPayment = typeof payments.$inferSelect & {
-  advancePaymentDate: string;
-  advancePaymentRatio: number;
-  advancePaymentAmount: number;
-  remainingPaymentDate: string;
-  remainingPaymentRatio: number;
-  remainingPaymentAmount: number;
-  counterpartBank: string;
-  paymentTerm: string;
+  advancePaymentDate: string | null;
+  advancePaymentRatio: number | null;
+  advancePaymentAmount: number | null;
+  remainingPaymentDate: string | null;
+  remainingPaymentRatio: number | null;
+  remainingPaymentAmount: number | null;
+  counterpartBank: string | null;
+  paymentTerm: string | null;
   totalContractAmount: number;
 };
 

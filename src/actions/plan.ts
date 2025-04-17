@@ -174,7 +174,7 @@ export async function createPlan(
             margin: cargo.sellingPrice - supplyPrice,
             totalProfit:
               (cargo.sellingPrice - supplyPrice) * cargo.contractTon * 1000,
-            purchaseFeeRate: cargo.purchaseFeeRate,
+            purchaseFeeRate: 0,
           })
           .returning();
         console.log("화물 정보 저장 완료:", cargoResult);
