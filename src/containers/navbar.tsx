@@ -30,8 +30,8 @@ export default function Navbar() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDesktopDrawerOpen, setIsDesktopDrawerOpen] = useState(true);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery("(max-width:640px)");
+  const isTablet = useMediaQuery("(min-width:641px) and (max-width:900px)");
   const pathname = usePathname();
 
   // Auto-collapse sidebar on tablet view
@@ -185,10 +185,13 @@ export default function Navbar() {
             "& .MuiDrawer-paper": {
               width: isSidebarCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
               boxSizing: "border-box",
-              transition: theme.transitions.create("width", {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
+              transition: theme.transitions.create(
+                ["width", "visibility", "overflow"],
+                {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                },
+              ),
               overflowX: "hidden",
               borderRight: `1px solid ${theme.palette.divider}`,
             },

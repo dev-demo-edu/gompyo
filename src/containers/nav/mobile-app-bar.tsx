@@ -6,6 +6,8 @@ import {
   Avatar,
   Box,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import Image from "next/image";
 import React from "react";
@@ -30,29 +32,27 @@ export default function MobileAppBar({
   collapsedWidth,
   zIndex,
 }: MobileAppBarProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery("(max-width:640px)");
+
+  const currentDrawerWidth = isDrawerOpen
+    ? isSidebarCollapsed
+      ? collapsedWidth
+      : drawerWidth
+    : 0;
+
   return (
     <AppBar
       position="fixed"
       color="default"
       elevation={1}
       sx={{
-        marginLeft: {
-          sm: isDrawerOpen
-            ? isSidebarCollapsed
-              ? collapsedWidth
-              : drawerWidth
-            : 0,
-        },
-        width: {
-          xs: "100%",
-          sm: `calc(100% - ${
-            isDrawerOpen
-              ? isSidebarCollapsed
-                ? collapsedWidth
-                : drawerWidth
-              : 0
-          }px)`,
-        },
+        marginLeft: isMobile ? 0 : `${currentDrawerWidth}px`,
+        width: isMobile ? "100%" : `calc(100% - ${currentDrawerWidth}px)`,
+        transition: theme.transitions.create(["width", "margin-left"], {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
         zIndex,
         height: "64px",
         backgroundColor: "background.paper",
@@ -71,7 +71,7 @@ export default function MobileAppBar({
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ display: { xs: "flex", sm: "none" } }}>
+          {isMobile && (
             <Image
               src="/logo.png"
               alt="Logo"
@@ -79,7 +79,7 @@ export default function MobileAppBar({
               height={22}
               priority
             />
-          </Box>
+          )}
         </Box>
 
         <Box display="flex" alignItems="center" gap={1}>

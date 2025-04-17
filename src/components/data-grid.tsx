@@ -54,6 +54,7 @@ export default function DataGrid<T>({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showFilter, setShowFilter] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // 기본 컬럼 설정
   const defaultColDef = useMemo(
@@ -115,16 +116,28 @@ export default function DataGrid<T>({
 
       {/* 필터 패널 */}
       <div
-        className={`bg-white rounded-xl shadow-sm p-6 space-y-6 ${showFilter ? "block" : "hidden md:block"} w-full md:w-80 md:shrink-0`}
+        className={`relative transition-all duration-300 p-6 space-y-6
+        ${showFilter ? "block" : "hidden md:block"}
+        ${isCollapsed ? "w-12 bg-slate-50" : "w-full md:w-80 bg-white rounded-xl shadow-sm"}
+        md:shrink-0 overflow-hidden`}
       >
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">필터</h2>
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                검색어
-              </label>
-              <div className="relative">
+        {/* 접기/펼치기 토글 버튼 */}
+        <button
+          onClick={() => setIsCollapsed((prev) => !prev)}
+          className="absolute right-2 top-2 w-8 h-8 bg-gray-200 text-gray-600 rounded-full shadow-md hover:bg-gray-300 transition z-10 hidden md:block"
+        >
+          {isCollapsed ? ">" : "<"}
+        </button>
+
+        {/* 내용 */}
+        {!isCollapsed && (
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">필터</h2>
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  검색어
+                </label>
                 <input
                   type="text"
                   placeholder="검색어를 입력하세요"
@@ -132,57 +145,28 @@ export default function DataGrid<T>({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                조회 기간
-              </label>
-              <div>
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  조회 기간
+                </label>
                 <input
                   type="date"
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-3"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-2 bg-white text-sm text-gray-500">
-                      부터
-                    </span>
-                  </div>
-                </div>
                 <input
                   type="date"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mt-3"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-
       {/* 그리드 */}
       <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden min-h-[400px]">
         {loading ? (
