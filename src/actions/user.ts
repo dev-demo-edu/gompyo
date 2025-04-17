@@ -23,7 +23,7 @@ export async function loginUser(formData: FormData) {
       name: "userId",
       value: user.id,
       httpOnly: true,
-      secure: true,
+      // secure: true,
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
