@@ -232,13 +232,13 @@ export default function Dashboard() {
           </Select>
         </FormControl>
 
-        {/* 수입처 셀렉트 */}
-        <FormControl fullWidth>
-          <InputLabel>수입처</InputLabel>
+        {/* 수입회사 셀렉트 */}
+        <FormControl fullWidth className="flex-1 min-w-48">
+          <InputLabel>수입회사</InputLabel>
           <Select
-            value={filters.importer}
-            label="수입처"
+            value={filters.importer || ""}
             onChange={(e) => handleFilterChange("importer", e.target.value)}
+            label="수입회사"
           >
             {selectOptions.importer.map((item) => (
               <MenuItem key={item} value={item}>

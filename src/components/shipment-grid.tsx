@@ -33,7 +33,7 @@ export default function ShipmentGrid() {
       },
       {
         field: "importer",
-        headerName: "수입처",
+        headerName: "수입회사",
         width: 120,
       },
       {

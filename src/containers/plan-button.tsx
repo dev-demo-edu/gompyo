@@ -13,7 +13,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,10 +23,20 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 import { searchItemsByName } from "@/actions/item";
-import { InputAdornment } from "@mui/material";
+import {
+  InputAdornment,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
 import { useSetAtom } from "jotai";
 import { refreshPlanAtom } from "@/states/document-state";
+import { getAllImporters, createImporter } from "@/actions/importer";
+import type { Importer } from "@/types/importer";
+import { CalculationType } from "@/types/importer";
 
 // 계약 정보 스키마
 export const contractSchema = z.object({
@@ -37,7 +47,7 @@ export const contractSchema = z.object({
     .default(new Date().toISOString().split("T")[0]),
   contractParty: z.string().min(1, "공급업체를 입력해주세요."),
   incoterms: z.string().optional(),
-  importer: z.string().min(1, "수입처를 입력해주세요."),
+  importer: z.string().min(1, "수입회사를 입력해주세요."),
   estimatedTimeArrival: z.string().optional(),
   estimatedTimeDeparture: z.string().optional(),
   arrivalPort: z.string().optional(),
@@ -165,14 +175,43 @@ export default function PlanButton() {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // 수입업체 관련 상태 변수
+  const [importers, setImporters] = useState<Importer[]>([]);
+  const [isLoadingImporters, setIsLoadingImporters] = useState(false);
+  const [showAddImporterInput, setShowAddImporterInput] = useState(false);
+  const [newImporterName, setNewImporterName] = useState("");
+  const [isCreatingImporter, setIsCreatingImporter] = useState(false);
+
   const {
     register: registerContract,
     handleSubmit: handleContractSubmit,
     formState: { errors: contractErrors },
     reset: resetContract,
+    setValue: setContractValue,
+    watch: watchContract,
   } = useForm<ContractFormData>({
     resolver: zodResolver(contractSchema),
   });
+
+  // 수입업체 선택값 감시
+  const selectedImporter = watchContract("importer");
+
+  // 컴포넌트 마운트 시 수입업체 목록 로드
+  useEffect(() => {
+    const fetchImporters = async () => {
+      setIsLoadingImporters(true);
+      try {
+        const importerList = await getAllImporters();
+        setImporters(importerList);
+      } catch (error) {
+        console.error("수입회사 목록 불러오기 실패:", error);
+      } finally {
+        setIsLoadingImporters(false);
+      }
+    };
+
+    fetchImporters();
+  }, []);
 
   const {
     register: registerCargo,
@@ -193,6 +232,9 @@ export default function PlanButton() {
     resetCargo();
     setCargoItems([]);
     setIsSubmitting(false);
+    // 수입업체 관련 상태 초기화
+    setShowAddImporterInput(false);
+    setNewImporterName("");
   };
 
   const handleNext = (data: ContractFormData) => {
@@ -290,6 +332,32 @@ export default function PlanButton() {
     setAnchorEl(null);
   };
 
+  // 새 수입업체 생성
+  const handleCreateImporter = async () => {
+    if (!newImporterName.trim()) {
+      return;
+    }
+
+    setIsCreatingImporter(true);
+    try {
+      const newImporter = await createImporter(
+        newImporterName.trim(),
+        CalculationType.STANDARD,
+      );
+
+      if (newImporter) {
+        setImporters((prev) => [...prev, newImporter]);
+        setContractValue("importer", newImporter.id);
+        setNewImporterName("");
+        setShowAddImporterInput(false);
+      }
+    } catch (error) {
+      console.error("수입회사 생성 실패:", error);
+    } finally {
+      setIsCreatingImporter(false);
+    }
+  };
+
   const isSearchOpen = Boolean(anchorEl) && searchResults.length > 0;
   const popperId = isSearchOpen ? "item-search-popper" : undefined;
 
@@ -340,15 +408,97 @@ export default function PlanButton() {
           className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
         />
 
-        <TextField
-          label="수입처"
-          {...registerContract("importer")}
-          error={!!contractErrors.importer}
-          helperText={contractErrors.importer?.message}
-          placeholder="입력해주세요."
-          fullWidth
-          className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-        />
+        {/* 수입회사 필드 */}
+        <Box className="flex flex-col gap-2">
+          {/* 수입회사 선택 드롭다운 */}
+          {!showAddImporterInput ? (
+            <FormControl fullWidth error={!!contractErrors.importer}>
+              <InputLabel
+                id="importer-label"
+                shrink
+                className="bg-background-paper px-1 text-xs font-semibold text-text-secondary font-['Public_Sans']"
+              >
+                수입회사
+              </InputLabel>
+              <Select
+                labelId="importer-label"
+                value={selectedImporter || ""}
+                {...registerContract("importer")}
+                displayEmpty
+                className="h-14 rounded-lg"
+                startAdornment={
+                  isLoadingImporters ? (
+                    <CircularProgress size={20} className="mr-2" />
+                  ) : null
+                }
+              >
+                <MenuItem value="" disabled>
+                  <em>수입회사를 선택해주세요</em>
+                </MenuItem>
+                {importers.map((importer) => (
+                  <MenuItem key={importer.id} value={importer.id}>
+                    {importer.name}
+                  </MenuItem>
+                ))}
+                <MenuItem
+                  onClick={(e) => {
+                    e.preventDefault(); // 선택 이벤트 방지
+                    setShowAddImporterInput(true);
+                  }}
+                  className="text-primary-main border-t border-gray-100"
+                >
+                  <AddIcon fontSize="small" className="mr-2" />
+                  <span>새 수입회사 추가하기</span>
+                </MenuItem>
+              </Select>
+              {contractErrors.importer && (
+                <FormHelperText>
+                  {contractErrors.importer.message}
+                </FormHelperText>
+              )}
+            </FormControl>
+          ) : (
+            /* 새 수입회사 생성 폼 */
+            <Box className="flex items-end gap-2">
+              <TextField
+                label="새 수입회사 이름"
+                value={newImporterName}
+                onChange={(e) => setNewImporterName(e.target.value)}
+                error={isCreatingImporter && !newImporterName.trim()}
+                helperText={
+                  isCreatingImporter && !newImporterName.trim()
+                    ? "수입회사 이름을 입력해주세요."
+                    : ""
+                }
+                fullWidth
+                className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
+              />
+              <Box className="flex gap-2">
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => setShowAddImporterInput(false)}
+                  className="h-14 min-w-[80px]"
+                >
+                  취소
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleCreateImporter}
+                  disabled={isCreatingImporter || !newImporterName.trim()}
+                  className="h-14 min-w-[80px]"
+                >
+                  {isCreatingImporter ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "추가"
+                  )}
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Box>
 
         <TextField
           label="인코텀즈"

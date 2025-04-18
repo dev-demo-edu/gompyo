@@ -24,7 +24,7 @@ export const DEFAULT_COLUMN: ColDef[] = [
   },
   {
     field: "importer",
-    headerName: "수입처",
+    headerName: "수입회사",
     width: 120,
   },
   {

@@ -43,7 +43,7 @@ export default function PlanGrid() {
       },
       importer: {
         field: "importer",
-        headerName: "수입처",
+        headerName: "수입회사",
         width: 120,
       },
       contractParty: {
