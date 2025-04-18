@@ -206,7 +206,17 @@ export default function Dashboard() {
   ];
 
   return (
-    <Stack sx={{ width: "100%", height: "100%", padding: 10 }} spacing={2}>
+    <Stack
+      sx={{
+        width: "100%",
+        height: "100%",
+        padding: 10,
+        "@media (max-width: 600px)": {
+          padding: 3,
+        },
+      }}
+      spacing={2}
+    >
       <Typography variant="h4" sx={{ marginBottom: 10 }}>
         대시보드
       </Typography>

@@ -127,7 +127,7 @@ export default function DetailPage() {
     const currentIndex = statusOrder.indexOf(koreanStatus);
     const totalSteps = statusOrder.length;
     // 전체 너비를 80%로 제한
-    const progressWidth = (currentIndex / (totalSteps - 1)) * 96;
+    const progressWidth = (currentIndex / (totalSteps - 1)) * 100;
     return `${progressWidth}%`;
   };
 
@@ -141,7 +141,7 @@ export default function DetailPage() {
     const index = statusOrder.indexOf(koreanStatus);
     const totalSteps = statusOrder.length;
     // 전체 너비를 80%로 제한하고 시작점을 10%로 설정
-    const position = (index / (totalSteps - 1)) * 96;
+    const position = (index / (totalSteps - 1)) * 100;
     return `${position}%`;
   };
 
@@ -221,9 +221,9 @@ export default function DetailPage() {
           </Box>
 
           {/* 진행 상태 */}
-          <Box className="w-full h-24 relative">
+          <Box className="w-full h-24 p-4 relative">
             <Container maxWidth="xl" className="progress-container h-full">
-              <Box className="relative h-full flex items-center px-4">
+              <Box className="relative h-full flex items-center">
                 {/* 프로그레스 바 배경 */}
                 <Box className="w-full h-2.5 bg-gray-200 rounded-2xl" />
 
@@ -237,7 +237,7 @@ export default function DetailPage() {
                 <Box
                   className="absolute transition-all duration-500 ease-in-out"
                   style={{
-                    left: `calc(${getStatusPosition()} + 16px)`,
+                    left: `calc(${getStatusPosition()})`,
                     top: "50%",
                     transform: "translate(-50%, -50%)",
                   }}
@@ -247,7 +247,7 @@ export default function DetailPage() {
                 <Typography
                   className="absolute text-sm font-normal font-['Public_Sans'] text-emerald-600 whitespace-nowrap transition-all duration-500 ease-in-out"
                   style={{
-                    left: `calc(${getStatusPosition()} + 16px)`,
+                    left: `calc(${getStatusPosition()})`,
                     top: "calc(50% + 20px)",
                     transform: "translateX(-50%)",
                   }}
@@ -264,7 +264,7 @@ export default function DetailPage() {
             {/* 메뉴 버튼 */}
             <Box className="mb-8">
               <Stack
-                direction="row"
+                direction={{ xs: "column", sm: "row" }}
                 spacing={2}
                 justifyContent="space-between"
                 alignItems="center"
