@@ -3,7 +3,7 @@ type Contract = {
   contractNumber: string | null;
   contractDate: string | null;
   contractParty: string | null;
-  importer: string | null;
+  importerId: string | null;
   incoterms: string | null;
 };
 

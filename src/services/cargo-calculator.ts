@@ -159,7 +159,7 @@ export class CargoCalculator {
       contractNumber: contract.contractNumber || "",
       contractDate: contract.contractDate || "",
       contractParty: contract.contractParty || "",
-      importer: contract.importer || "",
+      importerId: contract.importerId || "",
       departurePort: shipment.departurePort || "",
       arrivalPort: shipment.arrivalPort || "",
       estimatedTimeDeparture: shipment.estimatedTimeDeparture || "",

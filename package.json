@@ -12,6 +12,7 @@
     "test:watch": "jest --watch",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/runSeed.ts",
+    "db:migrate-importers": "tsx src/db/migrate-importers.ts",
     "drizzle:test": "tsx drizzle.test.ts",
     "drizzle:push": "drizzle-kit push"
   },
