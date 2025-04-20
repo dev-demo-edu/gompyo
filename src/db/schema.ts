@@ -99,6 +99,7 @@ export const costs = sqliteTable("costs", {
   laborCost: real("labor_cost"),
   transportStorageFee: real("transport_storage_fee"),
   loadingUnloadingFee: real("loading_unloading_fee"),
+  usanceInterest: real("usance_interest"),
   cargoId: text("cargo_id").notNull(),
 });
 
@@ -140,6 +141,8 @@ export const cargos = sqliteTable(
     warehouseEntryDate: text("warehouse_entry_date"),
     progressStatus: text("progress_status"),
     sellingPrice: real("selling_price"),
+    sellingPriceWholesale: real("selling_price_wholesale"),
+    sellingPriceRetail: real("selling_price_retail"),
     margin: real("margin"),
     totalProfit: real("total_profit"),
     purchaseFeeRate: real("purchase_fee_rate"),

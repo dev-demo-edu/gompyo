@@ -42,6 +42,7 @@ export type CalculatedCostDetail = typeof costDetails.$inferSelect & {
 export type CalculatedCost = typeof costs.$inferSelect & {
   contractorCost: number;
   contractorProfit: number;
+  usanceInterest: number;
 };
 
 export type CalculatedCargo = typeof cargos.$inferSelect & {
@@ -239,6 +240,7 @@ export class CargoCalculator {
       laborCost: cost.laborCost || 0,
       transportStorageFee: cost.transportStorageFee || 0,
       loadingUnloadingFee: cost.loadingUnloadingFee || 0,
+      usanceInterest: cost.usanceInterest || 0,
     };
   }
 
@@ -257,6 +259,8 @@ export class CargoCalculator {
       progressStatus: cargo.progressStatus,
       totalCost: this.calculatedValues.totalCost,
       sellingPrice: cargo.sellingPrice || 0,
+      sellingPriceWholesale: cargo.sellingPriceWholesale || 0,
+      sellingPriceRetail: cargo.sellingPriceRetail || 0,
       margin: this.calculatedValues.margin,
       totalProfit: this.calculatedValues.totalProfit,
       purchaseFeeRate: cargo.purchaseFeeRate,

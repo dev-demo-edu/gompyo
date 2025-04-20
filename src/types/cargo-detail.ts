@@ -47,6 +47,7 @@ type ContractAmount = {
   laborCost: number | null;
   transportStorageFee: number | null;
   loadingUnloadingFee: number | null;
+  usanceInterest: number | null;
   cargoId: string;
 };
 
@@ -61,6 +62,8 @@ type Cargo = {
   warehouseEntryDate: string | null;
   progressStatus: string | null;
   sellingPrice: number | null;
+  sellingPriceWholesale: number | null;
+  sellingPriceRetail: number | null;
   margin: number | null;
   totalProfit: number | null;
   purchaseFeeRate: number | null;
