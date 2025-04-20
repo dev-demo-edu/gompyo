@@ -50,7 +50,7 @@ export async function createPlan(
           contractNumber: contractData.contractNumber,
           contractDate: contractData.contractDate,
           contractParty: contractData.contractParty,
-          importer: contractData.importer,
+          importerId: contractData.importer,
           incoterms: contractData.incoterms,
         })
         .returning();

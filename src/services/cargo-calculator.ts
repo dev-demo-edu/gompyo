@@ -8,6 +8,10 @@ import {
   items,
   shipments,
 } from "@/db/schema";
+import {
+  CalculationStrategy,
+  CalculationStrategyFactory,
+} from "./calculation-strategies";
 
 // DB 스키마를 기반으로 계산된 값을 포함하는 타입들
 export type CalculatedContract = typeof contracts.$inferSelect & {
@@ -70,9 +74,13 @@ export class CargoCalculator {
     contractorProfit: number;
     totalCost: number;
   };
+  private calculationStrategy: CalculationStrategy;
 
   constructor(data: CargoDetailData) {
     this.data = data;
+    this.calculationStrategy = CalculationStrategyFactory.createStrategy(
+      data.importer,
+    );
     this.calculatedValues = this.calculateValues();
   }
 
@@ -83,41 +91,50 @@ export class CargoCalculator {
     const sellingPrice = this.data.cargo.sellingPrice || 0;
     const purchaseFeeRate = this.data.cargo.purchaseFeeRate || 0;
 
-    const totalContractPrice = unitPrice * exchangeRate * contractTon;
-    const supplyPrice = (unitPrice * exchangeRate * contractTon) / 1000;
+    // 기본 값 계산 (회사 로직에 영향받지 않는 값들)
+    const totalContractPrice = Math.floor(
+      unitPrice * exchangeRate * contractTon,
+    );
     const costPerKg = (unitPrice * exchangeRate) / 1000;
 
     const contractorCostAmount =
       totalContractPrice +
       (this.data.costDetail.customTaxAmount || 0) +
+      (this.data.costDetail.transferFee || 0) +
       (this.data.costDetail.customsFee || 0) +
       (this.data.costDetail.inspectionFee || 0) +
       (this.data.costDetail.doCharge || 0) +
       (this.data.costDetail.otherCosts || 0);
     const contractorCost = contractorCostAmount / contractTon / 1000;
 
-    const contractorProfit =
-      contractorCost * (1 + purchaseFeeRate / 100) * contractTon * 1000;
-
-    const totalCost =
-      contractorProfit +
-      (this.data.cost.shippingCost || 0) +
-      (this.data.cost.laborCost || 0) +
-      (this.data.cost.transportStorageFee || 0) +
-      (this.data.cost.loadingUnloadingFee || 0);
-
-    const margin = sellingPrice - totalCost / contractTon / 1000;
-    const totalProfit = margin * contractTon * 1000;
+    // 회사별 계산 로직 적용
+    const calculated = this.calculationStrategy.calculate(
+      {
+        contractorCostAmount,
+        costPerKg,
+        totalContractPrice,
+        contractorCost,
+      },
+      {
+        contractTon,
+        sellingPrice,
+        purchaseFeeRate,
+        shippingCost: this.data.cost.shippingCost || 0,
+        laborCost: this.data.cost.laborCost || 0,
+        transportStorageFee: this.data.cost.transportStorageFee || 0,
+        loadingUnloadingFee: this.data.cost.loadingUnloadingFee || 0,
+      },
+    );
 
     return {
-      supplyPrice,
-      margin,
-      totalProfit,
+      supplyPrice: calculated.supplyPrice,
+      margin: calculated.margin,
+      totalProfit: calculated.totalProfit,
       totalContractPrice,
       costPerKg,
       contractorCost,
-      contractorProfit,
-      totalCost,
+      contractorProfit: calculated.contractorProfit,
+      totalCost: calculated.totalCost,
     };
   }
 
@@ -216,9 +233,7 @@ export class CargoCalculator {
       id: cost.id,
       cargoId: cost.cargoId,
       contractorCost: this.calculatedValues.contractorCost,
-      supplyPrice:
-        this.calculatedValues.contractorCost *
-        (1 + (cargo.purchaseFeeRate || 0) / 100),
+      supplyPrice: this.calculatedValues.supplyPrice,
       contractorProfit: this.calculatedValues.contractorProfit,
       shippingCost: cost.shippingCost || 0,
       laborCost: cost.laborCost || 0,
@@ -261,7 +276,7 @@ export class CargoCalculator {
   }
 }
 
-// 기존 함수를 클래스 메서드로 대체
+// mapAndCalculateCargoDetails 함수 수정
 export function mapAndCalculateCargoDetails(
   data: CargoDetailData,
 ): CalculatedCargoDetailData {

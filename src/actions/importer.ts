@@ -6,9 +6,11 @@ import { Importer, CalculationType } from "@/types/importer";
 /**
  * 모든 수입업체 목록을 가져옵니다.
  */
+const importerService = new ImporterService();
+
 export async function getAllImporters(): Promise<Importer[]> {
   try {
-    const importers = await ImporterService.getAllImporters();
+    const importers = await importerService.getAllImporters();
     return importers.map((importer) => ({
       ...importer,
       calculationType: importer.calculationType as CalculationType,
@@ -24,7 +26,7 @@ export async function getAllImporters(): Promise<Importer[]> {
  */
 export async function searchImportersByName(name: string): Promise<Importer[]> {
   try {
-    const importers = await ImporterService.searchImportersByName(name);
+    const importers = await importerService.searchImportersByName(name);
     return importers.map((importer) => ({
       ...importer,
       calculationType: importer.calculationType as CalculationType,
@@ -43,7 +45,7 @@ export async function createImporter(
   calculationType: CalculationType = CalculationType.STANDARD,
 ): Promise<Importer | null> {
   try {
-    const importer = await ImporterService.createImporter(
+    const importer = await importerService.createImporter(
       name,
       calculationType,
     );
@@ -67,7 +69,7 @@ export async function updateImporter(
   data: Partial<Omit<Importer, "id">>,
 ): Promise<Importer | null> {
   try {
-    const importer = await ImporterService.updateImporter(id, data);
+    const importer = await importerService.updateImporter(id, data);
     if (!importer) return null;
 
     return {
@@ -85,7 +87,7 @@ export async function updateImporter(
  */
 export async function deleteImporter(id: string): Promise<boolean> {
   try {
-    const result = await ImporterService.deleteImporter(id);
+    const result = await importerService.deleteImporter(id);
     return !!result;
   } catch (error) {
     console.error("수입업체 삭제 오류:", error);

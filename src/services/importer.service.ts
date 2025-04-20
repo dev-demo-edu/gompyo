@@ -8,7 +8,7 @@ export class ImporterService {
   /**
    * 새로운 수입업체를 생성합니다.
    */
-  static async createImporter(name: string, calculationType: CalculationType) {
+  async createImporter(name: string, calculationType: CalculationType) {
     try {
       const [importer] = await db
         .insert(importers)
@@ -33,7 +33,7 @@ export class ImporterService {
   /**
    * 모든 수입업체를 조회합니다.
    */
-  static async getAllImporters() {
+  async getAllImporters() {
     try {
       const result = await db.query.importers.findMany();
       return result.map((importer) => ({
@@ -50,7 +50,7 @@ export class ImporterService {
   /**
    * ID로 수입업체를 조회합니다.
    */
-  static async getImporterById(id: string) {
+  async getImporterById(id: string) {
     try {
       const importer = await db.query.importers.findFirst({
         where: eq(importers.id, id),
@@ -74,7 +74,7 @@ export class ImporterService {
   /**
    * 수입업체 정보를 업데이트합니다.
    */
-  static async updateImporter(id: string, data: Partial<Omit<Importer, "id">>) {
+  async updateImporter(id: string, data: Partial<Omit<Importer, "id">>) {
     try {
       const [importer] = await db
         .update(importers)
@@ -102,7 +102,7 @@ export class ImporterService {
   /**
    * 수입업체를 삭제합니다.
    */
-  static async deleteImporter(id: string) {
+  async deleteImporter(id: string) {
     try {
       const [importer] = await db
         .delete(importers)
@@ -113,7 +113,9 @@ export class ImporterService {
         throw new Error("수입업체를 찾을 수 없습니다.");
       }
 
-      return importer;
+      return {
+        ...importer,
+      };
     } catch (error) {
       console.error("수입업체 삭제 중 오류:", error);
       throw new Error(
@@ -125,12 +127,11 @@ export class ImporterService {
   /**
    * 이름으로 수입업체를 검색합니다.
    */
-  static async searchImportersByName(name: string) {
+  async searchImportersByName(name: string) {
     try {
       const result = await db.query.importers.findMany({
         where: like(importers.name, `%${name}%`),
       });
-
       return result.map((importer) => ({
         ...importer,
       }));

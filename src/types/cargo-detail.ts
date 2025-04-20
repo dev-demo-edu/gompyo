@@ -1,3 +1,5 @@
+import { CalculationType } from "./importer";
+
 type Contract = {
   id: string;
   contractNumber: string | null;
@@ -65,6 +67,7 @@ type Cargo = {
 };
 
 export type CargoDetailData = {
+  importer: Importer | null;
   contract: Contract;
   payment: Payment;
   costDetail: CostDetail;
@@ -94,4 +97,10 @@ export type Item = {
   originCountry: string | null;
   hsCode: string | null;
   packingUnit: string | null;
+};
+
+export type Importer = {
+  id: string;
+  name: string;
+  calculationType: CalculationType;
 };
