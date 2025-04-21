@@ -17,6 +17,7 @@ export interface CalculationStrategy {
       laborCost: number;
       transportStorageFee: number;
       loadingUnloadingFee: number;
+      usanceInterest: number;
     },
   ): {
     supplyPrice: number;
@@ -44,6 +45,100 @@ export class StandardCalculationStrategy implements CalculationStrategy {
       laborCost: number;
       transportStorageFee: number;
       loadingUnloadingFee: number;
+      usanceInterest: number;
+    },
+  ) {
+    const supplyPrice =
+      baseValues.contractorCost * (1 + data.purchaseFeeRate / 100);
+
+    const contractorProfit =
+      (supplyPrice - baseValues.contractorCost) * data.contractTon * 1000;
+
+    const totalCost =
+      supplyPrice * data.contractTon * 1000 +
+      data.shippingCost +
+      data.laborCost +
+      data.transportStorageFee +
+      data.loadingUnloadingFee;
+
+    const margin = data.sellingPrice - totalCost / data.contractTon / 1000;
+
+    const totalProfit = margin * data.contractTon * 1000;
+
+    return {
+      supplyPrice,
+      contractorProfit,
+      totalCost,
+      margin,
+      totalProfit,
+    };
+  }
+}
+
+export class DnbCalculationStrategy implements CalculationStrategy {
+  calculate(
+    baseValues: {
+      costPerKg: number;
+      totalContractPrice: number;
+      contractorCost: number;
+      contractorCostAmount: number;
+    },
+    data: {
+      contractTon: number;
+      sellingPrice: number;
+      purchaseFeeRate: number;
+      shippingCost: number;
+      laborCost: number;
+      transportStorageFee: number;
+      loadingUnloadingFee: number;
+      usanceInterest: number;
+    },
+  ) {
+    const supplyPrice =
+      (baseValues.contractorCostAmount +
+        data.shippingCost +
+        data.laborCost +
+        data.transportStorageFee +
+        data.loadingUnloadingFee +
+        data.usanceInterest) *
+      (1 + data.purchaseFeeRate / 100);
+
+    const contractorProfit =
+      (supplyPrice - baseValues.contractorCost) * data.contractTon * 1000;
+
+    const totalCost = supplyPrice * data.contractTon * 1000;
+
+    const margin = data.sellingPrice - totalCost / data.contractTon / 1000;
+
+    const totalProfit = margin * data.contractTon * 1000;
+
+    return {
+      supplyPrice,
+      contractorProfit,
+      totalCost,
+      margin,
+      totalProfit,
+    };
+  }
+}
+
+export class NamhaeCalculationStrategy implements CalculationStrategy {
+  calculate(
+    baseValues: {
+      costPerKg: number;
+      totalContractPrice: number;
+      contractorCost: number;
+      contractorCostAmount: number;
+    },
+    data: {
+      contractTon: number;
+      sellingPrice: number;
+      purchaseFeeRate: number;
+      shippingCost: number;
+      laborCost: number;
+      transportStorageFee: number;
+      loadingUnloadingFee: number;
+      usanceInterest: number;
     },
   ) {
     const supplyPrice =
@@ -84,7 +179,10 @@ class CalculationStrategyFactory {
     switch (importer.calculationType) {
       case CalculationType.STANDARD:
         return new StandardCalculationStrategy();
-      // 다른 계산 로직 추가 가능
+      case CalculationType.DNB:
+        return new DnbCalculationStrategy();
+      case CalculationType.NAMHAE:
+        return new NamhaeCalculationStrategy();
       default:
         return new StandardCalculationStrategy();
     }

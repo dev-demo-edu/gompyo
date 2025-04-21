@@ -124,6 +124,7 @@ export class CargoCalculator {
         laborCost: this.data.cost.laborCost || 0,
         transportStorageFee: this.data.cost.transportStorageFee || 0,
         loadingUnloadingFee: this.data.cost.loadingUnloadingFee || 0,
+        usanceInterest: this.data.cost.usanceInterest || 0,
       },
     );
 

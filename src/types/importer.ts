@@ -1,7 +1,7 @@
 export enum CalculationType {
   STANDARD = "STANDARD",
-  SPECIAL_A = "SPECIAL_A",
-  SPECIAL_B = "SPECIAL_B",
+  DNB = "DNB",
+  NAMHAE = "NAMHAE",
 }
 
 export interface Importer {
