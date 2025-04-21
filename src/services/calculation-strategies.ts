@@ -95,12 +95,14 @@ export class DnbCalculationStrategy implements CalculationStrategy {
     },
   ) {
     const supplyPrice =
-      (baseValues.contractorCostAmount +
+      ((baseValues.contractorCostAmount +
         data.shippingCost +
         data.laborCost +
         data.transportStorageFee +
         data.loadingUnloadingFee +
-        data.usanceInterest) *
+        data.usanceInterest) /
+        data.contractTon /
+        1000) *
       (1 + data.purchaseFeeRate / 100);
 
     const contractorProfit =

@@ -23,13 +23,13 @@ export const DEFAULT_COLUMN: ColDef[] = [
     width: 150,
   },
   {
-    field: "importer",
-    headerName: "수입회사",
+    field: "exporter",
+    headerName: "공급업체",
     width: 120,
   },
   {
-    field: "contractParty",
-    headerName: "계약처",
+    field: "importer",
+    headerName: "수입회사",
     width: 120,
   },
   {

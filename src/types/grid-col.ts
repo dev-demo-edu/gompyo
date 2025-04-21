@@ -19,7 +19,7 @@ export interface IShipmentData {
   etd: string;
   arrivalPort: string;
   eta: string;
-  contractParty: string;
+  exporter: string;
   customsDate: string;
 }
 
@@ -28,7 +28,7 @@ export interface IPlanData {
   progressStatus: string;
   contractDate: string;
   importer: string;
-  contractParty: string;
+  exporter: string;
   estimatedTimeArrival: string;
   arrivalPort: string;
   itemName: string;

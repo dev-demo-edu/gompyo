@@ -50,7 +50,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
           id: contract?.id || "",
           contractNumber: contract?.contractNumber || "",
           contractDate: contract?.contractDate || "",
-          contractParty: contract?.contractParty || "",
+          exporter: contract?.exporter || "",
           importer: contract?.importer || "",
           incoterms: contract?.incoterms || "",
         },
@@ -153,7 +153,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
         etd: shipment?.estimatedTimeDeparture || "",
         arrivalPort: shipment?.arrivalPort || "",
         eta: shipment?.estimatedTimeArrival || "",
-        contractParty: contract?.contractParty || "",
+        exporter: contract?.exporter || "",
         customsDate: cargo?.customsClearanceDate || "",
         packingUnit: item?.packingUnit || "",
       };

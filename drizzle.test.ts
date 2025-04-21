@@ -235,7 +235,7 @@ async function testCreateContract() {
     .values({
       contractNumber: "C-2025-001",
       contractDate: new Date().toISOString().split("T")[0],
-      contractParty: "Test Supplier Co.",
+      exporter: "Test Supplier Co.",
       importer: "Gompyo Imports",
       incoterms: "FOB",
     })

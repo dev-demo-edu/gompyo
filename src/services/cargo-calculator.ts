@@ -7,6 +7,7 @@ import {
   cargos,
   items,
   shipments,
+  importers,
 } from "@/db/schema";
 import {
   CalculationStrategy,
@@ -53,6 +54,8 @@ export type CalculatedItem = typeof items.$inferSelect;
 
 export type CalculatedShipment = typeof shipments.$inferSelect;
 
+export type CalculatedImporter = typeof importers.$inferSelect;
+
 export type CalculatedCargoDetailData = {
   contract: CalculatedContract;
   payment: CalculatedPayment;
@@ -61,6 +64,7 @@ export type CalculatedCargoDetailData = {
   cargo: CalculatedCargo;
   item: CalculatedItem;
   shipment: CalculatedShipment;
+  importer: CalculatedImporter;
 };
 
 export class CargoCalculator {
@@ -177,7 +181,7 @@ export class CargoCalculator {
       incoterms: contract.incoterms || "",
       contractNumber: contract.contractNumber || "",
       contractDate: contract.contractDate || "",
-      contractParty: contract.contractParty || "",
+      exporter: contract.exporter || "",
       importerId: contract.importerId || "",
       departurePort: shipment.departurePort || "",
       arrivalPort: shipment.arrivalPort || "",

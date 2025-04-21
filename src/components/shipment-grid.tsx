@@ -124,8 +124,8 @@ export default function ShipmentGrid() {
         width: 150,
       },
       {
-        field: "contractParty",
-        headerName: "계약처",
+        field: "exporter",
+        headerName: "공급업체",
         width: 120,
       },
       {

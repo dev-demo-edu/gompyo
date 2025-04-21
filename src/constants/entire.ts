@@ -1,3 +1,5 @@
+import { Importer } from "@/types/importer";
+
 // 필드 타입 정의
 export type InputFieldType = "text" | "select" | "number" | "date";
 
@@ -24,7 +26,18 @@ interface BaseField {
   endAdornment?: string;
 }
 
-export const contractFields: BaseField[] = [
+// 수입회사 옵션을 설정하는 함수
+export const setImporterOptions = (
+  importers: { id: string; name: string }[],
+) => {
+  return importers.map((importer) => ({
+    value: importer.id,
+    label: importer.name,
+  }));
+};
+
+// contractFields를 생성하는 함수
+export const createContractFields = (importers: Importer[]): BaseField[] => [
   { name: "contractNumber", label: "계약 번호", valueType: "string" },
   {
     name: "contractDate",
@@ -33,13 +46,13 @@ export const contractFields: BaseField[] = [
     type: "date",
   },
   {
-    name: "contractor",
-    label: "계약처",
+    name: "importer",
+    label: "수입회사",
     valueType: "string",
     type: "select",
-    options: [], // 동적으로 채워질 예정
+    options: setImporterOptions(importers),
   },
-  { name: "importer", label: "수입회사", valueType: "string" },
+  { name: "exporter", label: "공급업체", valueType: "string" },
   { name: "incoterms", label: "인코텀즈", valueType: "string" },
   { name: "departurePort", label: "출발항", gridSize: 6, valueType: "string" },
   { name: "arrivalPort", label: "도착항", gridSize: 6, valueType: "string" },
@@ -230,19 +243,19 @@ export const costFields: BaseField[] = [
 export const contractAmountFields: BaseField[] = [
   {
     name: "contractorCost",
-    label: "계약처 원가",
+    label: "수입회사 원가",
     valueType: "number",
     disabled: true,
   },
   {
     name: "supplyPrice",
-    label: "계약처 수급가",
+    label: "수입회사 수급가",
     valueType: "number",
     disabled: true,
   },
   {
     name: "contractorProfit",
-    label: "계약처 이익",
+    label: "수입회사 이익",
     valueType: "number",
     disabled: true,
   },
