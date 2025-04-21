@@ -416,7 +416,10 @@ export default function PlanButton() {
               <InputLabel
                 id="importer-label"
                 shrink
-                className="bg-background-paper px-1 text-xs font-semibold text-text-secondary font-['Public_Sans']"
+                className="bg-white px-4 text-xs font-semibold text-text-secondary font-['Public_Sans']"
+                sx={{
+                  px: "4px",
+                }}
               >
                 수입회사
               </InputLabel>
