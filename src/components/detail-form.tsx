@@ -7,6 +7,7 @@ import {
   IconButton,
   FormControl,
   Autocomplete,
+  InputAdornment,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { Edit, Save, Close } from "@mui/icons-material";
@@ -264,6 +265,23 @@ export default function DetailForm({
         },
       },
       InputLabelProps: field.type === "date" ? { shrink: true } : undefined,
+      InputProps: field.endAdornment
+        ? {
+            endAdornment: (
+              <InputAdornment
+                sx={{
+                  color: "inherit",
+                  "& .MuiTypography-root": {
+                    color: "inherit",
+                  },
+                }}
+                position="end"
+              >
+                $
+              </InputAdornment>
+            ),
+          }
+        : undefined,
     };
     if (field.valueType === "number") {
       if (
@@ -278,7 +296,29 @@ export default function DetailForm({
         }
       }
     }
-    return <TextField {...textFieldProps} />;
+
+    // 나중에 실제 데이터에 endAdornment 데이터가 온다면 아래의 InputProps 제거가 필요함.
+    return (
+      <TextField
+        {...textFieldProps}
+        // 실제 Ardornment 데이터 사용하게되면 삭제하고 위의 TextFieldProps의 InputProps를 사용하시면 됩니다.
+        InputProps={{
+          endAdornment: (
+            <InputAdornment
+              sx={{
+                color: "inherit",
+                "& .MuiTypography-root": {
+                  color: "inherit",
+                },
+              }}
+              position="end"
+            >
+              $
+            </InputAdornment>
+          ),
+        }}
+      />
+    );
   };
 
   return (
