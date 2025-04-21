@@ -4,7 +4,7 @@ type Contract = {
   id: string;
   contractNumber: string | null;
   contractDate: string | null;
-  contractParty: string | null;
+  exporter: string | null;
   importerId: string | null;
   incoterms: string | null;
 };
@@ -70,7 +70,7 @@ type Cargo = {
 };
 
 export type CargoDetailData = {
-  importer: Importer | null;
+  importer: Importer;
   contract: Contract;
   payment: Payment;
   costDetail: CostDetail;

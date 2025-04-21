@@ -45,7 +45,7 @@ export const contractSchema = z.object({
     .string()
     .min(1, "계약 일자를 선택해주세요.")
     .default(new Date().toISOString().split("T")[0]),
-  contractParty: z.string().min(1, "공급업체를 입력해주세요."),
+  exporter: z.string().min(1, "공급업체를 입력해주세요."),
   incoterms: z.string().optional(),
   importer: z.string().min(1, "수입회사를 입력해주세요."),
   estimatedTimeArrival: z.string().optional(),
@@ -400,9 +400,9 @@ export default function PlanButton() {
 
         <TextField
           label="공급업체"
-          {...registerContract("contractParty")}
-          error={!!contractErrors.contractParty}
-          helperText={contractErrors.contractParty?.message}
+          {...registerContract("exporter")}
+          error={!!contractErrors.exporter}
+          helperText={contractErrors.exporter?.message}
           placeholder="입력해주세요."
           fullWidth
           className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"

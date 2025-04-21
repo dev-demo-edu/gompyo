@@ -46,9 +46,9 @@ export default function PlanGrid() {
         headerName: "수입회사",
         width: 120,
       },
-      contractParty: {
-        field: "contractParty",
-        headerName: "계약처",
+      exporter: {
+        field: "exporter",
+        headerName: "공급업체",
         width: 120,
       },
       estimatedTimeArrival: {

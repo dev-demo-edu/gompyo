@@ -4,7 +4,7 @@ export type BarDataItem = {
 };
 
 export type selectDataItem = {
-  contracter: string[];
+  exporter: string[];
   importer: string[];
   item: string[];
 };

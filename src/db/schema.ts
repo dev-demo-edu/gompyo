@@ -76,7 +76,7 @@ export const contracts = sqliteTable("contracts", {
   id: text("id").primaryKey(),
   contractNumber: text("contract_number"),
   contractDate: text("contract_date"),
-  contractParty: text("contract_party"),
+  exporter: text("exporter"),
   importerId: text("importer_id").references(() => importers.id),
   incoterms: text("incoterms"),
 });
