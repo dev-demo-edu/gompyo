@@ -4,10 +4,11 @@ import { CargoService } from "@/services/cargo.service";
 import { ContractService } from "@/services/contract.service";
 import { PaymentService } from "@/services/payment.service";
 import { ShipmentService } from "@/services/shipment.service";
-import { CargoDetailData } from "@/types/cargo-detail";
+import { CargoDetailData, Importer } from "@/types/cargo-detail";
 import { CostDetailService } from "@/services/cost-detail.service";
 import { CostService } from "@/services/cost.service";
 import { ItemsService } from "@/services/items.service";
+import { ImporterService } from "@/services/importer.service";
 import { CalculatedPayment } from "@/services/cargo-calculator";
 
 const cargoService = new CargoService();
@@ -17,6 +18,7 @@ const paymentService = new PaymentService();
 const costService = new CostService();
 const costDetailService = new CostDetailService();
 const itemsService = new ItemsService();
+const importerService = new ImporterService();
 
 export async function getCargoDetail(
   cargoId: string,
@@ -62,7 +64,15 @@ export async function getCargoDetail(
       throw new Error("상품 정보를 찾을 수 없습니다.");
     }
 
+    const importer = await importerService.getImporterById(
+      contract.importerId || "",
+    );
+    if (!importer) {
+      throw new Error("수입사 정보를 찾을 수 없습니다.");
+    }
+
     return {
+      importer: importer as Importer,
       contract,
       payment,
       cost,

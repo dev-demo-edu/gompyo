@@ -1,26 +1,44 @@
+export const importersSeed = [
+  {
+    id: "importer_namhae",
+    name: "남해",
+    calculationType: "NAMHAE",
+  },
+  {
+    id: "importer_dnb",
+    name: "DNB",
+    calculationType: "DNB",
+  },
+  {
+    id: "importer_standard",
+    name: "Standard",
+    calculationType: "STANDARD",
+  },
+];
+
 export const contractsSeed = [
   {
     id: "contract_86307",
     contractNumber: "84856",
     contractDate: "8",
     contractParty: "DNB",
-    importer: "ARJ",
+    importerId: "importer_dnb",
     incoterms: "FOB",
   },
   {
     id: "contract_4725",
     contractNumber: "nan",
     contractDate: "6",
-    contractParty: "DNB",
-    importer: "PG1",
+    contractParty: "남해",
+    importerId: "importer_namhae",
     incoterms: "FOB",
   },
   {
     id: "contract_4728",
     contractNumber: "nan",
     contractDate: "6",
-    contractParty: "DNB",
-    importer: "PG1",
+    contractParty: "남해",
+    importerId: "importer_namhae",
     incoterms: "FOB",
   },
   {
@@ -28,15 +46,15 @@ export const contractsSeed = [
     contractNumber: "nan",
     contractDate: "6",
     contractParty: "DNB",
-    importer: "PG1",
+    importerId: "importer_dnb",
     incoterms: "FOB",
   },
   {
     id: "contract_4734",
     contractNumber: "nan",
     contractDate: "6",
-    contractParty: "DNB",
-    importer: "PG1",
+    contractParty: "Standard",
+    importerId: "importer_standard",
     incoterms: "FOB",
   },
 ];

@@ -39,7 +39,7 @@ export const contractFields: BaseField[] = [
     type: "select",
     options: [], // 동적으로 채워질 예정
   },
-  { name: "importer", label: "수입처", valueType: "string" },
+  { name: "importer", label: "수입회사", valueType: "string" },
   { name: "incoterms", label: "인코텀즈", valueType: "string" },
   { name: "departurePort", label: "출발항", gridSize: 6, valueType: "string" },
   { name: "arrivalPort", label: "도착항", gridSize: 6, valueType: "string" },
@@ -250,11 +250,14 @@ export const contractAmountFields: BaseField[] = [
   { name: "laborCost", label: "작업료", valueType: "number" },
   { name: "transportStorageFee", label: "운송/보관료", valueType: "number" },
   { name: "loadingUnloadingFee", label: "상하차 비용", valueType: "number" },
+  { name: "usanceInterest", label: "Usance 이자(환차손)", valueType: "number" },
 ];
 
 export const expenseFields: BaseField[] = [
   { name: "totalCost", label: "총비용", valueType: "number", disabled: true },
-  { name: "sellingPrice", label: "판매가", valueType: "number" },
+  { name: "sellingPrice", label: "판매가(총판)", valueType: "number" },
+  { name: "sellingPriceWholesale", label: "판매가(도매)", valueType: "number" },
+  { name: "sellingPriceRetail", label: "판매가(소매)", valueType: "number" },
   { name: "margin", label: "마진", valueType: "number", disabled: true },
   { name: "totalProfit", label: "총이익", valueType: "number", disabled: true },
 ];
