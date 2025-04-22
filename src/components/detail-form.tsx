@@ -234,8 +234,12 @@ export default function DetailForm({
               />
             )}
             renderOption={(props, option) => {
+              const { key, ...rest } =
+                props as React.HTMLAttributes<HTMLLIElement> & {
+                  key: React.Key;
+                };
               return (
-                <li {...props}>
+                <li key={key} {...rest}>
                   {typeof option === "string" ? option : option.label}
                 </li>
               );

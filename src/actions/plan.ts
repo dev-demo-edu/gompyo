@@ -24,6 +24,8 @@ import { ItemService } from "@/services/item.service";
 import { CostService } from "@/services/cost.service";
 import { CostDetailService } from "@/services/cost-detail.service";
 import { PaymentService } from "@/services/payment.service";
+import { ImporterService } from "@/services/importer.service";
+import { CalculationType } from "@/types/importer";
 
 type ContractData = z.infer<typeof contractSchema>;
 type CargoItem = z.infer<typeof cargoSchema>;
@@ -245,18 +247,28 @@ export async function getPlanData(): Promise<IPlanData[]> {
     const costService = new CostService();
     const costDetailService = new CostDetailService();
     const paymentService = new PaymentService();
+    const importerService = new ImporterService();
 
     // 각 서비스를 통해 데이터 가져오기
-    const [contracts, shipments, cargos, items, costs, costDetails, payments] =
-      await Promise.all([
-        contractService.findAll(),
-        shipmentService.findAll(),
-        cargoService.findAll(),
-        itemService.findAll(),
-        costService.findAll(),
-        costDetailService.findAll(),
-        paymentService.findAll(),
-      ]);
+    const [
+      contracts,
+      shipments,
+      cargos,
+      items,
+      costs,
+      costDetails,
+      payments,
+      importers,
+    ] = await Promise.all([
+      contractService.findAll(),
+      shipmentService.findAll(),
+      cargoService.findAll(),
+      itemService.findAll(),
+      costService.findAll(),
+      costDetailService.findAll(),
+      paymentService.findAll(),
+      importerService.getAllImporters(),
+    ]);
 
     // 데이터 매핑 및 계산
     return cargos.map((cargo) => {
@@ -267,6 +279,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       const cost = costs.find((c) => c.cargoId === cargo?.id);
       const costDetail = costDetails.find((cd) => cd.costId === cost?.id);
       const payment = payments.find((p) => p.contractId === contract?.id);
+      const importer = importers.find((i) => i.id === contract?.importerId);
 
       // cargo-calculator를 사용하기 위한 데이터 구조로 변환
       const cargoDetailData: CargoDetailData = {
@@ -275,7 +288,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
           contractNumber: contract?.contractNumber || "",
           contractDate: contract?.contractDate || "",
           exporter: contract?.exporter || "",
-          importer: contract?.importer || "",
+          importerId: contract?.importerId || "",
           incoterms: contract?.incoterms || "",
         },
         shipment: {
@@ -304,6 +317,8 @@ export async function getPlanData(): Promise<IPlanData[]> {
           margin: cargo?.margin || 0,
           totalProfit: cargo?.totalProfit || 0,
           purchaseFeeRate: cargo?.purchaseFeeRate || 0,
+          sellingPriceWholesale: cargo?.sellingPriceWholesale || 0,
+          sellingPriceRetail: cargo?.sellingPriceRetail || 0,
         },
         cost: {
           id: cost?.id || "",
@@ -313,6 +328,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
           laborCost: cost?.laborCost || 0,
           transportStorageFee: cost?.transportStorageFee || 0,
           loadingUnloadingFee: cost?.loadingUnloadingFee || 0,
+          usanceInterest: cost?.usanceInterest || 0,
         },
         costDetail: {
           id: costDetail?.id || "",
@@ -350,6 +366,13 @@ export async function getPlanData(): Promise<IPlanData[]> {
           originCountry: item?.originCountry || "",
           hsCode: item?.hsCode || "",
         },
+        importer: {
+          id: importer?.id || "",
+          importerName: importer?.importerName || "",
+          calculationType:
+            (importer?.calculationType as CalculationType) ||
+            CalculationType.STANDARD,
+        },
       };
 
       // cargo-calculator를 사용하여 계산된 데이터 가져오기
@@ -360,7 +383,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
         contractNumber: contract?.contractNumber || "",
         progressStatus: cargo?.progressStatus || "예정",
         contractDate: contract?.contractDate || "",
-        importer: contract?.importer || "",
+        importer: importer?.importerName || "",
         exporter: contract?.exporter || "",
         estimatedTimeArrival: shipment?.estimatedTimeArrival || "",
         arrivalPort: shipment?.arrivalPort || "",

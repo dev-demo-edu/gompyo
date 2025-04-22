@@ -92,6 +92,7 @@ export async function updateCargoDetail(
   updateData: Partial<CargoDetailData> & { option?: "all" | "single" },
 ) {
   try {
+    console.log("updateData", updateData);
     // 계약 정보 업데이트
     if (updateData.contract) {
       await contractService.update(updateData.contract.id, updateData.contract);
@@ -137,6 +138,18 @@ export async function updateCargoDetail(
       );
       await cargoService.update(cargoId, {
         itemsId: newItem.id,
+      });
+    }
+
+    // 수입업체 정보 업데이트
+    if (updateData.importer) {
+      const importer = await importerService.updateImporter(
+        updateData.importer.id,
+        updateData.importer,
+      );
+      console.log("importer", importer);
+      await contractService.update(updateData?.contract?.id || "", {
+        importerId: importer.id,
       });
     }
 

@@ -104,6 +104,6 @@ export type Item = {
 
 export type Importer = {
   id: string;
-  name: string;
+  importerName: string;
   calculationType: CalculationType;
 };
