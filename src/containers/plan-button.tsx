@@ -437,7 +437,7 @@ export default function PlanButton() {
                 </MenuItem>
                 {importers.map((importer) => (
                   <MenuItem key={importer.id} value={importer.id}>
-                    {importer.name}
+                    {importer.importerName}
                   </MenuItem>
                 ))}
                 <MenuItem

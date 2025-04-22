@@ -25,6 +25,13 @@ export class ContractService {
     return await db.select().from(contracts);
   }
 
+  async findByImporterId(importerId: string) {
+    return await db
+      .select()
+      .from(contracts)
+      .where(eq(contracts.importerId, importerId));
+  }
+
   // Update
   async update(id: string, data: Partial<NewContract>) {
     const [contract] = await db

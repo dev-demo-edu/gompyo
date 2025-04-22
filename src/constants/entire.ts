@@ -27,12 +27,10 @@ interface BaseField {
 }
 
 // 수입회사 옵션을 설정하는 함수
-export const setImporterOptions = (
-  importers: { id: string; name: string }[],
-) => {
+export const setImporterOptions = (importers: Importer[]) => {
   return importers.map((importer) => ({
-    value: importer.id,
-    label: importer.name,
+    value: importer.importerName,
+    label: importer.importerName,
   }));
 };
 
@@ -46,7 +44,7 @@ export const createContractFields = (importers: Importer[]): BaseField[] => [
     type: "date",
   },
   {
-    name: "importer",
+    name: "importerName",
     label: "수입회사",
     valueType: "string",
     type: "select",

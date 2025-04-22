@@ -12,7 +12,7 @@ import { defaultColumnOrderFields } from "@/constants/column";
 // Importers table
 export const importers = sqliteTable("importers", {
   id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  importerName: text("importer_name").notNull(),
   calculationType: text("calculation_type").notNull(),
 });
 

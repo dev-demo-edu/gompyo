@@ -3,18 +3,19 @@ import { importers } from "@/db/schema";
 import { nanoid } from "nanoid";
 import { Importer, CalculationType } from "@/types/importer";
 import { eq, like } from "drizzle-orm";
+import { ContractService } from "./contract.service";
 
 export class ImporterService {
   /**
    * 새로운 수입업체를 생성합니다.
    */
-  async createImporter(name: string, calculationType: CalculationType) {
+  async createImporter(importerName: string, calculationType: CalculationType) {
     try {
       const [importer] = await db
         .insert(importers)
         .values({
           id: nanoid(),
-          name,
+          importerName,
           calculationType,
         })
         .returning();
@@ -74,15 +75,30 @@ export class ImporterService {
   /**
    * 수입업체 정보를 업데이트합니다.
    */
-  async updateImporter(id: string, data: Partial<Omit<Importer, "id">>) {
+  async updateImporter(
+    importerName: string,
+    data: Partial<Omit<Importer, "id">>,
+  ) {
+    const contractService = new ContractService();
     try {
-      const [importer] = await db
-        .update(importers)
-        .set({
-          ...data,
-        })
-        .where(eq(importers.id, id))
-        .returning();
+      if (!data.importerName) {
+        throw new Error("이름이 필요합니다.");
+      }
+      const existingImporter = await this.findByName(data.importerName);
+      if (existingImporter) {
+        const contracts = await contractService.findByImporterId(
+          existingImporter.id,
+        );
+        if (contracts.length < 2) {
+          this.deleteImporter(existingImporter.id);
+        }
+        return existingImporter;
+      }
+
+      const importer = await this.createImporter(
+        data.importerName,
+        mapImporter(data.importerName),
+      );
 
       if (!importer) {
         throw new Error("수입업체를 찾을 수 없습니다.");
@@ -130,7 +146,7 @@ export class ImporterService {
   async searchImportersByName(name: string) {
     try {
       const result = await db.query.importers.findMany({
-        where: like(importers.name, `%${name}%`),
+        where: like(importers.importerName, `%${name}%`),
       });
       return result.map((importer) => ({
         ...importer,
@@ -141,5 +157,23 @@ export class ImporterService {
         `수입업체 검색 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
       );
     }
+  }
+  async findByName(importerName: string) {
+    const [importer] = await db
+      .select()
+      .from(importers)
+      .where(eq(importers.importerName, importerName));
+    return importer;
+  }
+}
+
+function mapImporter(importerName: string): CalculationType {
+  switch (importerName) {
+    case "DNB":
+      return CalculationType.DNB;
+    case "남해":
+      return CalculationType.NAMHAE;
+    default:
+      return CalculationType.STANDARD;
   }
 }

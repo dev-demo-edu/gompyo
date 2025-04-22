@@ -6,6 +6,6 @@ export enum CalculationType {
 
 export interface Importer {
   id: string;
-  name: string;
+  importerName: string;
   calculationType: CalculationType;
 }

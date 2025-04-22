@@ -21,6 +21,7 @@ export type CalculatedContract = typeof contracts.$inferSelect & {
   estimatedTimeDeparture: string;
   estimatedTimeArrival: string;
   blNumber: string;
+  importerName: string;
 };
 
 export type CalculatedPayment = typeof payments.$inferSelect & {
@@ -175,6 +176,7 @@ export class CargoCalculator {
   private mapContract(
     contract: CargoDetailData["contract"],
     shipment: CargoDetailData["shipment"],
+    importer: CargoDetailData["importer"],
   ): CalculatedContract {
     return {
       id: contract.id,
@@ -188,6 +190,7 @@ export class CargoCalculator {
       estimatedTimeDeparture: shipment.estimatedTimeDeparture || "",
       estimatedTimeArrival: shipment.estimatedTimeArrival || "",
       blNumber: shipment.blNumber || "",
+      importerName: importer?.importerName || "",
     };
   }
 
@@ -274,7 +277,12 @@ export class CargoCalculator {
 
   public calculate(): CalculatedCargoDetailData {
     return {
-      contract: this.mapContract(this.data.contract, this.data.shipment),
+      importer: this.data.importer,
+      contract: this.mapContract(
+        this.data.contract,
+        this.data.shipment,
+        this.data.importer,
+      ),
       payment: this.mapPayment(this.data.payment),
       costDetail: this.mapAndCalculateCostDetail(this.data.costDetail),
       cost: this.mapAndCalculateContractAmount(this.data.cargo, this.data.cost),
