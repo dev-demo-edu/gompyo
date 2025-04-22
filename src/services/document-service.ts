@@ -141,4 +141,20 @@ export class DocumentService {
     });
     return getSignedUrl(this.s3Client, command, { expiresIn });
   }
+
+  async getUploadPresignedUrl(
+    key: string,
+    contentType: string,
+    expiresIn: number = 300,
+  ) {
+    const command = new PutObjectCommand({
+      Bucket: this.BUCKET_NAME,
+      Key: key,
+      ContentType: contentType,
+    });
+    return getSignedUrl(this.s3Client, command, {
+      expiresIn,
+      signableHeaders: new Set(["content-type", "content-length", "host"]),
+    });
+  }
 }

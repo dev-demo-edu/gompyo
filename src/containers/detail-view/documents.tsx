@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  LinearProgress,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -25,9 +26,10 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import {
   getDocuments,
-  uploadDocuments,
   getSignedDownloadUrl,
   deleteDocument,
+  getUploadPresignedUrl,
+  saveDocument,
 } from "@/actions/document-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useAtom, useAtomValue } from "jotai";
@@ -38,7 +40,7 @@ import {
   Document,
 } from "@/states/document-state";
 import { CircularProgress } from "@mui/material";
-
+import { cargoDetailAtom } from "@/states/detail";
 interface DocumentsProps {
   cargoId: string;
 }
@@ -46,13 +48,28 @@ interface DocumentsProps {
 interface UploadModalProps {
   open: boolean;
   onClose: () => void;
-  onUpload: (files: File[], category: "contract" | "shipment") => void;
+  onUpload: (
+    files: File[],
+    category: "contract" | "shipment",
+    onProgress: (fileName: string, progress: number) => void,
+  ) => void;
   category: "contract" | "shipment";
 }
 
 function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  );
+
+  // 업로드 상태를 초기화하는 함수
+  const resetUploadState = () => {
+    setSelectedFiles([]);
+    setIsUploading(false);
+    setUploadProgress({});
+  };
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -81,20 +98,53 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
     }
   };
 
-  const handleUpload = () => {
-    if (selectedFiles.length > 0) {
-      onUpload(selectedFiles, category);
-      onClose();
-    }
-  };
-
   const handleRemoveFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleUpload = () => {
+    if (selectedFiles.length > 0) {
+      setIsUploading(true);
+      // 파일 이름별로 업로드 진행 상태를 초기화
+      const initialProgress = selectedFiles.reduce<Record<string, number>>(
+        (acc, file) => {
+          acc[file.name] = 0;
+          return acc;
+        },
+        {},
+      );
+      setUploadProgress(initialProgress);
+
+      // 파일 업로드 함수에 파일 목록과 프로그레스 업데이트 함수 전달
+      onUpload(selectedFiles, category, (fileName, progress) => {
+        setUploadProgress((prev) => {
+          const newProgress = { ...prev, [fileName]: progress };
+
+          // 모든 파일이 100%가 되었을 때 업로드 완료 처리
+          if (progress === 100) {
+            const allCompleted = Object.values(newProgress).every(
+              (p) => p === 100,
+            );
+
+            if (allCompleted) {
+              setTimeout(() => {
+                resetUploadState();
+                onClose();
+              }, 1000); // 1초 후 모달 닫기
+            }
+          }
+
+          return newProgress;
+        });
+      });
+    }
+  };
+
   const handleClose = () => {
-    setSelectedFiles([]);
-    onClose();
+    if (!isUploading) {
+      resetUploadState();
+      onClose();
+    }
   };
 
   return (
@@ -115,9 +165,15 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
           <Typography variant="body1" sx={{ mb: 2 }}>
             파일을 드래그하여 업로드하거나
           </Typography>
-          <Button variant="outlined" component="label">
+          <Button variant="outlined" component="label" disabled={isUploading}>
             파일 선택
-            <input type="file" multiple hidden onChange={handleFileSelect} />
+            <input
+              type="file"
+              multiple
+              hidden
+              onChange={handleFileSelect}
+              disabled={isUploading}
+            />
           </Button>
         </Box>
 
@@ -135,6 +191,7 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
                       edge="end"
                       aria-label="delete"
                       onClick={() => handleRemoveFile(index)}
+                      disabled={isUploading}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -149,15 +206,46 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
             </List>
           </Box>
         )}
+
+        {/* 업로드 진행 상태 표시 */}
+        {isUploading && selectedFiles.length > 0 && (
+          <Box className="mt-4">
+            <Typography variant="subtitle2" className="mb-2">
+              업로드 진행 상태
+            </Typography>
+            <List className="max-h-48 overflow-y-auto">
+              {selectedFiles.map((file, index) => (
+                <ListItem key={index}>
+                  <Box sx={{ width: "100%" }}>
+                    <Typography variant="body2">{file.name}</Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={uploadProgress[file.name] || 0}
+                      sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{ mt: 0.5, display: "block" }}
+                    >
+                      {uploadProgress[file.name] || 0}%
+                    </Typography>
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>취소</Button>
+        <Button onClick={handleClose} disabled={isUploading}>
+          취소
+        </Button>
         <Button
           variant="contained"
           onClick={handleUpload}
-          disabled={selectedFiles.length === 0}
+          disabled={selectedFiles.length === 0 || isUploading}
         >
-          업로드 ({selectedFiles.length})
+          {isUploading ? "업로드 중..." : `업로드 (${selectedFiles.length})`}
         </Button>
       </DialogActions>
     </Dialog>
@@ -179,9 +267,36 @@ export default function Documents({ cargoId }: DocumentsProps) {
   const getCurrentDocs = useAtomValue(getCurrentDocuments);
   const getLoadingState = useAtomValue(getIsLoading);
   // const shouldFetch = useAtomValue(shouldFetchDocuments);
+  const [mappedData] = useAtom(cargoDetailAtom);
+  const [contractId, setContractId] = useState<string>("");
+  const [shipmentId, setShipmentId] = useState<string>("");
 
-  const currentDocuments = getCurrentDocs(cargoId, activeTab);
-  const isLoading = getLoadingState(cargoId, activeTab);
+  useEffect(() => {
+    if (!mappedData) return;
+
+    setContractId(mappedData.contract?.id || "");
+    setShipmentId(mappedData.shipment?.id || "");
+
+    if (!contractId && !shipmentId) {
+      toast({
+        title: "오류",
+        description: "관련 문서를 찾을 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    fetchDocuments();
+  }, [mappedData]);
+
+  const currentDocuments = getCurrentDocs(
+    activeTab === "contract" ? contractId : shipmentId,
+    activeTab,
+  );
+  const isLoading = getLoadingState(
+    activeTab === "contract" ? contractId : shipmentId,
+    activeTab,
+  );
 
   useEffect(() => {
     fetchDocuments();
@@ -190,45 +305,57 @@ export default function Documents({ cargoId }: DocumentsProps) {
   const fetchDocuments = async () => {
     const categories: ("contract" | "shipment")[] = ["contract", "shipment"];
     for (const category of categories) {
+      const relatedId =
+        category === "contract"
+          ? mappedData?.contract?.id
+          : mappedData?.shipment?.id;
+      if (!relatedId) {
+        toast({
+          title: "오류",
+          description: "관련 문서를 찾을 수 없습니다.",
+          variant: "destructive",
+        });
+        return;
+      }
       try {
         setDocuments({
-          cargoId,
+          relatedId,
           category,
           documents: [],
           isLoading: true,
         });
 
-        const result = await getDocuments(cargoId, category);
+        const result = await getDocuments(relatedId, category);
         if (result.success && result.documents) {
           setDocuments({
-            cargoId,
+            relatedId,
             category,
             documents: result.documents as Document[],
             isLoading: false,
           });
         } else {
-          console.error("문서 목록 조회 실패:", result.error);
+          console.error(`${category} 문서 목록 조회 실패:`, result.error);
           toast({
             title: "오류",
             description: result.error || "문서 목록을 불러오는데 실패했습니다.",
             variant: "destructive",
           });
           setDocuments({
-            cargoId,
+            relatedId,
             category,
             documents: [],
             isLoading: false,
           });
         }
       } catch (error) {
-        console.error("문서 목록 조회 중 오류 발생:", error);
+        console.error(`${category} 문서 목록 조회 중 오류 발생:`, error);
         toast({
           title: "오류",
           description: "문서 목록을 불러오는 중 오류가 발생했습니다.",
           variant: "destructive",
         });
         setDocuments({
-          cargoId,
+          relatedId,
           category,
           documents: [],
           isLoading: false,
@@ -240,27 +367,102 @@ export default function Documents({ cargoId }: DocumentsProps) {
   const handleUpload = async (
     files: File[],
     category: "contract" | "shipment",
+    onProgress: (fileName: string, progress: number) => void,
   ) => {
     try {
-      const formData = new FormData();
-      files.forEach((file) => formData.append("files", file));
-
-      const result = await uploadDocuments(formData, cargoId, category);
-      if (result.success) {
-        await fetchDocuments();
-      } else {
-        console.error("파일 업로드 실패:", result.error);
+      const relatedId =
+        category === "contract"
+          ? mappedData?.contract?.id
+          : mappedData?.shipment?.id;
+      if (!relatedId) {
         toast({
           title: "오류",
-          description: result.error || "파일 업로드에 실패했습니다.",
+          description: "관련 문서를 찾을 수 없습니다.",
           variant: "destructive",
         });
+        return;
       }
+
+      // 병렬 업로드 처리
+      const uploadPromises = files.map(async (file) => {
+        // 1. Presigned URL 요청
+        const presignedResult = await getUploadPresignedUrl(
+          file.name,
+          file.type,
+          relatedId,
+          category,
+        );
+
+        if (!presignedResult.success || !presignedResult.url) {
+          throw new Error(
+            `파일 ${file.name}의 Presigned URL 생성에 실패했습니다.`,
+          );
+        }
+
+        // 2. XMLHttpRequest로 업로드하여 진행 상태 추적
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+
+          xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = Math.round(
+                (event.loaded / event.total) * 100,
+              );
+              onProgress(file.name, percentComplete);
+            }
+          });
+
+          xhr.open("PUT", presignedResult.url);
+          xhr.setRequestHeader("Content-Type", file.type);
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              onProgress(file.name, 100); // 완료
+              resolve();
+            } else {
+              reject(new Error(`업로드 실패: ${xhr.statusText}`));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error("업로드 중 네트워크 오류 발생"));
+          xhr.send(file);
+        });
+
+        // 3. DB에 메타데이터 저장
+        const saveResult = await saveDocument({
+          name: file.name,
+          type: file.type,
+          url: presignedResult.fileUrl,
+          relatedId,
+          category,
+        });
+
+        if (!saveResult.success) {
+          throw new Error(`파일 ${file.name}의 정보 저장에 실패했습니다.`);
+        }
+      });
+
+      // 업로드 완료 후 대기 시간 없이 바로 다음 단계로 진행
+      await Promise.all(uploadPromises);
+      await fetchDocuments();
+
+      toast({
+        title: "성공",
+        description: `${files.length}개의 파일이 업로드되었습니다.`,
+      });
+
+      // 업로드 완료 후 모달 닫기 및 상태 초기화
+      setTimeout(() => {
+        setIsUploadModalOpen(false);
+      }, 1000); // 1초 후 닫기
     } catch (error) {
       console.error("파일 업로드 중 오류 발생:", error);
       toast({
         title: "오류",
-        description: "파일 업로드 중 오류가 발생했습니다.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "파일 업로드 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     }
@@ -297,14 +499,27 @@ export default function Documents({ cargoId }: DocumentsProps) {
     if (!documentToDelete) return;
 
     try {
-      const result = await deleteDocument(documentToDelete.id, cargoId);
+      // 삭제 중임을 표시하는 메시지로 변경
+      const documentBeingDeleted = documentToDelete;
+
+      // 삭제 요청 전송
+      const result = await deleteDocument(documentBeingDeleted.id, cargoId);
+
+      // 삭제 결과에 따라 처리
       if (result.success) {
+        // 성공적으로 삭제된 후 모달 닫기
+        setIsDeleteDialogOpen(false);
+        setDocumentToDelete(null);
+
+        // 문서 목록 다시 불러오기
         await fetchDocuments();
+
         toast({
           title: "성공",
           description: "문서가 삭제되었습니다.",
         });
       } else {
+        // 오류 발생 시 모달은 열린 상태 유지
         toast({
           title: "오류",
           description: result.error || "문서 삭제에 실패했습니다.",
@@ -318,9 +533,6 @@ export default function Documents({ cargoId }: DocumentsProps) {
         description: "문서 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setDocumentToDelete(null);
     }
   };
 

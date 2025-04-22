@@ -579,6 +579,21 @@ export const shipmentsSeed = [
 
 export const cargosSeed = [
   {
+    id: "cargo_101",
+    itemsId: "item_102",
+    shipmentId: "shipment_102",
+    contractTon: 12.0,
+    sellingPrice: 1850,
+    containerCount: null,
+    customsClearanceDate: "2025-05-06",
+    quarantineDate: "2025-05-06",
+    warehouseEntryDate: "2025-05-06",
+    progressStatus: "AFTER_CUSTOMS",
+    margin: null,
+    totalProfit: null,
+    purchaseFeeRate: 2,
+  },
+  {
     id: "cargo_102",
     itemsId: "item_102",
     shipmentId: "shipment_102",
@@ -867,6 +882,15 @@ export const cargosSeed = [
 
 export const costsSeed = [
   {
+    id: "cost_101",
+    cargoId: "cargo_101",
+    supplyPrice: 32520.0,
+    shippingCost: 0,
+    laborCost: 0,
+    transportStorageFee: 0,
+    loadingUnloadingFee: 0,
+  },
+  {
     id: "cost_102",
     cargoId: "cargo_102",
     supplyPrice: 32520.0,
@@ -1040,6 +1064,19 @@ export const costsSeed = [
 ];
 
 export const costDetailsSeed = [
+  {
+    id: "detail_101",
+    costId: "cost_101",
+    unitPrice: 1355.0,
+    exchangeRate: 1460.0,
+    customsTaxRate: 0.03,
+    customTaxAmount: 0.0,
+    customsFee: 100000.0,
+    inspectionFee: 110000.0,
+    doCharge: 500000.0,
+    otherCosts: null,
+    transferFee: 150000.0,
+  },
   {
     id: "detail_102",
     costId: "cost_102",
