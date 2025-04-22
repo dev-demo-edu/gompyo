@@ -4,7 +4,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "AAA",
     importerId: "importer_dnb",
-    contractDate: "6",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -12,7 +14,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "AAA",
     importerId: "importer_dnb",
-    contractDate: "6",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -20,7 +24,9 @@ export const contractsSeed = [
     contractNumber: "020/EXP/2025",
     exporter: "BBB",
     importerId: "importer_dnb",
-    contractDate: "6",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -28,7 +34,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "BBB",
     importerId: "importer_dnb",
-    contractDate: "5",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -36,7 +44,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "CCC",
     importerId: "importer_dnb",
-    contractDate: "5",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -44,7 +54,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "CCC",
     importerId: "importer_dnb",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -52,7 +64,9 @@ export const contractsSeed = [
     contractNumber: "2월 구매 고려",
     exporter: "DDD",
     importerId: "importer_dnb",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -60,7 +74,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "EEE",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -68,7 +84,9 @@ export const contractsSeed = [
     contractNumber: "84887",
     exporter: "FFF",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -76,7 +94,9 @@ export const contractsSeed = [
     contractNumber: "84887",
     exporter: "GGG",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -84,7 +104,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "HHH",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -92,7 +114,9 @@ export const contractsSeed = [
     contractNumber: "SCA0039185",
     exporter: "III",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -100,7 +124,9 @@ export const contractsSeed = [
     contractNumber: "2월 구매 연구",
     exporter: "JJJ",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -108,7 +134,9 @@ export const contractsSeed = [
     contractNumber: "NaN",
     exporter: "KKK",
     importerId: "importer_namhae",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -116,7 +144,9 @@ export const contractsSeed = [
     contractNumber: "84886",
     exporter: "KKK",
     importerId: "importer_standard",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -124,7 +154,9 @@ export const contractsSeed = [
     contractNumber: "84886",
     exporter: "LLL",
     importerId: "importer_standard",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -132,7 +164,9 @@ export const contractsSeed = [
     contractNumber: "1월 구매",
     exporter: "MMM",
     importerId: "importer_standard",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -140,7 +174,9 @@ export const contractsSeed = [
     contractNumber: "84889",
     exporter: "NNN",
     importerId: "importer_standard",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
   {
@@ -148,7 +184,9 @@ export const contractsSeed = [
     contractNumber: "84889",
     exporter: "OOO",
     importerId: "importer_standard",
-    contractDate: "4",
+    contractDate: new Date(new Date().setMonth(new Date().getMonth() - 0))
+      .toISOString()
+      .split("T")[0],
     incoterms: "FOB",
   },
 ];
