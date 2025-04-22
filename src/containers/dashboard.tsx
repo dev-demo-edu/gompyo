@@ -241,13 +241,13 @@ export default function Dashboard() {
           </Select>
         </FormControl>
 
-        {/* 수입회사 셀렉트 */}
-        <FormControl fullWidth className="flex-1 min-w-48">
-          <InputLabel>수입회사</InputLabel>
+        {/* 공급처 셀렉트 */}
+        <FormControl fullWidth>
+          <InputLabel>공급처</InputLabel>
           <Select
-            value={filters.exporter || ""}
+            value={filters.exporter}
+            label="공급처"
             onChange={(e) => handleFilterChange("exporter", e.target.value)}
-            label="수입회사"
           >
             {selectOptions.exporter.map((item) => (
               <MenuItem key={item} value={item}>
