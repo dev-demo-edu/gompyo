@@ -31,7 +31,7 @@ export async function uploadDocuments(
     }
 
     const uploadPromises = files.map(async (file) => {
-      const key = `documents/${relatedId}/${category}/${Date.now()}-${file.name}`;
+      const key = `documents/${category}/${relatedId}/${Date.now()}-${file.name}`;
 
       await documentService.uploadToS3(file, key);
 
@@ -62,7 +62,7 @@ export async function deleteDocument(documentId: string, relatedId: string) {
       return { success: false, error: "문서를 찾을 수 없습니다." };
     }
 
-    const s3Key = document.s3Url.split(".com/")[1];
+    const s3Key = `documents/${document.documentCategory}/${relatedId}/${document.s3Url.split("/").pop()}`;
     await documentService.deleteFromS3(s3Key);
     await documentService.deleteDocument(documentId);
 
@@ -94,8 +94,8 @@ export async function getSignedDownloadUrl(documentId: string) {
       return { success: false, error: "문서를 찾을 수 없습니다." };
     }
 
-    const key = document.s3Url.split(".com/")[1];
-    const signedUrl = await documentService.getSignedUrl(key);
+    const s3Key = `documents/${document.documentCategory}/${document.relatedId}/${document.s3Url.split("/").pop()}`;
+    const signedUrl = await documentService.getSignedUrl(s3Key);
     return { success: true, url: signedUrl };
   } catch (error) {
     console.error("다운로드 URL 생성 중 오류 발생:", error);

@@ -38,7 +38,7 @@ import {
   Document,
 } from "@/states/document-state";
 import { CircularProgress } from "@mui/material";
-
+import { cargoDetailAtom } from "@/states/detail";
 interface DocumentsProps {
   cargoId: string;
 }
@@ -179,9 +179,36 @@ export default function Documents({ cargoId }: DocumentsProps) {
   const getCurrentDocs = useAtomValue(getCurrentDocuments);
   const getLoadingState = useAtomValue(getIsLoading);
   // const shouldFetch = useAtomValue(shouldFetchDocuments);
+  const [mappedData] = useAtom(cargoDetailAtom);
+  const [contractId, setContractId] = useState<string>("");
+  const [shipmentId, setShipmentId] = useState<string>("");
 
-  const currentDocuments = getCurrentDocs(cargoId, activeTab);
-  const isLoading = getLoadingState(cargoId, activeTab);
+  useEffect(() => {
+    if (!mappedData) return;
+
+    setContractId(mappedData.contract?.id || "");
+    setShipmentId(mappedData.shipment?.id || "");
+
+    if (!contractId && !shipmentId) {
+      toast({
+        title: "오류",
+        description: "관련 문서를 찾을 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    fetchDocuments();
+  }, [mappedData]);
+
+  const currentDocuments = getCurrentDocs(
+    activeTab === "contract" ? contractId : shipmentId,
+    activeTab,
+  );
+  const isLoading = getLoadingState(
+    activeTab === "contract" ? contractId : shipmentId,
+    activeTab,
+  );
 
   useEffect(() => {
     fetchDocuments();
@@ -190,45 +217,57 @@ export default function Documents({ cargoId }: DocumentsProps) {
   const fetchDocuments = async () => {
     const categories: ("contract" | "shipment")[] = ["contract", "shipment"];
     for (const category of categories) {
+      const relatedId =
+        category === "contract"
+          ? mappedData?.contract?.id
+          : mappedData?.shipment?.id;
+      if (!relatedId) {
+        toast({
+          title: "오류",
+          description: "관련 문서를 찾을 수 없습니다.",
+          variant: "destructive",
+        });
+        return;
+      }
       try {
         setDocuments({
-          cargoId,
+          relatedId,
           category,
           documents: [],
           isLoading: true,
         });
 
-        const result = await getDocuments(cargoId, category);
+        const result = await getDocuments(relatedId, category);
         if (result.success && result.documents) {
           setDocuments({
-            cargoId,
+            relatedId,
             category,
             documents: result.documents as Document[],
             isLoading: false,
           });
         } else {
-          console.error("문서 목록 조회 실패:", result.error);
+          console.error(`${category} 문서 목록 조회 실패:`, result.error);
           toast({
             title: "오류",
             description: result.error || "문서 목록을 불러오는데 실패했습니다.",
             variant: "destructive",
           });
           setDocuments({
-            cargoId,
+            relatedId,
             category,
             documents: [],
             isLoading: false,
           });
         }
       } catch (error) {
-        console.error("문서 목록 조회 중 오류 발생:", error);
+        console.error(`${category} 문서 목록 조회 중 오류 발생:`, error);
         toast({
           title: "오류",
           description: "문서 목록을 불러오는 중 오류가 발생했습니다.",
           variant: "destructive",
         });
         setDocuments({
-          cargoId,
+          relatedId,
           category,
           documents: [],
           isLoading: false,
@@ -245,7 +284,20 @@ export default function Documents({ cargoId }: DocumentsProps) {
       const formData = new FormData();
       files.forEach((file) => formData.append("files", file));
 
-      const result = await uploadDocuments(formData, cargoId, category);
+      const relatedId =
+        category === "contract"
+          ? mappedData?.contract?.id
+          : mappedData?.shipment?.id;
+      if (!relatedId) {
+        toast({
+          title: "오류",
+          description: "관련 문서를 찾을 수 없습니다.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const result = await uploadDocuments(formData, relatedId, category);
       if (result.success) {
         await fetchDocuments();
       } else {

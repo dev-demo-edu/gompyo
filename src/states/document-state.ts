@@ -29,19 +29,19 @@ export const getDocumentsAtom = atom(
     get,
     set,
     {
-      cargoId,
+      relatedId,
       category,
       documents,
       isLoading,
     }: {
-      cargoId: string;
+      relatedId: string;
       category: "contract" | "shipment";
       documents: Document[];
       isLoading: boolean;
     },
   ) => {
     const currentState = get(documentsStateAtom);
-    const key = `${cargoId}-${category}`;
+    const key = `${relatedId}-${category}`;
 
     set(documentsStateAtom, {
       ...currentState,
@@ -56,24 +56,24 @@ export const getDocumentsAtom = atom(
 
 export const getCurrentDocuments = atom((get) => {
   const state = get(documentsStateAtom);
-  return (cargoId: string, category: "contract" | "shipment") => {
-    const key = `${cargoId}-${category}`;
+  return (relatedId: string, category: "contract" | "shipment") => {
+    const key = `${relatedId}-${category}`;
     return state[key]?.documents || [];
   };
 });
 
 export const getIsLoading = atom((get) => {
   const state = get(documentsStateAtom);
-  return (cargoId: string, category: "contract" | "shipment") => {
-    const key = `${cargoId}-${category}`;
+  return (relatedId: string, category: "contract" | "shipment") => {
+    const key = `${relatedId}-${category}`;
     return state[key]?.isLoading || false;
   };
 });
 
 // export const shouldFetchDocuments = atom((get) => {
 //   const state = get(documentsStateAtom);
-//   return (cargoId: string, category: "contract" | "shipment") => {
-//     const key = `${cargoId}-${category}`;
+//   return (relatedId: string, category: "contract" | "shipment") => {
+//     const key = `${relatedId}-${category}`;
 //     const currentState = state[key];
 
 //     // 상태가 없거나 마지막 fetch 이후 5분이 지났으면 fetch
