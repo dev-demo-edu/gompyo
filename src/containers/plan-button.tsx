@@ -40,7 +40,7 @@ import { CalculationType } from "@/types/importer";
 
 // 계약 정보 스키마
 export const contractSchema = z.object({
-  contractNumber: z.string().min(1, "계약 번호를 입력해주세요."),
+  contractNumber: z.string().optional(),
   contractDate: z
     .string()
     .min(1, "계약 일자를 선택해주세요.")
@@ -107,6 +107,12 @@ export const cargoSchema = z.object({
     .min(0, "0 이상의 숫자를 입력해주세요")
     .default(0),
   otherCosts: z.coerce
+    .number({
+      message: "숫자를 입력해주세요",
+    })
+    .min(0, "0 이상의 숫자를 입력해주세요")
+    .default(0),
+  purchaseFeeRate: z.coerce
     .number({
       message: "숫자를 입력해주세요",
     })
@@ -827,11 +833,11 @@ export default function PlanButton() {
           />
 
           <TextField
-            label="매입 수수료"
+            label="매입 수수료율"
             type="text"
-            {...registerCargo("shippingCost")}
-            error={!!cargoErrors.shippingCost}
-            helperText={cargoErrors.shippingCost?.message}
+            {...registerCargo("purchaseFeeRate")}
+            error={!!cargoErrors.purchaseFeeRate}
+            helperText={cargoErrors.purchaseFeeRate?.message}
             placeholder="입력해주세요."
             fullWidth
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
