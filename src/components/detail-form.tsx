@@ -23,7 +23,7 @@ interface FieldConfig {
   placeholder?: string;
   gridSize?: number;
   hasEditButton?: boolean;
-  type?: "text" | "select" | "number" | "date";
+  type?: "text" | "select" | "number" | "date" | "textarea";
   options?: { value: string; label: string }[];
   valueType: FieldValueType;
   disabled?: boolean;
@@ -257,7 +257,7 @@ export default function DetailForm({
       className: "bg-background-paper",
       disabled: !isEditing || field.disabled,
       value: formData[field.name] ?? "",
-      type: field.type,
+      type: field.type === "textarea" ? undefined : field.type,
       onChange: handleTextChange(field.name),
       error: !!formErrors[field.name],
       helperText: formErrors[field.name],
@@ -286,6 +286,8 @@ export default function DetailForm({
             ),
           }
         : undefined,
+      multiline: field.type === "textarea",
+      rows: field.type === "textarea" ? 4 : undefined,
     };
     if (field.valueType === "number") {
       if (

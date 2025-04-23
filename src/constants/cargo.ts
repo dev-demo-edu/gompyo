@@ -138,3 +138,12 @@ export const statusFields: BaseField[] = [
     valueType: "string",
   },
 ];
+
+// 비고 필드 정의
+export const remarkField: BaseField = {
+  name: "remark",
+  label: "비고",
+  gridSize: 12,
+  valueType: "string",
+  type: "textarea",
+};

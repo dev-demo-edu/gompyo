@@ -1,7 +1,7 @@
 import { Importer } from "@/types/importer";
 
 // 필드 타입 정의
-export type InputFieldType = "text" | "select" | "number" | "date";
+export type InputFieldType = "text" | "select" | "number" | "date" | "textarea";
 
 // 가능한 값 타입들을 정의
 export type FieldValueType = "string" | "number" | "date";

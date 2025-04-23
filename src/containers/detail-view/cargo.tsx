@@ -7,6 +7,7 @@ import {
   statusFields,
   PackagingData,
   StatusData,
+  remarkField,
 } from "@/constants/cargo";
 import { useAtom } from "jotai";
 import { useToast } from "@/hooks/use-toast";
@@ -125,6 +126,8 @@ export default function Cargo({ cargoId }: CargoProps) {
   const statusData = transformDataForForm(
     transformStatusData(mappedData.cargo, mappedData.shipment),
   );
+  // 비고 데이터 변환
+  const remarkData = { remark: mappedData.cargo?.remark || "" };
 
   return (
     <>
@@ -145,6 +148,12 @@ export default function Cargo({ cargoId }: CargoProps) {
           title="상태 정보"
           fields={statusFields}
           data={statusData}
+          onSave={(formData) => handleDataUpdate(formData)}
+        />
+        <DetailForm
+          title="비고"
+          fields={[remarkField]}
+          data={remarkData}
           onSave={(formData) => handleDataUpdate(formData)}
         />
       </div>
