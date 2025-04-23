@@ -328,7 +328,7 @@ export default function DetailForm({
                 }}
                 position="end"
               >
-                $
+                {field.endAdornment}
               </InputAdornment>
             ),
           }
@@ -350,28 +350,7 @@ export default function DetailForm({
       }
     }
 
-    // 나중에 실제 데이터에 endAdornment 데이터가 온다면 아래의 InputProps 제거가 필요함.
-    return (
-      <TextField
-        {...textFieldProps}
-        // 실제 Ardornment 데이터 사용하게되면 삭제하고 위의 TextFieldProps의 InputProps를 사용하시면 됩니다.
-        InputProps={{
-          endAdornment: (
-            <InputAdornment
-              sx={{
-                color: "inherit",
-                "& .MuiTypography-root": {
-                  color: "inherit",
-                },
-              }}
-              position="end"
-            >
-              $
-            </InputAdornment>
-          ),
-        }}
-      />
-    );
+    return <TextField {...textFieldProps} />;
   };
 
   return (
