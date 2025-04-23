@@ -15,7 +15,9 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { FieldValue, FieldValueType } from "@/constants/entire";
 import { useAtom } from "jotai";
-import { cancelEditAtom } from "@/states/detail";
+import { cancelEditAtom, cargoDetailAtom } from "@/states/detail";
+import { addChangeLog } from "@/actions/detail-view/history";
+import { userAtom } from "@/states/user";
 
 interface FieldConfig {
   name: string;
@@ -51,6 +53,8 @@ export default function DetailForm({
   const [formData, setFormData] = useState<Record<string, string | null>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [, cancelEdit] = useAtom(cancelEditAtom);
+  const [currentUser] = useAtom(userAtom);
+  const [cargoData] = useAtom(cargoDetailAtom);
 
   useEffect(() => {
     const initialData = Object.entries(data).reduce(
@@ -125,7 +129,39 @@ export default function DetailForm({
     return z.object(shape);
   };
 
-  const handleSave = () => {
+  // 변경사항 추적 함수
+  const trackChanges = async (
+    oldData: Record<string, FieldValue>,
+    newData: Record<string, FieldValue>,
+  ) => {
+    const changes: Array<{ field: string; from: string; to: string }> = [];
+
+    fields.forEach((field) => {
+      const oldValue = oldData[field.name];
+      const newValue = newData[field.name];
+
+      if (oldValue !== newValue?.toString()) {
+        changes.push({
+          field: field.label,
+          from: oldValue?.toString() ?? "",
+          to: newValue?.toString() ?? "",
+        });
+      }
+    });
+
+    // 변경사항이 있는 경우에만 히스토리 기록
+    if (changes.length > 0) {
+      console.log("changes", changes);
+      console.log("currentUser", currentUser);
+      await addChangeLog({
+        targetId: cargoData?.cargo.id || "",
+        user: currentUser?.name || "",
+        changes,
+      });
+    }
+  };
+
+  const handleSave = async () => {
     const schema = generateZodSchemaFromFields(fields);
     const parsed = schema.safeParse(formData);
 
@@ -151,6 +187,17 @@ export default function DetailForm({
         },
         {} as Record<string, FieldValue>,
       );
+      const oldData = Object.entries(data).reduce(
+        (acc, [key, value]) => {
+          acc[key] = value?.toString() ?? null;
+          return acc;
+        },
+        {} as Record<string, string | null>,
+      );
+
+      // 변경사항 추적
+      await trackChanges(oldData, convertedData);
+
       onSave(convertedData);
     }
     setIsEditing(false);

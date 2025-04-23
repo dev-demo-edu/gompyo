@@ -92,7 +92,6 @@ export async function updateCargoDetail(
   updateData: Partial<CargoDetailData> & { option?: "all" | "single" },
 ) {
   try {
-    console.log("updateData", updateData);
     // 계약 정보 업데이트
     if (updateData.contract) {
       await contractService.update(updateData.contract.id, updateData.contract);

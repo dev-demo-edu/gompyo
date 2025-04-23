@@ -17,7 +17,6 @@ import {
   updateCargoAtom,
 } from "@/states/detail";
 import { Box, CircularProgress } from "@mui/material";
-import { useEffect } from "react";
 import { FieldValue } from "@/constants/entire";
 import { CalculatedCargoDetailData } from "@/services/cargo-calculator";
 
@@ -75,10 +74,6 @@ export default function Cargo({ cargoId }: CargoProps) {
   const [loading] = useAtom(cargoLoadingAtom);
   const [, updateCargo] = useAtom(updateCargoAtom);
   const { toast, ToastComponent } = useToast();
-
-  useEffect(() => {
-    console.log("mappedData:", mappedData);
-  }, [mappedData]);
 
   const handleDataUpdate = async (formData: Record<string, FieldValue>) => {
     if (!mappedData) return;

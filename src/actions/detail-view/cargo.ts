@@ -3,12 +3,14 @@
 import { CargoService } from "@/services/cargo.service";
 import { ShipmentService } from "@/services/shipment.service";
 import { ItemsService } from "@/services/items.service";
+import { getUser } from "@/actions/user";
 
 const cargoService = new CargoService();
 const shipmentService = new ShipmentService();
 const itemsService = new ItemsService();
 
 import { getCargoDetail } from "./common";
+import { addStatusLog } from "./history";
 
 export async function updateCargoItemInfo(
   cargoId: string,
@@ -79,6 +81,13 @@ export async function updateCargoStatusInfo(
     if (!cargo) {
       throw new Error("화물 정보를 찾을 수 없습니다.");
     }
+
+    const currentUser = await getUser();
+    await addStatusLog({
+      targetId: cargoId,
+      user: currentUser?.name || "",
+      status: data.status,
+    });
 
     // cargo 테이블 업데이트
     await cargoService.update(cargoId, {
