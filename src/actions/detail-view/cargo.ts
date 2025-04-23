@@ -4,6 +4,7 @@ import { CargoService } from "@/services/cargo.service";
 import { ShipmentService } from "@/services/shipment.service";
 import { ItemsService } from "@/services/items.service";
 import { getUser } from "@/actions/user";
+import { statusMapping } from "@/constants/cargo-status";
 
 const cargoService = new CargoService();
 const shipmentService = new ShipmentService();
@@ -86,7 +87,7 @@ export async function updateCargoStatusInfo(
     await addStatusLog({
       targetId: cargoId,
       user: currentUser?.name || "",
-      status: data.status,
+      status: statusMapping[data.status as keyof typeof statusMapping],
     });
 
     // cargo 테이블 업데이트

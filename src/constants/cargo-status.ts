@@ -8,8 +8,8 @@ export enum CargoStatus {
   BEFORE_QUARANTINE = "검역전",
   QUARANTINING = "검역중",
   CUSTOMS_DECLARING = "세관신고중",
-  BEFORE_CUSTOMS = "통관전",
-  AFTER_CUSTOMS = "통관후",
+  DONE_ARRIVAL = "입항완료",
+  AFTER_CUSTOMS = "통관완료",
   SELLING = "판매중",
 }
 
@@ -23,7 +23,7 @@ export const statusMapping: Record<string, CargoStatus> = {
   BEFORE_QUARANTINE: CargoStatus.BEFORE_QUARANTINE,
   QUARANTINING: CargoStatus.QUARANTINING,
   CUSTOMS_DECLARING: CargoStatus.CUSTOMS_DECLARING,
-  BEFORE_CUSTOMS: CargoStatus.BEFORE_CUSTOMS,
+  DONE_ARRIVAL: CargoStatus.DONE_ARRIVAL,
   AFTER_CUSTOMS: CargoStatus.AFTER_CUSTOMS,
   SELLING: CargoStatus.SELLING,
 };
@@ -38,7 +38,7 @@ export const reverseStatusMapping: Partial<Record<CargoStatus, string>> = {
   [CargoStatus.BEFORE_QUARANTINE]: "BEFORE_QUARANTINE",
   [CargoStatus.QUARANTINING]: "QUARANTINING",
   [CargoStatus.CUSTOMS_DECLARING]: "CUSTOMS_DECLARING",
-  [CargoStatus.BEFORE_CUSTOMS]: "BEFORE_CUSTOMS",
+  [CargoStatus.DONE_ARRIVAL]: "DONE_ARRIVAL",
   [CargoStatus.AFTER_CUSTOMS]: "AFTER_CUSTOMS",
   [CargoStatus.SELLING]: "SELLING",
 };

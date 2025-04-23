@@ -26,7 +26,7 @@ import { CostDetailService } from "@/services/cost-detail.service";
 import { PaymentService } from "@/services/payment.service";
 import { ImporterService } from "@/services/importer.service";
 import { CalculationType } from "@/types/importer";
-
+import { statusMapping } from "@/constants/cargo-status";
 type ContractData = z.infer<typeof contractSchema>;
 type CargoItem = z.infer<typeof cargoSchema>;
 
@@ -305,6 +305,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
         },
         cargo: {
           id: cargo?.id || "",
+          remark: cargo?.remark || "",
           itemsId: cargo?.itemsId || "",
           shipmentId: shipment?.id || "",
           containerCount: cargo?.containerCount || 0,
@@ -381,7 +382,9 @@ export async function getPlanData(): Promise<IPlanData[]> {
       return {
         id: cargo?.id || "",
         contractNumber: contract?.contractNumber || "",
-        progressStatus: cargo?.progressStatus || "예정",
+        progressStatus:
+          statusMapping[cargo?.progressStatus as keyof typeof statusMapping] ||
+          "예정",
         contractDate: contract?.contractDate || "",
         importer: importer?.importerName || "",
         exporter: contract?.exporter || "",
