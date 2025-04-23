@@ -35,6 +35,7 @@ async function runSeed() {
       id: nanoid(),
       email: "admin@example.com",
       password: "password123",
+      name: "루비짱",
       columnOrder: JSON.stringify(defaultColumnOrderFields),
     });
 

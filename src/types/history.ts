@@ -1,16 +1,14 @@
-export interface HistoryItem {
+export interface HistoryLog {
   id: string;
-  title: string;
-  description: string;
-  time: string;
-  isActive: boolean;
-  type: "contract" | "payment" | "shipment" | "completion";
-}
-
-export interface HistoryData {
-  orderTime: string;
-  paymentTime: string;
-  deliveryTime: string;
-  completionTime: string;
-  historyItems: HistoryItem[];
+  targetType: string;
+  targetId: string;
+  type: string;
+  user: string;
+  changes: {
+    field: string;
+    from: string;
+    to: string;
+  }[];
+  status: string;
+  createdAt: Date;
 }

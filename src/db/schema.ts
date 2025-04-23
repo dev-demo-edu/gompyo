@@ -108,6 +108,7 @@ export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   email: text("email"),
   password: text("password"),
+  name: text("name"),
   columnOrder: text("column_order").default(
     JSON.stringify(defaultColumnOrderFields),
   ),
@@ -165,6 +166,18 @@ export const documents = sqliteTable("documents", {
   uploadDate: text("upload_date").notNull(),
   relatedId: text("related_id").notNull(),
   documentCategory: text("document_category").notNull(),
+});
+
+// History logs table
+export const historyLogs = sqliteTable("history_logs", {
+  id: text("id").primaryKey(),
+  targetType: text("target_type"),
+  targetId: text("target_id"),
+  type: text("type"), // "change" | "status"
+  user: text("user"),
+  changes: text("changes"), // ← 단일이든 다중이든 여기만 씀
+  status: text("status"), // ← 상태 변화일 경우만 사용
+  createdAt: text("created_at"),
 });
 
 // Importers relations
@@ -272,4 +285,9 @@ export const documentsRelations = relations(documents, ({ one }) => ({
     references: [shipments.id],
     relationName: "shipment_documents",
   }),
+}));
+
+// History logs relations
+export const historyLogsRelations = relations(historyLogs, ({}) => ({
+  // 여기서는 특별한 관계 설정이 필요 없음 (targetType과 targetId로 동적 참조)
 }));

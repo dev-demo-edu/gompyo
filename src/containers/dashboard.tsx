@@ -134,11 +134,6 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // DEBUG
-  useEffect(() => {
-    console.log(totalData);
-  }, [totalData]);
-
   // 필터 변경 핸들러
   const handleFilterChange = (
     key: keyof typeof filters,
