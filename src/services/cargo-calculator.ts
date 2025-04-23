@@ -272,6 +272,7 @@ export class CargoCalculator {
       margin: this.calculatedValues.margin,
       totalProfit: this.calculatedValues.totalProfit,
       purchaseFeeRate: cargo.purchaseFeeRate,
+      remark: cargo.remark,
     };
   }
 

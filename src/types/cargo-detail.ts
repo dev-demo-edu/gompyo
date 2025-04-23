@@ -67,6 +67,7 @@ type Cargo = {
   margin: number | null;
   totalProfit: number | null;
   purchaseFeeRate: number | null;
+  remark: string | null;
 };
 
 export type CargoDetailData = {

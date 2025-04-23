@@ -150,7 +150,9 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {category === "contract" ? "계약단 서류 업로드" : "선적단 서류 업로드"}
+        {category === "contract"
+          ? "계약 관련 서류 업로드"
+          : "선적 관련 서류 업로드"}
       </DialogTitle>
       <DialogContent>
         <Box
@@ -571,8 +573,8 @@ export default function Documents({ cargoId }: DocumentsProps) {
               onClick={() => setIsUploadModalOpen(true)}
             >
               {activeTab === "contract"
-                ? "계약단 서류 업로드"
-                : "선적단 서류 업로드"}
+                ? "계약 관련 서류 업로드"
+                : "선적 관련 서류 업로드"}
             </Button>
           </Stack>
 
@@ -581,15 +583,17 @@ export default function Documents({ cargoId }: DocumentsProps) {
             onChange={(_, newValue) => setActiveTab(newValue)}
             className="border-b"
           >
-            <Tab label="계약단 서류" value="contract" />
-            <Tab label="선적단 서류" value="shipment" />
+            <Tab label="계약 관련 서류" value="contract" />
+            <Tab label="선적 관련 서류" value="shipment" />
           </Tabs>
 
           <List>
             {filteredDocuments.length === 0 ? (
               <ListItem>
                 <ListItemText
-                  primary={`등록된 ${activeTab === "contract" ? "계약단" : "선적단"} 서류가 없습니다.`}
+                  primary={`등록된 ${
+                    activeTab === "contract" ? "계약" : "선적"
+                  } 관련 서류가 없습니다.`}
                 />
               </ListItem>
             ) : (

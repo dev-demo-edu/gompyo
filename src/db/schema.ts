@@ -146,6 +146,7 @@ export const cargos = sqliteTable(
     margin: real("margin"),
     totalProfit: real("total_profit"),
     purchaseFeeRate: real("purchase_fee_rate"),
+    remark: text("remark"),
   },
   (table) => [
     check(
