@@ -1,10 +1,9 @@
 {
   "/favicon.ico/route": "/favicon.ico",
-  "/login/page": "/login",
   "/_not-found/page": "/_not-found",
-  "/detail/[cargo_id]/page": "/detail/[cargo_id]",
-  "/plan/page": "/plan",
-  "/test/page": "/test",
+  "/login/page": "/login",
+  "/shipment/page": "/shipment",
   "/page": "/",
-  "/shipment/page": "/shipment"
+  "/plan/page": "/plan",
+  "/detail/[cargo_id]/page": "/detail/[cargo_id]"
 }
