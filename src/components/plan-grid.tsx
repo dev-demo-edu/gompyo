@@ -65,7 +65,7 @@ export default function PlanGrid() {
       itemName: {
         field: "itemName",
         headerName: "품목",
-        width: 120,
+        width: 150,
       },
       contractTon: {
         field: "contractTon",
@@ -129,7 +129,7 @@ export default function PlanGrid() {
       margin: {
         field: "margin",
         headerName: "마진",
-        valueFormatter: (params) => `${params.value}%`,
+        valueFormatter: currencyFormatter,
         width: 100,
       },
       totalProfit: {
@@ -146,6 +146,7 @@ export default function PlanGrid() {
         filter: false,
         width: 100,
         pinned: "right",
+        lockPinned: false,
       },
     }),
     [],

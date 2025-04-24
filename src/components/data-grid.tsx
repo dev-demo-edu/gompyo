@@ -63,6 +63,7 @@ export default function DataGrid<T>({
       resizable: true,
       minWidth: 100,
       filter: true,
+      lockPinned: true,
     }),
     [],
   );
