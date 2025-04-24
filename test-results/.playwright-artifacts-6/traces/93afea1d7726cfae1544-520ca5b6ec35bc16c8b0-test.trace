@@ -1,0 +1,50 @@
+{"version":7,"type":"context-options","origin":"testRunner","browserName":"","options":{},"platform":"darwin","wallTime":1745485352306,"monotonicTime":92773.236,"sdkLanguage":"javascript"}
+{"type":"before","callId":"hook@1","startTime":92777.061,"class":"Test","method":"step","apiName":"Before Hooks","params":{},"stack":[]}
+{"type":"before","callId":"hook@2","parentId":"hook@1","startTime":92777.405,"class":"Test","method":"step","apiName":"beforeEach hook","params":{},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/input/input.test.ts","line":101,"column":8}]}
+{"type":"before","callId":"fixture@3","parentId":"hook@2","startTime":92781.308,"class":"Test","method":"step","apiName":"fixture: browser","params":{},"stack":[]}
+{"type":"before","callId":"pw:api@4","parentId":"fixture@3","startTime":92782.394,"class":"Test","method":"step","apiName":"browserType.launch","params":{"handleSIGINT":"false","tracesDir":"/Users/kang-yean-woo/gompyo/test-results/.playwright-artifacts-6/traces","headless":"true","ignoreDefaultArgs":"undefined","ignoreAllDefaultArgs":"false","env":"undefined"},"stack":[]}
+{"type":"after","callId":"pw:api@4","endTime":93026.902,"annotations":[]}
+{"type":"after","callId":"fixture@3","endTime":93027.125,"annotations":[]}
+{"type":"before","callId":"fixture@5","parentId":"hook@2","startTime":93027.627,"class":"Test","method":"step","apiName":"fixture: context","params":{},"stack":[]}
+{"type":"before","callId":"pw:api@6","parentId":"fixture@5","startTime":93028.559,"class":"Test","method":"step","apiName":"browser.newContext","params":{"acceptDownloads":"accept","bypassCSP":"false","colorScheme":"light","hasTouch":"false","ignoreHTTPSErrors":"false","isMobile":"false","javaScriptEnabled":"true","locale":"en-US","offline":"false","viewport":"Object","serviceWorkers":"allow","noDefaultViewport":"false","extraHTTPHeaders":"undefined","storageState":"undefined","recordHar":"undefined","reducedMotion":"undefined","forcedColors":"undefined","contrast":"undefined","clientCertificates":"undefined"},"stack":[]}
+{"type":"after","callId":"pw:api@6","endTime":93037.358,"annotations":[]}
+{"type":"after","callId":"fixture@5","endTime":93044.13,"annotations":[]}
+{"type":"before","callId":"fixture@7","parentId":"hook@2","startTime":93044.32,"class":"Test","method":"step","apiName":"fixture: page","params":{},"stack":[]}
+{"type":"before","callId":"pw:api@8","parentId":"fixture@7","startTime":93045.703,"class":"Test","method":"step","apiName":"browserContext.newPage","params":{},"stack":[]}
+{"type":"after","callId":"pw:api@8","endTime":93179.832,"annotations":[]}
+{"type":"after","callId":"fixture@7","endTime":93179.923,"annotations":[]}
+{"type":"before","callId":"pw:api@9","parentId":"hook@2","startTime":93181.758,"class":"Test","method":"step","apiName":"page.goto","params":{"url":"http://localhost:3000/login","waitUntil":"load"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/utils/login.ts","line":4,"column":16,"function":"login"}]}
+{"type":"after","callId":"pw:api@9","endTime":93615.792,"annotations":[]}
+{"type":"before","callId":"pw:api@10","parentId":"hook@2","startTime":93617.18,"class":"Test","method":"step","apiName":"locator.fill","params":{"selector":"internal:role=textbox[name=\"이메일\"i]","value":"admin@example.com","strict":"true"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/utils/login.ts","line":6,"column":54,"function":"login"}]}
+{"type":"after","callId":"pw:api@10","endTime":93719.425,"annotations":[]}
+{"type":"before","callId":"pw:api@11","parentId":"hook@2","startTime":93720.066,"class":"Test","method":"step","apiName":"locator.fill","params":{"selector":"internal:role=textbox[name=\"비밀번호\"i]","value":"password123","strict":"true"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/utils/login.ts","line":7,"column":55,"function":"login"}]}
+{"type":"after","callId":"pw:api@11","endTime":93788.469,"annotations":[]}
+{"type":"before","callId":"pw:api@12","parentId":"hook@2","startTime":93790.057,"class":"Test","method":"step","apiName":"locator.click","params":{"selector":"internal:role=button[name=\"로그인\"i]","strict":"true"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/utils/login.ts","line":8,"column":53,"function":"login"}]}
+{"type":"after","callId":"pw:api@12","endTime":93892.192,"annotations":[]}
+{"type":"before","callId":"pw:api@13","parentId":"hook@2","startTime":93894.23,"class":"Test","method":"step","apiName":"page.waitForURL","params":{"info":"Object"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/utils/login.ts","line":13,"column":14,"function":"login"}]}
+{"type":"before","callId":"pw:api@14","parentId":"hook@2","startTime":93897.286,"class":"Test","method":"step","apiName":"locator.waitFor","params":{"selector":"internal:text=\"이메일 또는 비밀번호가 올바르지 않습니다.\"i","strict":"true","omitReturnValue":"true","timeout":"5000"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/utils/login.ts","line":14,"column":24,"function":"login"}]}
+{"type":"after","callId":"pw:api@13","endTime":94135.573,"annotations":[]}
+{"type":"stdout","timestamp":94137.062,"text":"[로그인 성공]\n"}
+{"type":"before","callId":"pw:api@15","parentId":"hook@2","startTime":94138.733,"class":"Test","method":"step","apiName":"page.goto","params":{"url":"http://localhost:3000/plan","waitUntil":"load"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/input/input.test.ts","line":104,"column":16}]}
+{"type":"after","callId":"pw:api@15","endTime":94712.327,"annotations":[]}
+{"type":"before","callId":"pw:api@16","parentId":"hook@2","startTime":94714.209,"class":"Test","method":"step","apiName":"page.waitForLoadState","params":{"info":"Object"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/input/input.test.ts","line":107,"column":16}]}
+{"type":"after","callId":"pw:api@16","endTime":95389.357,"annotations":[]}
+{"type":"before","callId":"pw:api@17","parentId":"hook@2","startTime":95389.991,"class":"Test","method":"step","apiName":"page.waitForSelector","params":{"selector":"a:has-text(\"상세보기\")","state":"attached","timeout":"10000"},"stack":[{"file":"/Users/kang-yean-woo/gompyo/test/input/input.test.ts","line":110,"column":16}]}
+{"type":"after","callId":"pw:api@14","endTime":98914.308,"annotations":[],"error":{"name":"","message":"TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('이메일 또는 비밀번호가 올바르지 않습니다.') to be visible\u001b[22m\n\u001b[2m    - waiting for\" http://localhost:3000/plan\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/plan\"\u001b[22m\n","stack":"TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('이메일 또는 비밀번호가 올바르지 않습니다.') to be visible\u001b[22m\n\u001b[2m    - waiting for\" http://localhost:3000/plan\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/plan\"\u001b[22m\n\n    at login (/Users/kang-yean-woo/gompyo/test/utils/login.ts:14:24)\n    at /Users/kang-yean-woo/gompyo/test/input/input.test.ts:102:5"}}
+{"type":"after","callId":"hook@2","endTime":103255.548,"annotations":[],"error":{"name":"","message":"\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m","stack":"\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/kang-yean-woo/gompyo/test/input/input.test.ts:101:8"}}
+{"type":"after","callId":"hook@1","endTime":103255.722,"annotations":[],"error":{"name":"","message":"\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m","stack":"\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/kang-yean-woo/gompyo/test/input/input.test.ts:101:8"}}
+{"type":"before","callId":"hook@18","startTime":103256.019,"class":"Test","method":"step","apiName":"After Hooks","params":{},"stack":[]}
+{"type":"before","callId":"fixture@19","parentId":"hook@18","startTime":103256.509,"class":"Test","method":"step","apiName":"fixture: page","params":{},"stack":[]}
+{"type":"after","callId":"fixture@19","endTime":103256.593,"annotations":[]}
+{"type":"before","callId":"fixture@20","parentId":"hook@18","startTime":103256.698,"class":"Test","method":"step","apiName":"fixture: context","params":{},"stack":[]}
+{"type":"after","callId":"fixture@20","endTime":103256.726,"annotations":[]}
+{"type":"after","callId":"pw:api@17","endTime":103603.123,"annotations":[],"error":{"name":"","message":"Error: page.waitForSelector: Test ended.\nCall log:\n\u001b[2m  - waiting for locator('a:has-text(\"상세보기\")')\u001b[22m\n","stack":"Error: page.waitForSelector: Test ended.\nCall log:\n\u001b[2m  - waiting for locator('a:has-text(\"상세보기\")')\u001b[22m\n\n    at /Users/kang-yean-woo/gompyo/test/input/input.test.ts:110:16"}}
+{"type":"error","message":"Error: page.waitForSelector: Test ended.\nCall log:\n\u001b[2m  - waiting for locator('a:has-text(\"상세보기\")')\u001b[22m\n","stack":[{"file":"/Users/kang-yean-woo/gompyo/test/input/input.test.ts","line":110,"column":16}]}
+{"type":"error","message":"Error: Channel closed","stack":[{"file":"/Users/kang-yean-woo/gompyo/test/input/input.test.ts","line":110,"column":5}]}
+{"type":"before","callId":"_attach@1","startTime":103632.841,"class":"Test","method":"step","apiName":"_attach \"_error-context-0\"","params":{},"stack":[]}
+{"type":"after","callId":"_attach@1","endTime":103632.882,"attachments":[{"name":"_error-context-0","contentType":"text/markdown","path":"/Users/kang-yean-woo/gompyo/test-results/test-input-input-input-테스트-계획-관리-상세보기-비용-정보/error-context.md"}]}
+{"type":"after","callId":"hook@18","endTime":103633.531,"annotations":[]}
+{"type":"before","callId":"hook@21","startTime":103633.743,"class":"Test","method":"step","apiName":"Worker Cleanup","params":{},"stack":[]}
+{"type":"before","callId":"fixture@22","parentId":"hook@21","startTime":103633.983,"class":"Test","method":"step","apiName":"fixture: browser","params":{},"stack":[]}
+{"type":"after","callId":"fixture@22","endTime":103718.609,"annotations":[]}
+{"type":"after","callId":"hook@21","endTime":103718.792,"annotations":[]}

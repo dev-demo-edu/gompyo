@@ -1,0 +1,2 @@
+0:{"a":"$@1","f":"","b":"development"}
+1:["contractNumber","progressStatus","contractDate","exporter","importer","estimatedTimeArrival","arrivalPort","itemName","contractTon","unitPrice","totalPrice","paymentMethod","warehouseEntryDate","importCostPerKg","supplyCostPerKg","totalCost","totalCostPerKg","sellingPrice","margin","totalProfit"]
