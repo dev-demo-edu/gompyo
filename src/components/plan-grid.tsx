@@ -6,14 +6,16 @@ import { IPlanData } from "@/types/grid-col";
 import DataGrid, { DetailButtonRenderer } from "./data-grid";
 import { getPlanData } from "@/actions/plan";
 import {
-  dateFormatter,
-  currencyFormatter,
-  perKgFormatter,
-} from "../utils/formatter";
-import { getUserColumnOrder, saveUserColumnOrder } from "@/actions/user";
+  getUserPlanColumnOrder,
+  saveUserPlanColumnOrder,
+} from "@/actions/user";
 import useDragColumnChange from "@/hooks/useDragColumnChange";
 import { useAtomValue } from "jotai";
 import { refreshPlanAtom } from "@/states/document-state";
+import {
+  DEFAULT_PLAN_COLUMN,
+  defaultPlanColumnOrderFields,
+} from "@/constants/column";
 
 // 컬럼 드래그 커스텀 훅
 
@@ -23,122 +25,27 @@ export default function PlanGrid() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const baseColumnDefs = useMemo<Record<string, ColDef>>(
-    () => ({
-      contractNumber: {
-        field: "contractNumber",
-        headerName: "계약 번호",
-        width: 130,
-      },
-      progressStatus: {
-        field: "progressStatus",
-        headerName: "진행 상태",
-        width: 100,
-      },
-      contractDate: {
-        field: "contractDate",
-        headerName: "계약일자",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
-      importer: {
-        field: "importer",
-        headerName: "수입회사",
-        width: 120,
-      },
-      exporter: {
-        field: "exporter",
-        headerName: "공급업체",
-        width: 120,
-      },
-      estimatedTimeArrival: {
-        field: "estimatedTimeArrival",
-        headerName: "ETA",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
-      arrivalPort: {
-        field: "arrivalPort",
-        headerName: "도착항",
-        width: 120,
-      },
-      itemName: {
-        field: "itemName",
-        headerName: "품목",
-        width: 120,
-      },
-      contractTon: {
-        field: "contractTon",
-        headerName: "무게",
-        valueFormatter: (params) => `${params.value}톤`,
-        width: 100,
-      },
-      unitPrice: {
-        field: "unitPrice",
-        headerName: "단가",
-        valueFormatter: currencyFormatter,
-        width: 130,
-      },
-      totalPrice: {
-        field: "totalPrice",
-        headerName: "단가 * 무게",
-        valueFormatter: currencyFormatter,
-        width: 150,
-      },
-      paymentMethod: {
-        field: "paymentMethod",
-        headerName: "결제방식",
-        width: 100,
-      },
-      warehouseEntryDate: {
-        field: "warehouseEntryDate",
-        headerName: "입고일",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
-      importCostPerKg: {
-        field: "importCostPerKg",
-        headerName: "수입가/kg",
-        valueFormatter: perKgFormatter,
-        width: 130,
-      },
-      supplyCostPerKg: {
-        field: "supplyCostPerKg",
-        headerName: "수급가/kg",
-        valueFormatter: perKgFormatter,
-        width: 130,
-      },
-      totalCost: {
-        field: "totalCost",
-        headerName: "총 비용",
-        valueFormatter: currencyFormatter,
-        width: 150,
-      },
-      totalCostPerKg: {
-        field: "totalCostPerKg",
-        headerName: "총 비용/kg",
-        valueFormatter: perKgFormatter,
-        width: 130,
-      },
-      sellingPrice: {
-        field: "sellingPrice",
-        headerName: "판매가",
-        valueFormatter: currencyFormatter,
-        width: 130,
-      },
-      margin: {
-        field: "margin",
-        headerName: "마진",
-        valueFormatter: (params) => `${params.value}%`,
-        width: 100,
-      },
-      totalProfit: {
-        field: "totalProfit",
-        headerName: "총 이익",
-        valueFormatter: currencyFormatter,
-        width: 150,
-      },
-      detail: {
+  // 컬럼 정의
+  const columnDefs = useMemo<ColDef[]>(() => {
+    const orderedColumns =
+      columnOrder.length > 0
+        ? columnOrder
+            .map((field) => {
+              const col = DEFAULT_PLAN_COLUMN.find((c) => c.field === field);
+              if (!col) {
+                console.warn(
+                  `Column ${field} not found in DEFAULT_PLAN_COLUMN`,
+                );
+                return null;
+              }
+              return col;
+            })
+            .filter((col): col is ColDef => col !== null)
+        : DEFAULT_PLAN_COLUMN;
+
+    return [
+      ...orderedColumns,
+      {
         headerName: "상세",
         field: "detail",
         cellRenderer: DetailButtonRenderer,
@@ -146,17 +53,10 @@ export default function PlanGrid() {
         filter: false,
         width: 100,
         pinned: "right",
+        lockPinned: false,
       },
-    }),
-    [],
-  );
-
-  // 컬럼 순서에 따라 정렬된 컬럼 정의
-  const columnDefs = useMemo<ColDef[]>(() => {
-    const orderedColumns = columnOrder.map((field) => baseColumnDefs[field]);
-
-    return [...orderedColumns, baseColumnDefs.detail];
-  }, [baseColumnDefs, columnOrder]);
+    ];
+  }, [columnOrder]);
 
   // 컬럼 드래그 저장 핸들러
   const handleColumnDragSave = useCallback(async (e: DragStoppedEvent) => {
@@ -166,7 +66,7 @@ export default function PlanGrid() {
       .filter((colId) => colId !== "detail");
 
     try {
-      const result = await saveUserColumnOrder(newColumnOrder);
+      const result = await saveUserPlanColumnOrder(newColumnOrder);
       console.log("Column order save result:", result);
 
       if (result.success) {
@@ -174,6 +74,20 @@ export default function PlanGrid() {
       }
     } catch (error) {
       console.error("컬럼 순서 저장 중 오류:", error);
+    }
+  }, []);
+
+  // 컬럼 순서 리셋 핸들러
+  const handleResetColumnOrder = useCallback(async () => {
+    try {
+      const result = await saveUserPlanColumnOrder(
+        defaultPlanColumnOrderFields,
+      );
+      if (result.success) {
+        setColumnOrder(defaultPlanColumnOrderFields);
+      }
+    } catch (error) {
+      console.error("컬럼 순서 리셋 중 오류:", error);
     }
   }, []);
 
@@ -188,9 +102,9 @@ export default function PlanGrid() {
       try {
         setLoading(true);
         const data = await getPlanData();
-        const userColumnOrder = await getUserColumnOrder();
+        const userColumnOrder = await getUserPlanColumnOrder();
         setRowData(data);
-        setColumnOrder(userColumnOrder || []);
+        setColumnOrder(userColumnOrder || defaultPlanColumnOrderFields);
         setError(null);
       } catch (err) {
         setError(
@@ -214,6 +128,7 @@ export default function PlanGrid() {
       error={error}
       onDragStarted={onDragStarted}
       onDragStopped={onDragStopped}
+      onResetColumnOrder={handleResetColumnOrder}
     />
   );
 }

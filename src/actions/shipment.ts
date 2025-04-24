@@ -12,7 +12,7 @@ import { mapAndCalculateCargoDetails } from "@/services/cargo-calculator";
 import { ImporterService } from "@/services/importer.service";
 import type { CargoDetailData } from "@/types/cargo-detail";
 import { CalculationType } from "@/types/importer";
-
+import { statusMapping } from "@/constants/cargo-status";
 export async function getShipmentData(): Promise<IShipmentData[]> {
   try {
     // 서비스 인스턴스 생성
@@ -94,6 +94,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
           purchaseFeeRate: cargo?.purchaseFeeRate || 0,
           sellingPriceWholesale: cargo?.sellingPriceWholesale || 0,
           sellingPriceRetail: cargo?.sellingPriceRetail || 0,
+          remark: cargo?.remark || "",
         },
         cost: {
           id: cost?.id || "",
@@ -156,7 +157,8 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
       return {
         id: cargo?.id || "",
         contractNumber: contract?.contractNumber || "",
-        progressStatus: cargo?.progressStatus || "예정",
+        progressStatus:
+          statusMapping[cargo?.progressStatus as keyof typeof statusMapping],
         contractDate: contract?.contractDate || "",
         importer: importer?.importerName || "",
         productName: item?.itemVariety || "",

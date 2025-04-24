@@ -7,7 +7,10 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
-import { defaultColumnOrderFields } from "@/constants/column";
+import {
+  defaultPlanColumnOrderFields,
+  defaultShipmentColumnOrderFields,
+} from "@/constants/column";
 
 // Importers table
 export const importers = sqliteTable("importers", {
@@ -109,8 +112,11 @@ export const users = sqliteTable("users", {
   email: text("email"),
   password: text("password"),
   name: text("name"),
-  columnOrder: text("column_order").default(
-    JSON.stringify(defaultColumnOrderFields),
+  planColumnOrder: text("plan_column_order").default(
+    JSON.stringify(defaultPlanColumnOrderFields),
+  ),
+  shipmentColumnOrder: text("shipment_column_order").default(
+    JSON.stringify(defaultShipmentColumnOrderFields),
   ),
 });
 
