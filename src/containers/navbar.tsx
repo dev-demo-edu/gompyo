@@ -15,7 +15,6 @@ import {
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import ScienceIcon from "@mui/icons-material/Science";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NavigationItem from "./nav/navigation-item";
@@ -77,11 +76,6 @@ export default function Navbar() {
       text: "선적 관리",
       href: "/shipment",
       icon: <LocalShippingIcon />,
-    },
-    {
-      text: "테스트",
-      href: "/test",
-      icon: <ScienceIcon />,
     },
   ];
 
