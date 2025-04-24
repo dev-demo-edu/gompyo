@@ -10,9 +10,12 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "db:migrate": "tsx src/db/migrate.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/runSeed.ts",
     "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:update": "pnpm db:generate && pnpm db:migrate",
     "db:delete": "rm -rf drizzle/database.sqlite",
     "db:rerun": "pnpm db:delete && pnpm db:push && pnpm db:seed",
     "drizzle:test": "tsx drizzle.test.ts"
