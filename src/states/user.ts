@@ -22,7 +22,8 @@ export const userAtom = atom(
       id: dbUser.id,
       email: dbUser.email,
       name: dbUser.name,
-      columnOrder: dbUser.columnOrder || "",
+      planColumnOrder: dbUser.planColumnOrder || "",
+      shipmentColumnOrder: dbUser.shipmentColumnOrder || "",
     };
   },
   async (get, set, newUser: User | null) => {

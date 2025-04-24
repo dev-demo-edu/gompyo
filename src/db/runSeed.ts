@@ -24,7 +24,10 @@ import {
 } from "./data/generated_seeds_from_kkk_20.js"; // 위에서 생성한 seed 데이터
 import { users } from "./schema";
 import { nanoid } from "nanoid";
-import { defaultColumnOrderFields } from "@/constants/column";
+import {
+  defaultPlanColumnOrderFields,
+  defaultShipmentColumnOrderFields,
+} from "@/constants/column";
 
 async function runSeed() {
   const existingUsers = await db.select().from(users);
@@ -36,7 +39,8 @@ async function runSeed() {
       email: "admin@example.com",
       password: "password123",
       name: "루비짱",
-      columnOrder: JSON.stringify(defaultColumnOrderFields),
+      planColumnOrder: JSON.stringify(defaultPlanColumnOrderFields),
+      shipmentColumnOrder: JSON.stringify(defaultShipmentColumnOrderFields),
     });
 
     console.log("✅ 기본 사용자가 생성되었습니다:");

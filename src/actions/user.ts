@@ -52,7 +52,7 @@ export async function getUser() {
   return userService.findById(userId);
 }
 
-export async function getUserColumnOrder() {
+export async function getUserPlanColumnOrder() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
@@ -60,11 +60,23 @@ export async function getUserColumnOrder() {
     return [];
   }
 
-  const columnOrder = await userService.getColumnOrder(userId);
+  const columnOrder = await userService.getPlanColumnOrder(userId);
   return columnOrder;
 }
 
-export async function saveUserColumnOrder(columnOrder: string[]) {
+export async function getUserShipmentColumnOrder() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    return [];
+  }
+
+  const columnOrder = await userService.getShipmentColumnOrder(userId);
+  return columnOrder;
+}
+
+export async function saveUserPlanColumnOrder(columnOrder: string[]) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
@@ -73,7 +85,31 @@ export async function saveUserColumnOrder(columnOrder: string[]) {
   }
 
   try {
-    await userService.updateColumnOrder(userId, JSON.stringify(columnOrder));
+    await userService.updatePlanColumnOrder(
+      userId,
+      JSON.stringify(columnOrder),
+    );
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("컬럼 순서 저장 오류:", error);
+    return { error: "컬럼 순서를 저장하는 중 오류가 발생했습니다." };
+  }
+}
+
+export async function saveUserShipmentColumnOrder(columnOrder: string[]) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    return { error: "로그인이 필요합니다." };
+  }
+
+  try {
+    await userService.updateShipmentColumnOrder(
+      userId,
+      JSON.stringify(columnOrder),
+    );
     revalidatePath("/");
     return { success: true };
   } catch (error) {
