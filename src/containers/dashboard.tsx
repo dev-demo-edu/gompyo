@@ -84,8 +84,8 @@ function BarChart({
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({
-    contracter: "전체보기",
     importer: "전체보기",
+    exporter: "전체보기",
     item: "전체보기",
     exchangeRate: 1400,
   });
@@ -98,8 +98,8 @@ export default function Dashboard() {
 
   const [totalData, setTotalData] = useState<IPlanData[]>([]);
   const [selectOptions, setSelectOptions] = useState<selectDataItem>({
-    contracter: ["전체보기"],
     importer: ["전체보기"],
+    exporter: ["전체보기"],
     item: ["전체보기"],
   });
 
@@ -111,9 +111,9 @@ export default function Dashboard() {
 
         // 옵션 자동 생성
         setSelectOptions({
-          contracter: [
+          exporter: [
             "전체보기",
-            ...new Set(fetchedTotalData.map((data) => data.contractParty)),
+            ...new Set(fetchedTotalData.map((data) => data.exporter)),
           ],
           importer: [
             "전체보기",
@@ -134,11 +134,6 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // DEBUG
-  useEffect(() => {
-    console.log(totalData);
-  }, [totalData]);
-
   // 필터 변경 핸들러
   const handleFilterChange = (
     key: keyof typeof filters,
@@ -149,7 +144,7 @@ export default function Dashboard() {
 
   // 데이터 필터링 함수
   const filterData = (data: IPlanData[] = totalData) => {
-    const { contracter, importer, item, exchangeRate } = filters;
+    const { exporter, importer, item, exchangeRate } = filters;
 
     // 날짜 기준 최근 3개월 데이터 필터링
     const monthNames = ["3개월 전", "2개월 전", "1개월 전"];
@@ -175,8 +170,7 @@ export default function Dashboard() {
           return (
             itemDate >= targetMonth &&
             itemDate < nextMonth &&
-            (contracter === "전체보기" ||
-              monthItem.contractParty === contracter) &&
+            (exporter === "전체보기" || monthItem.exporter === exporter) &&
             (importer === "전체보기" || monthItem.importer === importer) &&
             (item === "전체보기" || monthItem.itemName === item)
           );
@@ -206,7 +200,17 @@ export default function Dashboard() {
   ];
 
   return (
-    <Stack sx={{ width: "100%", height: "100%", padding: 10 }} spacing={2}>
+    <Stack
+      sx={{
+        width: "100%",
+        height: "100%",
+        padding: 10,
+        "@media (max-width: 600px)": {
+          padding: 3,
+        },
+      }}
+      spacing={2}
+    >
       <Typography variant="h4" sx={{ marginBottom: 10 }}>
         대시보드
       </Typography>
@@ -216,15 +220,15 @@ export default function Dashboard() {
         spacing={2}
         className="w-full md:w-[100%]"
       >
-        {/* 계약처 셀렉트 */}
+        {/* 수입회사 셀렉트 */}
         <FormControl fullWidth>
-          <InputLabel>계약처</InputLabel>
+          <InputLabel>수입회사</InputLabel>
           <Select
-            value={filters.contracter}
-            label="계약처"
-            onChange={(e) => handleFilterChange("contracter", e.target.value)}
+            value={filters.importer}
+            label="수입회사"
+            onChange={(e) => handleFilterChange("importer", e.target.value)}
           >
-            {selectOptions.contracter.map((item) => (
+            {selectOptions.importer.map((item) => (
               <MenuItem key={item} value={item}>
                 {item}
               </MenuItem>
@@ -232,15 +236,15 @@ export default function Dashboard() {
           </Select>
         </FormControl>
 
-        {/* 수입처 셀렉트 */}
+        {/* 공급처 셀렉트 */}
         <FormControl fullWidth>
-          <InputLabel>수입처</InputLabel>
+          <InputLabel>공급처</InputLabel>
           <Select
-            value={filters.importer}
-            label="수입처"
-            onChange={(e) => handleFilterChange("importer", e.target.value)}
+            value={filters.exporter}
+            label="공급처"
+            onChange={(e) => handleFilterChange("exporter", e.target.value)}
           >
-            {selectOptions.importer.map((item) => (
+            {selectOptions.exporter.map((item) => (
               <MenuItem key={item} value={item}>
                 {item}
               </MenuItem>

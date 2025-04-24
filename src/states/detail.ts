@@ -84,6 +84,7 @@ export const updateCargoAtom = atom(
       updateData.payment = { ...originalData.payment, ...formData };
       updateData.contract = { ...originalData.contract, ...formData };
       updateData.item = { ...originalData.item, ...formData };
+      updateData.importer = { ...originalData.importer, ...formData };
 
       // B/L 번호가 변경되었고, 특정 화물만 업데이트하는 경우
       if (

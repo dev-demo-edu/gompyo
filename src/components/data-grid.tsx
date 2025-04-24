@@ -14,7 +14,10 @@ import {
   themeMaterial,
   ICellRendererParams,
 } from "ag-grid-community";
-import { FilterList as FilterListIcon } from "@mui/icons-material";
+import {
+  FilterList as FilterListIcon,
+  RestartAlt as RestartAltIcon,
+} from "@mui/icons-material";
 import Link from "next/link";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -40,6 +43,7 @@ interface DataGridProps<T> {
   error?: string | null;
   onDragStarted?: (event: DragStartedEvent) => void;
   onDragStopped?: (event: DragStoppedEvent) => void;
+  onResetColumnOrder?: () => void;
 }
 
 export default function DataGrid<T>({
@@ -49,6 +53,7 @@ export default function DataGrid<T>({
   error = null,
   onDragStarted,
   onDragStopped,
+  onResetColumnOrder,
 }: DataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -63,6 +68,22 @@ export default function DataGrid<T>({
       resizable: true,
       minWidth: 100,
       filter: true,
+      lockPinned: true,
+    }),
+    [],
+  );
+
+  // 기본 정렬 상태
+  const initialState = useMemo(
+    () => ({
+      sort: {
+        sortModel: [
+          {
+            colId: "contractDate",
+            sort: "desc" as const,
+          },
+        ],
+      },
     }),
     [],
   );
@@ -163,6 +184,15 @@ export default function DataGrid<T>({
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
+              {onResetColumnOrder && (
+                <button
+                  onClick={onResetColumnOrder}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <RestartAltIcon className="w-5 h-5" />
+                  <span>컬럼 순서 초기화</span>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -190,6 +220,7 @@ export default function DataGrid<T>({
               rowData={filteredData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
+              initialState={initialState}
               pagination={true}
               paginationPageSize={15}
               rowSelection="multiple"

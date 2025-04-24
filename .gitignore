@@ -63,4 +63,3 @@ next-env.d.ts
 
 # drizzle
 drizzle/database.sqlite
-drizzle/

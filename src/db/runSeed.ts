@@ -8,6 +8,7 @@ import {
   costDetails,
   payments,
   paymentsTt,
+  importers,
 } from "./schema.js"; // Drizzle ORM에 정의된 스키마
 
 import {
@@ -19,9 +20,14 @@ import {
   costDetailsSeed,
   paymentsSeed,
   paymentsTtSeed,
-} from "./data/seed.js"; // 위에서 생성한 seed 데이터
+  importersSeed,
+} from "./data/generated_seeds_from_kkk_20.js"; // 위에서 생성한 seed 데이터
 import { users } from "./schema";
 import { nanoid } from "nanoid";
+import {
+  defaultPlanColumnOrderFields,
+  defaultShipmentColumnOrderFields,
+} from "@/constants/column";
 
 async function runSeed() {
   const existingUsers = await db.select().from(users);
@@ -32,7 +38,9 @@ async function runSeed() {
       id: nanoid(),
       email: "admin@example.com",
       password: "password123",
-      // columnOrder는 기본값을 사용
+      name: "루비짱",
+      planColumnOrder: JSON.stringify(defaultPlanColumnOrderFields),
+      shipmentColumnOrder: JSON.stringify(defaultShipmentColumnOrderFields),
     });
 
     console.log("✅ 기본 사용자가 생성되었습니다:");
@@ -54,10 +62,12 @@ async function runSeed() {
     await db.delete(shipments);
     await db.delete(items);
     await db.delete(contracts);
+    await db.delete(importers);
     console.log("✅ 기존 데이터 삭제 완료");
 
     // 새로운 데이터 삽입
     console.log("🌱 새로운 데이터 삽입 중...");
+    await db.insert(importers).values(importersSeed);
     await db.insert(contracts).values(contractsSeed);
     await db.insert(items).values(itemsSeed);
     await db.insert(shipments).values(shipmentsSeed);

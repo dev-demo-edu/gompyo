@@ -1,9 +1,11 @@
+import { CalculationType } from "./importer";
+
 type Contract = {
   id: string;
   contractNumber: string | null;
   contractDate: string | null;
-  contractParty: string | null;
-  importer: string | null;
+  exporter: string | null;
+  importerId: string | null;
   incoterms: string | null;
 };
 
@@ -45,6 +47,7 @@ type ContractAmount = {
   laborCost: number | null;
   transportStorageFee: number | null;
   loadingUnloadingFee: number | null;
+  usanceInterest: number | null;
   cargoId: string;
 };
 
@@ -59,12 +62,16 @@ type Cargo = {
   warehouseEntryDate: string | null;
   progressStatus: string | null;
   sellingPrice: number | null;
+  sellingPriceWholesale: number | null;
+  sellingPriceRetail: number | null;
   margin: number | null;
   totalProfit: number | null;
   purchaseFeeRate: number | null;
+  remark: string | null;
 };
 
 export type CargoDetailData = {
+  importer: Importer;
   contract: Contract;
   payment: Payment;
   costDetail: CostDetail;
@@ -94,4 +101,10 @@ export type Item = {
   originCountry: string | null;
   hsCode: string | null;
   packingUnit: string | null;
+};
+
+export type Importer = {
+  id: string;
+  importerName: string;
+  calculationType: CalculationType;
 };

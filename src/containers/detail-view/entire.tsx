@@ -12,7 +12,7 @@ import {
   updateCargoAtom,
 } from "@/states/detail";
 import {
-  contractFields,
+  createContractFields,
   paymentFields,
   costFields,
   contractAmountFields,
@@ -21,10 +21,11 @@ import {
   FieldValueType,
 } from "@/constants/entire";
 import { BlNumberUpdateModal } from "@/components/bl-number-update-modal";
-
 interface EntireViewProps {
   cargoId: string;
 }
+import { getAllImporters } from "@/actions/importer";
+import { Importer } from "@/types/importer";
 
 export default function EntireView({ cargoId }: EntireViewProps) {
   const [mappedData, setMappedData] = useAtom(cargoDetailAtom);
@@ -32,7 +33,6 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const setError = useSetAtom(cargoErrorAtom);
   const [, updateCargo] = useAtom(updateCargoAtom);
   const { toast, ToastComponent } = useToast();
-
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<Record<
     string,
@@ -40,6 +40,16 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   > | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>("");
+
+  const [importers, setImporters] = useState<Importer[]>([]);
+
+  useEffect(() => {
+    const fetchImporters = async () => {
+      const importers = await getAllImporters();
+      setImporters(importers);
+    };
+    fetchImporters();
+  }, []);
 
   // 결제 정보 필드 상태 관리
   const [currentPaymentFields, setCurrentPaymentFields] = useState(() => {
@@ -63,18 +73,24 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const handlePaymentMethodChange = (method: string) => {
     console.log("handlePaymentMethodChange called with:", method);
     setSelectedPaymentMethod(method);
-  };
 
-  // 결제 방식에 따른 필드 설정
-  useEffect(() => {
-    if (!selectedPaymentMethod) {
+    // 결제 방식에 따른 필드 설정
+    if (!method) {
       setCurrentPaymentFields(paymentFields);
       return;
     }
 
-    const methodFields = paymentMethodFields[selectedPaymentMethod] || [];
+    // L/C at sight와 Payment Usance의 경우 실제 키 값으로 변환
+    const actualMethod =
+      method === "L/C at sight"
+        ? "L/C"
+        : method === "Payment Usance"
+          ? "Usance"
+          : method;
+
+    const methodFields = paymentMethodFields[actualMethod] || [];
     setCurrentPaymentFields([...paymentFields, ...methodFields]);
-  }, [selectedPaymentMethod]);
+  };
 
   // DetailForm에 전달할 데이터
   const paymentData = {
@@ -209,7 +225,7 @@ export default function EntireView({ cargoId }: EntireViewProps) {
         {/* 계약 정보 */}
         <DetailForm
           title="계약 정보"
-          fields={contractFields}
+          fields={createContractFields(importers)}
           className="w-full"
           data={mappedData.contract}
           onSave={(formData) => handleDataUpdate(formData)}
@@ -243,9 +259,9 @@ export default function EntireView({ cargoId }: EntireViewProps) {
           onSave={(formData) => handleDataUpdate(formData)}
         />
 
-        {/* 계약처 금액 정보 */}
+        {/* 수입회사 금액 정보 */}
         <DetailForm
-          title="계약처 금액 정보"
+          title="수입회사 금액 정보"
           fields={contractAmountFields}
           className="w-full md:w-[calc(50%-12px)]"
           data={mappedData.cost}

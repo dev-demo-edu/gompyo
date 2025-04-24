@@ -1,0 +1,2 @@
+ALTER TABLE `users` RENAME COLUMN "column_order" TO "plan_column_order";--> statement-breakpoint
+ALTER TABLE `users` ADD `shipment_column_order` text DEFAULT '["contractNumber","progressStatus","contractDate","exporter","importer","estimatedTimeArrival","arrivalPort","itemName","contractTon","unitPrice","totalPrice","paymentMethod","warehouseEntryDate","importCostPerKg","supplyCostPerKg","totalCost","totalCostPerKg","sellingPrice","margin","totalProfit"]';

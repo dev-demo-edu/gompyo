@@ -31,7 +31,7 @@ export async function uploadDocuments(
     }
 
     const uploadPromises = files.map(async (file) => {
-      const key = `documents/${relatedId}/${category}/${Date.now()}-${file.name}`;
+      const key = `documents/${category}/${relatedId}/${Date.now()}-${file.name}`;
 
       await documentService.uploadToS3(file, key);
 
@@ -62,7 +62,13 @@ export async function deleteDocument(documentId: string, relatedId: string) {
       return { success: false, error: "문서를 찾을 수 없습니다." };
     }
 
-    const s3Key = document.s3Url.split(".com/")[1];
+    // S3 URL에서 key 추출
+    // URL 형식: https://bucket-name.s3.region.amazonaws.com/documents/category/id/timestamp-filename
+    const urlParts = document.s3Url.split("/");
+    // 도메인 이후부터 key로 사용
+    const s3Key = urlParts.slice(3).join("/");
+
+    console.log("삭제할 S3 키:", s3Key);
     await documentService.deleteFromS3(s3Key);
     await documentService.deleteDocument(documentId);
 
@@ -94,11 +100,52 @@ export async function getSignedDownloadUrl(documentId: string) {
       return { success: false, error: "문서를 찾을 수 없습니다." };
     }
 
-    const key = document.s3Url.split(".com/")[1];
-    const signedUrl = await documentService.getSignedUrl(key);
+    const s3Key = `documents/${document.documentCategory}/${document.relatedId}/${document.s3Url.split("/").pop()}`;
+    const signedUrl = await documentService.getSignedUrl(s3Key);
     return { success: true, url: signedUrl };
   } catch (error) {
     console.error("다운로드 URL 생성 중 오류 발생:", error);
     return { success: false, error: "다운로드 URL 생성에 실패했습니다." };
+  }
+}
+
+// presigned URL 요청 서버 액션
+export async function getUploadPresignedUrl(
+  fileName: string,
+  fileType: string,
+  relatedId: string,
+  category: "contract" | "shipment",
+) {
+  try {
+    const key = `documents/${category}/${relatedId}/${Date.now()}-${fileName}`;
+    const url = await documentService.getUploadPresignedUrl(key, fileType);
+
+    return {
+      success: true,
+      url,
+      key,
+      fileUrl: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`,
+    };
+  } catch (error) {
+    console.error("Presigned URL 생성 중 오류:", error);
+    return { success: false, error: "Presigned URL 생성에 실패했습니다." };
+  }
+}
+
+// 문서 메타데이터 저장 서버 액션
+export async function saveDocument(documentData: {
+  name: string;
+  type: string;
+  url: string;
+  relatedId: string;
+  category: "contract" | "shipment";
+}) {
+  try {
+    await documentService.saveDocument(documentData);
+    revalidatePath(`/detail/${documentData.relatedId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("문서 정보 저장 중 오류:", error);
+    return { success: false, error: "문서 정보 저장에 실패했습니다." };
   }
 }

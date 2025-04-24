@@ -7,13 +7,17 @@ import {
   IconButton,
   FormControl,
   Autocomplete,
+  InputAdornment,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { Edit, Save, Close } from "@mui/icons-material";
 import { useState, useEffect } from "react";
+import { z } from "zod";
 import { FieldValue, FieldValueType } from "@/constants/entire";
 import { useAtom } from "jotai";
-import { cancelEditAtom } from "@/states/detail";
+import { cancelEditAtom, cargoDetailAtom } from "@/states/detail";
+import { addChangeLog } from "@/actions/detail-view/history";
+import { userAtom } from "@/states/user";
 
 interface FieldConfig {
   name: string;
@@ -21,7 +25,7 @@ interface FieldConfig {
   placeholder?: string;
   gridSize?: number;
   hasEditButton?: boolean;
-  type?: "text" | "select" | "number" | "date";
+  type?: "text" | "select" | "number" | "date" | "textarea";
   options?: { value: string; label: string }[];
   valueType: FieldValueType;
   disabled?: boolean;
@@ -31,7 +35,6 @@ interface FieldConfig {
 interface DetailFormProps {
   title: string;
   fields: FieldConfig[];
-  // 필드 이름을 키로 하고, 해당하는 값 타입을 가지는 레코드
   data?: Partial<Record<string, FieldValue>>;
   onSave?: (data: Record<string, FieldValue>) => void;
   onFieldChange?: (fieldName: string, value: FieldValueType) => void;
@@ -48,9 +51,11 @@ export default function DetailForm({
 }: DetailFormProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Record<string, string | null>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [, cancelEdit] = useAtom(cancelEditAtom);
+  const [currentUser] = useAtom(userAtom);
+  const [cargoData] = useAtom(cargoDetailAtom);
 
-  // 초기 데이터 설정
   useEffect(() => {
     const initialData = Object.entries(data).reduce(
       (acc, [key, value]) => {
@@ -62,27 +67,117 @@ export default function DetailForm({
     setFormData(initialData);
   }, [data]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const handleEdit = () => setIsEditing(true);
 
   const convertValue = (
     value: string | null,
     valueType: FieldValueType,
   ): FieldValue => {
     if (value === null) return null;
-
     switch (valueType) {
       case "number":
         return value === "" ? null : Number(value);
       case "date":
         return value === "" ? null : value;
       case "string":
+      default:
         return value;
     }
   };
 
-  const handleSave = () => {
+  // Zod 스키마 동적 생성
+  const generateZodSchemaFromFields = (fields: FieldConfig[]) => {
+    const requiredFieldNames = [
+      "계약 번호",
+      "계약 일자",
+      "공급 업체",
+      "수입처",
+      "품목",
+      "품종",
+      "포장단위",
+    ];
+
+    const shape: Record<string, z.ZodTypeAny> = {};
+    fields.forEach((field) => {
+      let schema: z.ZodTypeAny;
+
+      switch (field.valueType) {
+        case "number":
+          schema = z.string({
+            message: "숫자를 입력해주세요",
+          });
+          break;
+        case "date":
+          schema = z.coerce
+            .string()
+            .min(1, "날짜를 선택해주세요.")
+            .default(new Date().toISOString().split("T")[0]);
+          break;
+        case "string":
+        default:
+          schema = z.string({
+            message: "값을 입력해주세요",
+          });
+          break;
+      }
+
+      if (!requiredFieldNames.includes(field.label)) {
+        schema = schema.optional();
+      }
+      shape[field.name] = schema;
+    });
+    return z.object(shape);
+  };
+
+  // 변경사항 추적 함수
+  const trackChanges = async (
+    oldData: Record<string, FieldValue>,
+    newData: Record<string, FieldValue>,
+  ) => {
+    const changes: Array<{ field: string; from: string; to: string }> = [];
+
+    fields.forEach((field) => {
+      const oldValue = oldData[field.name];
+      const newValue = newData[field.name];
+
+      if (oldValue !== newValue?.toString()) {
+        changes.push({
+          field: field.label,
+          from: oldValue?.toString() ?? "",
+          to: newValue?.toString() ?? "",
+        });
+      }
+    });
+
+    // 변경사항이 있는 경우에만 히스토리 기록
+    if (changes.length > 0) {
+      console.log("changes", changes);
+      console.log("currentUser", currentUser);
+      await addChangeLog({
+        targetId: cargoData?.cargo.id || "",
+        user: currentUser?.name || "",
+        changes,
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    const schema = generateZodSchemaFromFields(fields);
+    const parsed = schema.safeParse(formData);
+
+    if (!parsed.success) {
+      const errors: Record<string, string> = {};
+      parsed.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          errors[err.path[0] as string] = err.message;
+        }
+      });
+      setFormErrors(errors);
+      return;
+    }
+
+    setFormErrors({}); // 유효성 오류 초기화
+
     if (onSave) {
       const convertedData = fields.reduce(
         (acc, field) => {
@@ -92,13 +187,23 @@ export default function DetailForm({
         },
         {} as Record<string, FieldValue>,
       );
+      const oldData = Object.entries(data).reduce(
+        (acc, [key, value]) => {
+          acc[key] = value?.toString() ?? null;
+          return acc;
+        },
+        {} as Record<string, string | null>,
+      );
+
+      // 변경사항 추적
+      await trackChanges(oldData, convertedData);
+
       onSave(convertedData);
     }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    // 원래 데이터로 되돌림
     const initialData = Object.entries(data).reduce(
       (acc, [key, value]) => {
         acc[key] = value?.toString() ?? null;
@@ -107,6 +212,7 @@ export default function DetailForm({
       {} as Record<string, string | null>,
     );
     setFormData(initialData);
+    setFormErrors({});
     setIsEditing(false);
     cancelEdit();
   };
@@ -165,6 +271,8 @@ export default function DetailForm({
               <TextField
                 {...params}
                 label={field.label}
+                error={!!formErrors[field.name]}
+                helperText={formErrors[field.name]}
                 sx={{
                   "& .MuiOutlinedInput-notchedOutline": {
                     borderColor: "rgba(145, 158, 171, 0.2)",
@@ -173,8 +281,12 @@ export default function DetailForm({
               />
             )}
             renderOption={(props, option) => {
+              const { key, ...rest } =
+                props as React.HTMLAttributes<HTMLLIElement> & {
+                  key: React.Key;
+                };
               return (
-                <li {...props}>
+                <li key={key} {...rest}>
                   {typeof option === "string" ? option : option.label}
                 </li>
               );
@@ -192,8 +304,10 @@ export default function DetailForm({
       className: "bg-background-paper",
       disabled: !isEditing || field.disabled,
       value: formData[field.name] ?? "",
-      type: field.type,
+      type: field.type === "textarea" ? undefined : field.type,
       onChange: handleTextChange(field.name),
+      error: !!formErrors[field.name],
+      helperText: formErrors[field.name],
       sx: {
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
@@ -202,7 +316,40 @@ export default function DetailForm({
         },
       },
       InputLabelProps: field.type === "date" ? { shrink: true } : undefined,
+      InputProps: field.endAdornment
+        ? {
+            endAdornment: (
+              <InputAdornment
+                sx={{
+                  color: "inherit",
+                  "& .MuiTypography-root": {
+                    color: "inherit",
+                  },
+                }}
+                position="end"
+              >
+                {field.endAdornment}
+              </InputAdornment>
+            ),
+          }
+        : undefined,
+      multiline: field.type === "textarea",
+      rows: field.type === "textarea" ? 4 : undefined,
     };
+    if (field.valueType === "number") {
+      if (
+        !isFinite(Number(textFieldProps.value)) ||
+        isNaN(Number(textFieldProps.value))
+      ) {
+        textFieldProps.value = "0";
+      } else {
+        const num = Number(textFieldProps.value);
+        if (!Number.isInteger(num)) {
+          textFieldProps.value = Math.floor(num).toString();
+        }
+      }
+    }
+
     return <TextField {...textFieldProps} />;
   };
 
@@ -210,7 +357,6 @@ export default function DetailForm({
     <Paper
       className={`bg-background-paper rounded-2xl shadow-[0px_12px_24px_-4px_rgba(145,158,171,0.12)] shadow-[0px_0px_2px_0px_rgba(145,158,171,0.20)] inline-flex flex-col justify-start items-end ${className}`}
     >
-      {/* 헤더 */}
       <Box className="self-stretch pl-6 pr-4 py-6 border-b border-[rgba(145,158,171,0.2)] flex justify-between items-center">
         <Typography variant="h6" className="text-text-primary font-semibold">
           {title}
@@ -233,7 +379,6 @@ export default function DetailForm({
         </Box>
       </Box>
 
-      {/* 폼 컨텐츠 */}
       <Box className="self-stretch p-6">
         <Grid container spacing={3}>
           {fields.map((field) => (

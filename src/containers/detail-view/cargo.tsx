@@ -7,6 +7,7 @@ import {
   statusFields,
   PackagingData,
   StatusData,
+  remarkField,
 } from "@/constants/cargo";
 import { useAtom } from "jotai";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +17,6 @@ import {
   updateCargoAtom,
 } from "@/states/detail";
 import { Box, CircularProgress } from "@mui/material";
-import { useEffect } from "react";
 import { FieldValue } from "@/constants/entire";
 import { CalculatedCargoDetailData } from "@/services/cargo-calculator";
 
@@ -75,10 +75,6 @@ export default function Cargo({ cargoId }: CargoProps) {
   const [, updateCargo] = useAtom(updateCargoAtom);
   const { toast, ToastComponent } = useToast();
 
-  useEffect(() => {
-    console.log("mappedData:", mappedData);
-  }, [mappedData]);
-
   const handleDataUpdate = async (formData: Record<string, FieldValue>) => {
     if (!mappedData) return;
 
@@ -125,6 +121,8 @@ export default function Cargo({ cargoId }: CargoProps) {
   const statusData = transformDataForForm(
     transformStatusData(mappedData.cargo, mappedData.shipment),
   );
+  // 비고 데이터 변환
+  const remarkData = { remark: mappedData.cargo?.remark || "" };
 
   return (
     <>
@@ -145,6 +143,12 @@ export default function Cargo({ cargoId }: CargoProps) {
           title="상태 정보"
           fields={statusFields}
           data={statusData}
+          onSave={(formData) => handleDataUpdate(formData)}
+        />
+        <DetailForm
+          title="비고"
+          fields={[remarkField]}
+          data={remarkData}
           onSave={(formData) => handleDataUpdate(formData)}
         />
       </div>

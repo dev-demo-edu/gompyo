@@ -1,139 +1,48 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import type { ColDef } from "ag-grid-community";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import type { ColDef, DragStoppedEvent } from "ag-grid-community";
 import { IShipmentData } from "@/types/grid-col";
 import DataGrid, { DetailButtonRenderer } from "./data-grid";
-import { dateFormatter, currencyFormatter } from "@/utils/formatter";
 import { getShipmentData } from "@/actions/shipment";
+import {
+  getUserShipmentColumnOrder,
+  saveUserShipmentColumnOrder,
+} from "@/actions/user";
+import useDragColumnChange from "@/hooks/useDragColumnChange";
+import {
+  DEFAULT_SHIPMENT_COLUMN,
+  defaultShipmentColumnOrderFields,
+} from "@/constants/column";
 
 export default function ShipmentGrid() {
   const [rowData, setRowData] = useState<IShipmentData[]>([]);
+  const [columnOrder, setColumnOrder] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 컬럼 정의
-  const columnDefs = useMemo<ColDef[]>(
-    () => [
-      {
-        field: "contractNumber",
-        headerName: "계약 번호",
-        width: 130,
-      },
-      {
-        field: "progressStatus",
-        headerName: "진행 상태",
-        width: 100,
-      },
-      {
-        field: "contractDate",
-        headerName: "계약일자",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
-      {
-        field: "importer",
-        headerName: "수입처",
-        width: 120,
-      },
-      {
-        field: "productName",
-        headerName: "제품명",
-        width: 150,
-      },
-      {
-        field: "itemName",
-        headerName: "품목",
-        width: 120,
-      },
-      {
-        field: "weight",
-        headerName: "무게",
-        valueFormatter: (params) => `${params.value}톤`,
-        width: 100,
-      },
-      {
-        field: "containerCount",
-        headerName: "컨테이너 개수",
-        width: 120,
-      },
-      {
-        field: "packingUnit",
-        headerName: "포장 단위",
-        width: 100,
-      },
-      {
-        field: "unitPrice",
-        headerName: "단가",
-        valueFormatter: currencyFormatter,
-        width: 130,
-      },
-      {
-        field: "totalPrice",
-        headerName: "단가 * 무게",
-        valueFormatter: currencyFormatter,
-        width: 150,
-      },
-      {
-        field: "supplyPrice",
-        headerName: "수급가",
-        valueFormatter: currencyFormatter,
-        width: 130,
-      },
-      {
-        field: "sellingPrice",
-        headerName: "판매가",
-        valueFormatter: currencyFormatter,
-        width: 130,
-      },
-      {
-        field: "paymentMethod",
-        headerName: "결제방식",
-        width: 100,
-      },
-      {
-        field: "hsCode",
-        headerName: "HS CODE",
-        width: 120,
-      },
-      {
-        field: "blNumber",
-        headerName: "BL no.",
-        width: 120,
-      },
-      {
-        field: "departurePort",
-        headerName: "port(출발항)",
-        width: 120,
-      },
-      {
-        field: "etd",
-        headerName: "ETD",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
-      {
-        field: "arrivalPort",
-        headerName: "port(도착항)",
-        width: 120,
-      },
-      {
-        field: "eta",
-        headerName: "ETA",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
-      {
-        field: "contractParty",
-        headerName: "계약처",
-        width: 120,
-      },
-      {
-        field: "customsDate",
-        headerName: "통관일자",
-        valueFormatter: dateFormatter,
-        width: 150,
-      },
+  const columnDefs = useMemo<ColDef[]>(() => {
+    const orderedColumns =
+      columnOrder.length > 0
+        ? columnOrder
+            .map((field) => {
+              const col = DEFAULT_SHIPMENT_COLUMN.find(
+                (c) => c.field === field,
+              );
+              if (!col) {
+                console.warn(
+                  `Column ${field} not found in DEFAULT_SHIPMENT_COLUMN`,
+                );
+                return null;
+              }
+              return col;
+            })
+            .filter((col): col is ColDef => col !== null)
+        : DEFAULT_SHIPMENT_COLUMN;
+
+    return [
+      ...orderedColumns,
       {
         headerName: "상세",
         field: "detail",
@@ -142,10 +51,47 @@ export default function ShipmentGrid() {
         filter: false,
         width: 100,
         pinned: "right",
+        lockPinned: false,
       },
-    ],
-    [],
-  );
+    ];
+  }, [columnOrder]);
+
+  // 컬럼 드래그 저장 핸들러
+  const handleColumnDragSave = useCallback(async (e: DragStoppedEvent) => {
+    const newColumnOrder = e.api
+      .getColumnState()
+      .map((c) => c.colId as string)
+      .filter((colId) => colId !== "detail");
+
+    try {
+      const result = await saveUserShipmentColumnOrder(newColumnOrder);
+      console.log("Column order save result:", result);
+
+      if (result.success) {
+        setColumnOrder(newColumnOrder);
+      }
+    } catch (error) {
+      console.error("컬럼 순서 저장 중 오류:", error);
+    }
+  }, []);
+
+  // 컬럼 순서 리셋 핸들러
+  const handleResetColumnOrder = useCallback(async () => {
+    try {
+      const result = await saveUserShipmentColumnOrder(
+        defaultShipmentColumnOrderFields,
+      );
+      if (result.success) {
+        setColumnOrder(defaultShipmentColumnOrderFields);
+      }
+    } catch (error) {
+      console.error("컬럼 순서 리셋 중 오류:", error);
+    }
+  }, []);
+
+  // 드래그 이벤트 훅 생성
+  const { onDragStarted, onDragStopped } =
+    useDragColumnChange(handleColumnDragSave);
 
   // DB 데이터 로딩
   useEffect(() => {
@@ -153,7 +99,9 @@ export default function ShipmentGrid() {
       try {
         setLoading(true);
         const data = await getShipmentData();
+        const userColumnOrder = await getUserShipmentColumnOrder();
         setRowData(data);
+        setColumnOrder(userColumnOrder || defaultShipmentColumnOrderFields);
         setError(null);
       } catch (err) {
         setError(
@@ -175,6 +123,9 @@ export default function ShipmentGrid() {
       data={rowData}
       loading={loading}
       error={error}
+      onDragStarted={onDragStarted}
+      onDragStopped={onDragStopped}
+      onResetColumnOrder={handleResetColumnOrder}
     />
   );
 }

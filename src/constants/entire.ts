@@ -1,5 +1,7 @@
+import { Importer } from "@/types/importer";
+
 // 필드 타입 정의
-export type InputFieldType = "text" | "select" | "number" | "date";
+export type InputFieldType = "text" | "select" | "number" | "date" | "textarea";
 
 // 가능한 값 타입들을 정의
 export type FieldValueType = "string" | "number" | "date";
@@ -24,7 +26,16 @@ interface BaseField {
   endAdornment?: string;
 }
 
-export const contractFields: BaseField[] = [
+// 수입회사 옵션을 설정하는 함수
+export const setImporterOptions = (importers: Importer[]) => {
+  return importers.map((importer) => ({
+    value: importer.importerName,
+    label: importer.importerName,
+  }));
+};
+
+// contractFields를 생성하는 함수
+export const createContractFields = (importers: Importer[]): BaseField[] => [
   { name: "contractNumber", label: "계약 번호", valueType: "string" },
   {
     name: "contractDate",
@@ -33,13 +44,13 @@ export const contractFields: BaseField[] = [
     type: "date",
   },
   {
-    name: "contractor",
-    label: "계약처",
+    name: "importerName",
+    label: "수입회사",
     valueType: "string",
     type: "select",
-    options: [], // 동적으로 채워질 예정
+    options: setImporterOptions(importers),
   },
-  { name: "importer", label: "수입처", valueType: "string" },
+  { name: "exporter", label: "공급업체", valueType: "string" },
   { name: "incoterms", label: "인코텀즈", valueType: "string" },
   { name: "departurePort", label: "출발항", gridSize: 6, valueType: "string" },
   { name: "arrivalPort", label: "도착항", gridSize: 6, valueType: "string" },
@@ -92,6 +103,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       name: "exchangeRate",
       label: "환율",
       valueType: "number",
+      endAdornment: "₩/USD",
     },
     {
       name: "counterpartBank",
@@ -117,12 +129,14 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       label: "선급금 비율",
       gridSize: 6,
       valueType: "number",
+      endAdornment: "%",
     },
     {
       name: "remainingPaymentRatio",
       label: "잔금 비율",
       gridSize: 6,
       valueType: "number",
+      endAdornment: "%",
     },
     {
       name: "advancePaymentAmount",
@@ -130,6 +144,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       gridSize: 6,
       valueType: "number",
       disabled: true,
+      endAdornment: "₩",
     },
     {
       name: "remainingPaymentAmount",
@@ -137,6 +152,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       gridSize: 6,
       valueType: "number",
       disabled: true,
+      endAdornment: "₩",
     },
   ],
   CAD: [
@@ -145,6 +161,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       name: "exchangeRate",
       label: "환율",
       valueType: "number",
+      endAdornment: "₩/USD",
     },
     {
       name: "paymentDueDate",
@@ -159,6 +176,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       name: "exchangeRate",
       label: "환율",
       valueType: "number",
+      endAdornment: "₩/USD",
     },
     {
       name: "paymentDueDate",
@@ -173,11 +191,13 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       name: "paymentTerm",
       label: "결제 기간",
       valueType: "string",
+      endAdornment: "일",
     },
     {
       name: "exchangeRate",
       label: "환율",
       valueType: "number",
+      endAdornment: "₩/USD",
     },
     {
       name: "paymentDueDate",
@@ -189,22 +209,30 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
 };
 
 export const costFields: BaseField[] = [
-  { name: "unitPrice", label: "단가 MT / $", valueType: "number" },
+  {
+    name: "unitPrice",
+    label: "단가",
+    valueType: "number",
+    endAdornment: "MT/USD",
+  },
   {
     name: "totalContractPrice",
     label: "총 계약가",
     valueType: "number",
+    endAdornment: "₩",
     disabled: true,
   },
   {
     name: "exchangeRate",
     label: "환율",
     valueType: "number",
+    endAdornment: "₩/USD",
   },
   {
     name: "costPerKg",
-    label: "원가 Kg / ₩",
+    label: "원가",
     valueType: "number",
+    endAdornment: "Kg/₩",
     disabled: true,
   },
   {
@@ -218,43 +246,138 @@ export const costFields: BaseField[] = [
     label: "관세액",
     valueType: "number",
     disabled: true,
+    endAdornment: "₩",
   },
-  { name: "transferFee", label: "송금수수료", valueType: "number" },
-  { name: "customsFee", label: "관세수수료", valueType: "number" },
-  { name: "inspectionFee", label: "검사료", valueType: "number" },
-  { name: "doCharge", label: "D/O Charge", valueType: "number" },
-  { name: "otherCosts", label: "기타비용", valueType: "number" },
-  { name: "purchaseFeeRate", label: "매입 수수료율", valueType: "number" },
+  {
+    name: "transferFee",
+    label: "송금수수료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "customsFee",
+    label: "관세수수료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "inspectionFee",
+    label: "검사료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "doCharge",
+    label: "D/O Charge",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "otherCosts",
+    label: "기타비용",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "purchaseFeeRate",
+    label: "매입 수수료율",
+    valueType: "number",
+    endAdornment: "%",
+  },
 ];
 
 export const contractAmountFields: BaseField[] = [
   {
     name: "contractorCost",
-    label: "계약처 원가",
+    label: "수입회사 원가",
     valueType: "number",
     disabled: true,
+    endAdornment: "Kg/₩",
   },
   {
     name: "supplyPrice",
-    label: "계약처 수급가",
+    label: "수입회사 수급가",
     valueType: "number",
     disabled: true,
+    endAdornment: "Kg/₩",
   },
   {
     name: "contractorProfit",
-    label: "계약처 이익",
+    label: "수입회사 이익",
     valueType: "number",
     disabled: true,
+    endAdornment: "₩",
   },
-  { name: "shippingCost", label: "배송비", valueType: "number" },
-  { name: "laborCost", label: "작업료", valueType: "number" },
-  { name: "transportStorageFee", label: "운송/보관료", valueType: "number" },
-  { name: "loadingUnloadingFee", label: "상하차 비용", valueType: "number" },
+  {
+    name: "shippingCost",
+    label: "배송비",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "laborCost",
+    label: "작업료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "transportStorageFee",
+    label: "운송/보관료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "loadingUnloadingFee",
+    label: "상하차 비용",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "usanceInterest",
+    label: "Usance 이자(환차손)",
+    valueType: "number",
+    endAdornment: "₩",
+  },
 ];
 
 export const expenseFields: BaseField[] = [
-  { name: "totalCost", label: "총비용", valueType: "number", disabled: true },
-  { name: "sellingPrice", label: "판매가", valueType: "number" },
-  { name: "margin", label: "마진", valueType: "number", disabled: true },
-  { name: "totalProfit", label: "총이익", valueType: "number", disabled: true },
+  {
+    name: "totalCost",
+    label: "총비용",
+    valueType: "number",
+    disabled: true,
+    endAdornment: "₩",
+  },
+  {
+    name: "sellingPrice",
+    label: "판매가(총판)",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "sellingPriceWholesale",
+    label: "판매가(도매)",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "sellingPriceRetail",
+    label: "판매가(소매)",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "margin",
+    label: "마진",
+    valueType: "number",
+    disabled: true,
+    endAdornment: "Kg/₩",
+  },
+  {
+    name: "totalProfit",
+    label: "총이익",
+    valueType: "number",
+    disabled: true,
+    endAdornment: "₩",
+  },
 ];
