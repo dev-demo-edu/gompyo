@@ -73,18 +73,24 @@ export default function EntireView({ cargoId }: EntireViewProps) {
   const handlePaymentMethodChange = (method: string) => {
     console.log("handlePaymentMethodChange called with:", method);
     setSelectedPaymentMethod(method);
-  };
 
-  // 결제 방식에 따른 필드 설정
-  useEffect(() => {
-    if (!selectedPaymentMethod) {
+    // 결제 방식에 따른 필드 설정
+    if (!method) {
       setCurrentPaymentFields(paymentFields);
       return;
     }
 
-    const methodFields = paymentMethodFields[selectedPaymentMethod] || [];
+    // L/C at sight와 Payment Usance의 경우 실제 키 값으로 변환
+    const actualMethod =
+      method === "L/C at sight"
+        ? "L/C"
+        : method === "Payment Usance"
+          ? "Usance"
+          : method;
+
+    const methodFields = paymentMethodFields[actualMethod] || [];
     setCurrentPaymentFields([...paymentFields, ...methodFields]);
-  }, [selectedPaymentMethod]);
+  };
 
   // DetailForm에 전달할 데이터
   const paymentData = {
