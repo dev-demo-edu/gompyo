@@ -63,7 +63,7 @@ export default function Login() {
           >
             <Box
               component="img"
-              src="/logo.png"
+              src="/gompyo.svg"
               alt="Gompyo Logo"
               sx={{
                 width: 200,
