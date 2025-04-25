@@ -24,7 +24,13 @@ export default function SidebarHeader({
     >
       {!isSidebarCollapsed && (
         <Link href="/">
-          <Image src="/logo.png" alt="Logo" width={120} height={27} priority />
+          <Image
+            src="/gompyo.svg"
+            alt="Logo"
+            width={120}
+            height={27}
+            priority
+          />
         </Link>
       )}
       {!isMobile && (

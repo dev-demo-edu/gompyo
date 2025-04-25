@@ -7,7 +7,7 @@ const publicPaths = ["/login"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/logo.png") {
+  if (pathname === "/gompyo.svg") {
     return NextResponse.next();
   }
 

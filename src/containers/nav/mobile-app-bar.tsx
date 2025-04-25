@@ -73,7 +73,7 @@ export default function MobileAppBar({
           </IconButton>
           {isMobile && (
             <Image
-              src="/logo.png"
+              src="/gompyo.svg"
               alt="Logo"
               width={100}
               height={22}
