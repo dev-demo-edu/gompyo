@@ -21,7 +21,7 @@ import {
   paymentsSeed,
   paymentsTtSeed,
   importersSeed,
-} from "./data/generated_seeds_from_kkk_20.js"; // 위에서 생성한 seed 데이터
+} from "./data/combinedSeeds.js"; // 위에서 생성한 seed 데이터
 import { users } from "./schema";
 import { nanoid } from "nanoid";
 import {
