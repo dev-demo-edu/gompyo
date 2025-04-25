@@ -1,9 +1,9 @@
 {
   "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/detail/[cargo_id]/page": "app/detail/[cargo_id]/page.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/login/page": "app/login/page.js",
   "/shipment/page": "app/shipment/page.js",
+  "/login/page": "app/login/page.js",
   "/page": "app/page.js",
-  "/plan/page": "app/plan/page.js",
-  "/detail/[cargo_id]/page": "app/detail/[cargo_id]/page.js"
+  "/plan/page": "app/plan/page.js"
 }

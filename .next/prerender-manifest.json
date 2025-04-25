@@ -30,30 +30,6 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/login": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "Next-Action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/login",
-      "dataRoute": "/login.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
     "/": {
       "experimentalBypassFor": [
         {
@@ -102,6 +78,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/login": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "Next-Action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/login",
+      "dataRoute": "/login.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/shipment": {
       "experimentalBypassFor": [
         {
@@ -130,8 +130,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "84339a272255e0bb7a8db1811a761c72",
-    "previewModeSigningKey": "3e108d8f63d0d2060a18977ddf0519bc2f1d9698fe80bc238e6cf1e4f89c90ce",
-    "previewModeEncryptionKey": "5c03a2d41bba015c8465a0d382fe4472088f78a0f87b1d791f5a2699f295c1c0"
+    "previewModeId": "4192b64f5d3d6d0192badcbbd2c3eece",
+    "previewModeSigningKey": "68b1e7957fea971fa920f536b4a8a4daf67d5cd8000f03696b2ca000049df9ed",
+    "previewModeEncryptionKey": "2df86012cc5e65268d16c31378bf6b8d35a55d9222be98e386275c35103b5f9e"
   }
 }
