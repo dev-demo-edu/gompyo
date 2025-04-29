@@ -1,9 +1,10 @@
 import DataGrid from "@/components/data-grid";
-import type { ColDef } from "ag-grid-community";
-import { useMemo } from "react";
+import type { ColDef, SelectionChangedEvent } from "ag-grid-community";
+import { useMemo, useCallback } from "react";
+import { useSetAtom } from "jotai";
+import { selectedAccountNumbersAtom } from "@/states/account-number";
 
-// 임시 계좌번호 데이터 타입 정의
-interface AccountNumberRow {
+export interface AccountNumberRow {
   id: number;
   accountNumber: string;
   bankName: string;
@@ -79,5 +80,20 @@ export default function AccountNumberGrid() {
     [],
   );
 
-  return <DataGrid<AccountNumberRow> columnDefs={columnDefs} data={mockData} />;
+  const setSelectedRows = useSetAtom(selectedAccountNumbersAtom);
+  const onSelectionChanged = useCallback(
+    (event: SelectionChangedEvent) => {
+      const selectedRows = event.api.getSelectedRows();
+      setSelectedRows(selectedRows);
+    },
+    [setSelectedRows],
+  );
+
+  return (
+    <DataGrid<AccountNumberRow>
+      columnDefs={columnDefs}
+      data={mockData}
+      onSelectionChanged={onSelectionChanged}
+    />
+  );
 }

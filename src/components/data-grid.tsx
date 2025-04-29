@@ -5,6 +5,7 @@ import type {
   ColDef,
   DragStartedEvent,
   DragStoppedEvent,
+  SelectionChangedEvent,
   GridApi,
   GridReadyEvent,
 } from "ag-grid-community";
@@ -45,6 +46,7 @@ interface DataGridProps<T> {
   onDragStarted?: (event: DragStartedEvent) => void;
   onDragStopped?: (event: DragStoppedEvent) => void;
   onResetColumnOrder?: () => void;
+  onSelectionChanged?: (event: SelectionChangedEvent) => void;
 }
 
 export default function DataGrid<T>({
@@ -55,6 +57,7 @@ export default function DataGrid<T>({
   onDragStarted,
   onDragStopped,
   onResetColumnOrder,
+  onSelectionChanged,
 }: DataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -245,6 +248,7 @@ export default function DataGrid<T>({
               onDragStarted={onDragStarted}
               onDragStopped={onDragStopped}
               onGridReady={handleGridReady}
+              onSelectionChanged={onSelectionChanged}
             />
           </div>
         )}
