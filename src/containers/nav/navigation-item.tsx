@@ -173,11 +173,12 @@ export default function NavigationItem({
                     primary={sub.text}
                     primaryTypographyProps={{
                       noWrap: true,
-                      style: {
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      },
+                      fontSize: 14,
+                      fontWeight: isActive ? 600 : 500,
+                      lineHeight: "20px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                     sx={{ minWidth: 0 }}
                   />
