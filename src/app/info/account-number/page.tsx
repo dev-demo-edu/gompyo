@@ -1,3 +1,5 @@
-export default function AccountNumber() {
-  return <div>AccountNumber</div>;
+import AccountNumber from "@/containers/info/account-number";
+
+export default function AccountNumberPage() {
+  return <AccountNumber />;
 }
