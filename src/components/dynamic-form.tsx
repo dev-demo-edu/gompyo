@@ -64,6 +64,7 @@ export type DynamicFormProps<Schema extends ZodType> = {
   submitLabel?: string;
   zodSchemas?: Schema[]; // 멀티 스텝 (optional)
   onCancel?: () => void;
+  fieldErrors?: Record<string, string>; // 추가: 외부에서 전달받은 필드별 에러
 };
 
 function getInitialValues<T extends Record<string, FieldValue>>(
@@ -87,6 +88,7 @@ export default function DynamicForm<Schema extends ZodType>({
   submitLabel = "저장",
   zodSchemas,
   onCancel,
+  fieldErrors = {}, // 추가
 }: DynamicFormProps<Schema>) {
   type T = InferZod<Schema>;
   const isMultiStep = !!steps;
@@ -192,6 +194,9 @@ export default function DynamicForm<Schema extends ZodType>({
     error?: string,
     idx?: number,
   ) => {
+    // 외부 에러와 내부 에러 통합
+    const fieldError = fieldErrors[field.name as string] || error;
+
     switch (field.type) {
       case "text":
       case "number":
@@ -211,8 +216,8 @@ export default function DynamicForm<Schema extends ZodType>({
               )
             }
             fullWidth
-            error={!!error}
-            helperText={error || field.helperText}
+            error={!!fieldError}
+            helperText={fieldError || field.helperText}
             InputLabelProps={
               field.type === "date" ? { shrink: true } : undefined
             }
@@ -223,7 +228,7 @@ export default function DynamicForm<Schema extends ZodType>({
         return (
           <FormControl
             fullWidth
-            error={!!error}
+            error={!!fieldError}
             key={field.name + (idx ?? "")}
             sx={{ mb: 1 }}
           >
@@ -239,9 +244,9 @@ export default function DynamicForm<Schema extends ZodType>({
                 </MenuItem>
               ))}
             </Select>
-            {error && (
+            {fieldError && (
               <Typography color="error" variant="caption">
-                {error}
+                {fieldError}
               </Typography>
             )}
           </FormControl>
@@ -306,15 +311,17 @@ export default function DynamicForm<Schema extends ZodType>({
                 </Box>
               ),
             )}
-            {error && (
+            {/* {fieldError && (
               <Typography color="error" variant="caption">
-                {error}
+                {fieldError}
               </Typography>
-            )}
+            )} */}
           </Box>
         );
       case "custom":
-        return field.render ? field.render({ value, onChange, error }) : null;
+        return field.render
+          ? field.render({ value, onChange, error: fieldError })
+          : null;
       default:
         return null;
     }

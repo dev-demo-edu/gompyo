@@ -13,6 +13,13 @@ export async function deleteAccountNumbers(ids: string[]) {
 export type AddAccountNumberInput = Omit<AccountNumberInput, "id">;
 
 export async function addAccountNumber(input: AddAccountNumberInput) {
+  const existingAccount = await AccountNumberService.getByAccountNumber(
+    input.accountNumber,
+  );
+  if (existingAccount) {
+    throw new Error("이미 존재하는 계좌번호입니다.");
+  }
+
   const newAccount: AccountNumberInput = {
     id: nanoid(),
     ...input,

@@ -6,7 +6,7 @@ import { selectedAccountNumbersAtom } from "@/states/account-number";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { useState } from "react";
-import AccountNumberModalContainer from "./account-number-modal-container";
+import AccountNumberAddModal from "./account-number-modal-container";
 import { AccountNumberDeleteConfirmModal } from "./account-number-modal-container";
 
 export default function AccountNumber() {
@@ -63,7 +63,7 @@ export default function AccountNumber() {
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <AccountNumberGrid />
         </div>
-        <AccountNumberModalContainer
+        <AccountNumberAddModal
           open={openAddModal}
           onClose={() => setOpenAddModal(false)}
         />

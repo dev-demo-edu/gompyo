@@ -24,6 +24,15 @@ export class AccountNumberService {
       .get();
   }
 
+  // 계좌 번호 조회
+  static async getByAccountNumber(accountNumber: string) {
+    return db
+      .select()
+      .from(accountNumbers)
+      .where(eq(accountNumbers.accountNumber, accountNumber))
+      .get();
+  }
+
   // 계좌 수정
   static async update(id: string, input: Partial<AccountNumberInput>) {
     await db.update(accountNumbers).set(input).where(eq(accountNumbers.id, id));

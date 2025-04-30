@@ -3,6 +3,7 @@ import { z } from "zod";
 import { addAccountNumber } from "@/actions/info/account-number-actions";
 import { useSetAtom } from "jotai";
 import { accountNumberRefreshAtom } from "@/states/account-number";
+import { useState } from "react";
 
 // zod 스키마 정의
 export const accountNumberSchema = z.object({
@@ -19,8 +20,8 @@ export type AccountNumberField = DynamicFormField<AccountNumberFormValues>;
 
 // 계좌 추가 폼 props 타입
 export interface AccountNumberFormProps {
+  onClose?: () => void;
   submitLabel?: string;
-  onSubmit?: () => void;
 }
 
 // 계좌 추가 폼 필드 정의 (필요에 따라 수정)
@@ -47,15 +48,32 @@ export const accountNumberFields: AccountNumberField[] = [
 
 // 계좌 추가 폼 컴포넌트
 export default function AccountNumberForm({
+  onClose,
   submitLabel = "저장",
-  onSubmit,
 }: AccountNumberFormProps) {
   const setRefresh = useSetAtom(accountNumberRefreshAtom);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (values: AccountNumberFormValues) => {
-    await addAccountNumber({ ...values, createdAt: new Date().toISOString() });
-    setRefresh((prev) => prev + 1);
-    onSubmit?.();
+    try {
+      await addAccountNumber({
+        ...values,
+        createdAt: new Date().toISOString(),
+      });
+      setRefresh((prev) => prev + 1);
+      setFieldErrors({}); // 에러 초기화
+      onClose?.();
+    } catch (error) {
+      if (error instanceof Error) {
+        setFieldErrors({
+          accountNumber: error.message,
+        });
+      } else {
+        setFieldErrors({
+          accountNumber: "오류가 발생했습니다.",
+        });
+      }
+    }
   };
 
   return (
@@ -64,6 +82,7 @@ export default function AccountNumberForm({
       onSubmit={handleSubmit}
       submitLabel={submitLabel}
       zodSchema={accountNumberSchema}
+      fieldErrors={fieldErrors}
     />
   );
 }

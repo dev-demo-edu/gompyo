@@ -24,7 +24,7 @@ export default function AccountNumberAddModal({
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>계좌 추가</DialogTitle>
       <DialogContent>
-        <AccountNumberForm onSubmit={onClose} />
+        <AccountNumberForm onClose={onClose} />
       </DialogContent>
     </Dialog>
   );
