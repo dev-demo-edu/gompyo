@@ -8,7 +8,10 @@ import { useState } from "react";
 // zod 스키마 정의
 export const accountNumberSchema = z.object({
   bankName: z.string().min(1, "은행명을 입력해주세요."),
-  accountNumber: z.string().min(1, "계좌번호를 입력해주세요."),
+  accountNumber: z
+    .string()
+    .min(1, "계좌번호를 입력해주세요.")
+    .regex(/^[0-9-]+$/, "숫자와 하이픈(-)만 입력 가능합니다."),
   owner: z.string().min(1, "예금주를 입력해주세요."),
 });
 
