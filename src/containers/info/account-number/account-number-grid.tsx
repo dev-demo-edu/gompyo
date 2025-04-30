@@ -4,32 +4,29 @@ import { useMemo, useCallback } from "react";
 import { useSetAtom } from "jotai";
 import { selectedAccountNumbersAtom } from "@/states/account-number";
 
-export interface AccountNumberRow {
-  id: number;
-  accountNumber: string;
-  bankName: string;
-  owner: string;
-  createdAt: string;
-}
+import { InferSelectModel } from "drizzle-orm";
+import { accountNumber } from "@/db/schema";
+
+export type AccountNumberRow = InferSelectModel<typeof accountNumber>;
 
 // 임시 데이터
 const mockData: AccountNumberRow[] = [
   {
-    id: 1,
+    id: "1",
     accountNumber: "123-456-789012",
     bankName: "국민은행",
     owner: "홍길동",
     createdAt: "2024-06-01",
   },
   {
-    id: 2,
+    id: "2",
     accountNumber: "987-654-321098",
     bankName: "신한은행",
     owner: "김철수",
     createdAt: "2024-05-20",
   },
   {
-    id: 3,
+    id: "3",
     accountNumber: "111-222-333444",
     bankName: "우리은행",
     owner: "이영희",
