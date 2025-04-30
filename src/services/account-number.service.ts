@@ -2,13 +2,7 @@ import { db } from "@/db";
 import { accountNumber } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 
-export interface AccountNumberInput {
-  id: string;
-  accountNumber: string;
-  bankName: string;
-  owner: string;
-  createdAt: string;
-}
+export type AccountNumberInput = typeof accountNumber.$inferInsert;
 
 export class AccountNumberService {
   // 계좌 추가

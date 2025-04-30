@@ -4,23 +4,27 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import AccountNumberForm from "./account-number-form";
+import { deleteAccountNumbers } from "@/actions/info/account-number-actions";
+import {
+  selectedAccountNumbersAtom,
+  accountNumberRefreshAtom,
+} from "@/states/account-number";
+import { useAtomValue, useSetAtom } from "jotai";
 
-interface AccountNumberModalContainerProps {
+interface AccountNumberAddModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: Record<string, string>) => void;
 }
 
-export default function AccountNumberModalContainer({
+export default function AccountNumberAddModal({
   open,
   onClose,
-  onSubmit,
-}: AccountNumberModalContainerProps) {
+}: AccountNumberAddModalProps) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>계좌 추가</DialogTitle>
       <DialogContent>
-        <AccountNumberForm onSubmit={onSubmit} />
+        <AccountNumberForm onSubmit={onClose} />
       </DialogContent>
     </Dialog>
   );
@@ -30,14 +34,20 @@ export default function AccountNumberModalContainer({
 interface AccountNumberDeleteConfirmModalProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
 }
 
 export function AccountNumberDeleteConfirmModal({
   open,
   onClose,
-  onConfirm,
 }: AccountNumberDeleteConfirmModalProps) {
+  const selectedRows = useAtomValue(selectedAccountNumbersAtom);
+  const setRefresh = useSetAtom(accountNumberRefreshAtom);
+
+  async function onConfirm() {
+    await deleteAccountNumbers(selectedRows.map((row) => row.id));
+    setRefresh((prev) => prev + 1);
+    onClose();
+  }
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>계좌 삭제 확인</DialogTitle>
@@ -45,7 +55,7 @@ export function AccountNumberDeleteConfirmModal({
         정말로 선택한 계좌를 삭제하시겠습니까?
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={onClose}>
+        <Button variant="outlined" color="primary">
           취소
         </Button>
         <Button variant="contained" color="primary" onClick={onConfirm}>

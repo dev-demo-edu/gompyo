@@ -19,3 +19,8 @@ export async function addAccountNumber(input: AddAccountNumberInput) {
   };
   await AccountNumberService.create(newAccount);
 }
+
+export async function getAccountNumbers() {
+  const accountNumbers = await AccountNumberService.getAll();
+  return accountNumbers;
+}
