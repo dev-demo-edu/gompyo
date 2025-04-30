@@ -186,6 +186,15 @@ export const historyLogs = sqliteTable("history_logs", {
   createdAt: text("created_at"),
 });
 
+// Account Number table
+export const accountNumbers = sqliteTable("account_numbers", {
+  id: text("id").primaryKey(),
+  accountNumber: text("account_number").notNull(),
+  bankName: text("bank_name").notNull(),
+  owner: text("owner").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 // Importers relations
 export const importersRelations = relations(importers, ({ many }) => ({
   contracts: many(contracts),
