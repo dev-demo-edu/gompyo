@@ -8,10 +8,10 @@ import {
 } from "@/states/account-number";
 
 import { InferSelectModel } from "drizzle-orm";
-import { accountNumber } from "@/db/schema";
+import { accountNumbers } from "@/db/schema";
 import { getAccountNumbers } from "@/actions/info/account-number-actions";
 
-export type AccountNumberRow = InferSelectModel<typeof accountNumber>;
+export type AccountNumberRow = InferSelectModel<typeof accountNumbers>;
 
 export default function AccountNumberGrid() {
   const [accountNumbers, setAccountNumbers] = useState<AccountNumberRow[]>([]);

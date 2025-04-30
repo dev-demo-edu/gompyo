@@ -187,7 +187,7 @@ export const historyLogs = sqliteTable("history_logs", {
 });
 
 // Account Number table
-export const accountNumber = sqliteTable("account_number", {
+export const accountNumbers = sqliteTable("account_numbers", {
   id: text("id").primaryKey(),
   accountNumber: text("account_number").notNull(),
   bankName: text("bank_name").notNull(),
