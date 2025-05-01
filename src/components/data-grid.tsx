@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import type {
   ColDef,
   DragStartedEvent,
   DragStoppedEvent,
+  SelectionChangedEvent,
+  GridApi,
+  GridReadyEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
@@ -19,7 +22,6 @@ import {
   RestartAlt as RestartAltIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
-
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // 상세 페이지 이동 버튼 렌더러
@@ -44,6 +46,7 @@ interface DataGridProps<T> {
   onDragStarted?: (event: DragStartedEvent) => void;
   onDragStopped?: (event: DragStoppedEvent) => void;
   onResetColumnOrder?: () => void;
+  onSelectionChanged?: (event: SelectionChangedEvent) => void;
 }
 
 export default function DataGrid<T>({
@@ -54,12 +57,16 @@ export default function DataGrid<T>({
   onDragStarted,
   onDragStopped,
   onResetColumnOrder,
+  onSelectionChanged,
 }: DataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showFilter, setShowFilter] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // ref 준비
+  const gridApiRef = useRef<GridApi | null>(null);
 
   // 기본 컬럼 설정
   const defaultColDef = useMemo(
@@ -73,19 +80,19 @@ export default function DataGrid<T>({
     [],
   );
 
-  // 기본 정렬 상태
-  const initialState = useMemo(
-    () => ({
-      sort: {
-        sortModel: [
-          {
-            colId: "contractDate",
-            sort: "desc" as const,
-          },
-        ],
-      },
-    }),
-    [],
+  // 컬럼 상태 생성
+  const columnState = useMemo(
+    () =>
+      columnDefs
+        .filter((col) => col.field)
+        .map((col) => ({
+          colId: col.field as string,
+          pinned: col.pinned,
+          flex: col.flex,
+          width: col.width,
+          lockPinned: col.lockPinned,
+        })),
+    [columnDefs],
   );
 
   const localeText = useMemo(() => AG_GRID_LOCALE_KR, []);
@@ -115,6 +122,20 @@ export default function DataGrid<T>({
       return matchesSearch && isWithinDateRange;
     });
   }, [data, searchTerm, startDate, endDate, columnDefs]);
+
+  // onGridReady에서 컬럼 상태 적용
+  const handleGridReady = useCallback(
+    (params: GridReadyEvent) => {
+      gridApiRef.current = params.api;
+
+      // localStorage 등에서 복구할 수도 있음
+      gridApiRef.current?.applyColumnState({
+        state: columnState,
+        applyOrder: true,
+      });
+    },
+    [columnState],
+  );
 
   if (error) {
     return (
@@ -220,13 +241,14 @@ export default function DataGrid<T>({
               rowData={filteredData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
-              initialState={initialState}
               pagination={true}
               paginationPageSize={15}
               rowSelection="multiple"
               localeText={localeText}
               onDragStarted={onDragStarted}
               onDragStopped={onDragStopped}
+              onGridReady={handleGridReady}
+              onSelectionChanged={onSelectionChanged}
             />
           </div>
         )}
