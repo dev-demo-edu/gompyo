@@ -1,18 +1,25 @@
 "use client";
 
 import BusinessNumberGrid from "./business-number-grid";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { selectedBusinessNumbersAtom } from "@/states/business-number";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BusinessNumberAddModal from "./business-number-modal";
 import { BusinessNumberDeleteConfirmModal } from "./business-number-modal";
 
 export default function BusinessNumber() {
   const selectedRows = useAtomValue(selectedBusinessNumbersAtom);
+  const setSelectedRows = useSetAtom(selectedBusinessNumbersAtom);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
+  useEffect(() => {
+    // 페이지 진입 시 선택된 행 초기화
+    setSelectedRows([]);
+    //TODO: SelectedRows 초기화 때문에 어색한 버튼 색깔 변경이 있는데 나중에 loading 변수 처리하기
+  }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
