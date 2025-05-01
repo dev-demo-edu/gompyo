@@ -1,3 +1,5 @@
-export default function BusinessNumber() {
-  return <div>BusinessNumber</div>;
+import BusinessNumber from "@/containers/info/business-number/business-number";
+
+export default function BusinessNumberPage() {
+  return <BusinessNumber />;
 }

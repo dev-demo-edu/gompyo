@@ -195,6 +195,15 @@ export const accountNumbers = sqliteTable("account_numbers", {
   createdAt: text("created_at").notNull(),
 });
 
+// Business Numbers table
+export const businessNumbers = sqliteTable("business_numbers", {
+  id: text("id").primaryKey(),
+  businessNumber: text("business_number").notNull(),
+  businessName: text("business_name").notNull(),
+  businessRepresentative: text("business_representative").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 // Importers relations
 export const importersRelations = relations(importers, ({ many }) => ({
   contracts: many(contracts),
