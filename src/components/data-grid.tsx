@@ -14,7 +14,6 @@ import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
 import {
   AllCommunityModule,
   ModuleRegistry,
-  themeMaterial,
   ICellRendererParams,
 } from "ag-grid-community";
 import {
@@ -22,6 +21,7 @@ import {
   RestartAlt as RestartAltIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { agGridTheme } from "@/styles/theme";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // 상세 페이지 이동 버튼 렌더러
@@ -237,7 +237,7 @@ export default function DataGrid<T>({
         ) : (
           <div className="w-full h-full">
             <AgGridReact
-              theme={themeMaterial}
+              theme={agGridTheme}
               rowData={filteredData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}

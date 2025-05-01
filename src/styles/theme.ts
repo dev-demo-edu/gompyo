@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import { themeMaterial } from "ag-grid-community";
 
 export const theme = createTheme({
   breakpoints: {
@@ -155,4 +156,9 @@ export const theme = createTheme({
     borderRadius: 8,
   },
   spacing: 8,
+});
+
+export const agGridTheme = themeMaterial.withParams({
+  accentColor: "#22C55E",
+  selectedRowBackgroundColor: "rgba(34, 197, 94, 0.1)",
 });
