@@ -1,9 +1,13 @@
 {
   "/favicon.ico/route": "/favicon.ico",
   "/detail/[cargo_id]/page": "/detail/[cargo_id]",
-  "/_not-found/page": "/_not-found",
-  "/shipment/page": "/shipment",
+  "/cashflow/page": "/cashflow",
+  "/info/account-number/page": "/info/account-number",
+  "/info/links/page": "/info/links",
   "/login/page": "/login",
+  "/_not-found/page": "/_not-found",
   "/page": "/",
+  "/info/business-number/page": "/info/business-number",
+  "/shipment/page": "/shipment",
   "/plan/page": "/plan"
 }

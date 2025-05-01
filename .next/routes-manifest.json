@@ -37,10 +37,34 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/cashflow",
+      "regex": "^/cashflow(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/cashflow(?:/)?$"
+    },
+    {
       "page": "/favicon.ico",
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/info/account-number",
+      "regex": "^/info/account\\-number(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/info/account\\-number(?:/)?$"
+    },
+    {
+      "page": "/info/business-number",
+      "regex": "^/info/business\\-number(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/info/business\\-number(?:/)?$"
+    },
+    {
+      "page": "/info/links",
+      "regex": "^/info/links(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/info/links(?:/)?$"
     },
     {
       "page": "/login",
