@@ -1,18 +1,25 @@
 "use client";
 
 import AccountNumberGrid from "./account-number-grid";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { selectedAccountNumbersAtom } from "@/states/account-number";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AccountNumberAddModal from "./account-number-modal-container";
 import { AccountNumberDeleteConfirmModal } from "./account-number-modal-container";
 
 export default function AccountNumber() {
   const selectedRows = useAtomValue(selectedAccountNumbersAtom);
+  const setSelectedRows = useSetAtom(selectedAccountNumbersAtom);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
+  useEffect(() => {
+    // 페이지 진입 시 선택된 행 초기화
+    setSelectedRows([]);
+    //TODO: SelectedRows 초기화 때문에 어색한 버튼 색깔 변경이 있는데 나중에 loading 변수 처리하기
+  }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
