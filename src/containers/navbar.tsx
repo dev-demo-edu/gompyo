@@ -20,6 +20,11 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NavigationItem from "./nav/navigation-item";
 import SidebarHeader from "./nav/sidebar-header";
 import MobileAppBar from "./nav/mobile-app-bar";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import BusinessIcon from "@mui/icons-material/Business";
+import LinkIcon from "@mui/icons-material/Link";
+import InfoIcon from "@mui/icons-material/Info";
+import SavingsIcon from "@mui/icons-material/Savings";
 
 const DRAWER_WIDTH = 240;
 const COLLAPSED_WIDTH = 64;
@@ -77,6 +82,33 @@ export default function Navbar() {
       href: "/shipment",
       icon: <LocalShippingIcon />,
     },
+    {
+      text: "수금 지출 계획",
+      href: "/cashflow",
+      icon: <SavingsIcon />,
+    },
+    {
+      text: "정보",
+      href: "/info",
+      icon: <InfoIcon />,
+      subItems: [
+        {
+          text: "계좌 번호",
+          href: "/info/account-number",
+          icon: <AccountBalanceIcon />,
+        },
+        {
+          text: "사업자 번호",
+          href: "/info/business-number",
+          icon: <BusinessIcon />,
+        },
+        {
+          text: "링크 모음",
+          href: "/info/links",
+          icon: <LinkIcon />,
+        },
+      ],
+    },
   ];
 
   const isActive = (item: { href: string }) => {
@@ -101,6 +133,7 @@ export default function Navbar() {
             isActive={isActive(item)}
             isSidebarCollapsed={isSidebarCollapsed}
             isMobile={isMobile}
+            subItems={item.subItems}
           />
         ))}
       </List>

@@ -15,6 +15,27 @@
       "when": 1745478245202,
       "tag": "0001_cheerful_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1745991606386,
+      "tag": "0002_plain_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1746010196591,
+      "tag": "0003_material_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1746019095948,
+      "tag": "0004_productive_cerise",
+      "breakpoints": true
     }
   ]
 }
