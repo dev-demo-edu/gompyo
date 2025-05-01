@@ -29,6 +29,13 @@
       "when": 1746010196591,
       "tag": "0003_material_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1746019095948,
+      "tag": "0004_productive_cerise",
+      "breakpoints": true
     }
   ]
 }
