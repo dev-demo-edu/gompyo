@@ -126,6 +126,7 @@ export default function ShipmentGrid() {
       onDragStarted={onDragStarted}
       onDragStopped={onDragStopped}
       onResetColumnOrder={handleResetColumnOrder}
+      searchDateField="contractDate"
     />
   );
 }

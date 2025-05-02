@@ -30,14 +30,14 @@ export interface AccountNumberFormProps {
 // 계좌 추가 폼 필드 정의 (필요에 따라 수정)
 export const accountNumberFields: AccountNumberField[] = [
   {
-    name: "bankName",
-    label: "은행명",
+    name: "accountNumber",
+    label: "계좌번호",
     type: "text",
     required: true,
   },
   {
-    name: "accountNumber",
-    label: "계좌번호",
+    name: "bankName",
+    label: "은행명",
     type: "text",
     required: true,
   },
