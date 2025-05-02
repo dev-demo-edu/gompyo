@@ -47,9 +47,10 @@ interface DataGridProps<T> {
   onDragStopped?: (event: DragStoppedEvent) => void;
   onResetColumnOrder?: () => void;
   onSelectionChanged?: (event: SelectionChangedEvent) => void;
+  searchDateField?: keyof T & string;
 }
 
-export default function DataGrid<T>({
+export default function DataGrid<T extends Record<string, unknown>>({
   columnDefs,
   data,
   loading = false,
@@ -58,6 +59,7 @@ export default function DataGrid<T>({
   onDragStopped,
   onResetColumnOrder,
   onSelectionChanged,
+  searchDateField,
 }: DataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -105,23 +107,26 @@ export default function DataGrid<T>({
         columnDefs.some((col) => {
           const field = col.field;
           if (!field) return false;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const value = (row as any)[field];
+          const value = row[field as keyof T];
           return (
             value &&
             value.toString().toLowerCase().includes(searchTerm.toLowerCase())
           );
         });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const contractDate = new Date((row as any).contractDate);
-      const isWithinDateRange =
-        (!startDate || contractDate >= new Date(startDate)) &&
-        (!endDate || contractDate <= new Date(endDate));
+      if (searchDateField) {
+        const searchDate = new Date(
+          row[searchDateField] as string | number | Date,
+        );
+        const isWithinDateRange =
+          (!startDate || searchDate >= new Date(startDate)) &&
+          (!endDate || searchDate <= new Date(endDate));
+        return matchesSearch && isWithinDateRange;
+      }
 
-      return matchesSearch && isWithinDateRange;
+      return matchesSearch;
     });
-  }, [data, searchTerm, startDate, endDate, columnDefs]);
+  }, [data, searchTerm, startDate, endDate, columnDefs, searchDateField]);
 
   // onGridReady에서 컬럼 상태 적용
   const handleGridReady = useCallback(
@@ -188,23 +193,25 @@ export default function DataGrid<T>({
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  조회 기간
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-3"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-                <input
-                  type="date"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
+              {searchDateField && (
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    조회 기간
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-3"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
+              )}
               {onResetColumnOrder && (
                 <button
                   onClick={onResetColumnOrder}

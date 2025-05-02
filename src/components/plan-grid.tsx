@@ -129,6 +129,7 @@ export default function PlanGrid() {
       onDragStarted={onDragStarted}
       onDragStopped={onDragStopped}
       onResetColumnOrder={handleResetColumnOrder}
+      searchDateField="contractDate"
     />
   );
 }
