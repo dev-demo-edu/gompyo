@@ -50,7 +50,7 @@ interface DataGridProps<T> {
   searchDateField?: keyof T & string;
 }
 
-export default function DataGrid<T extends Record<string, unknown>>({
+export default function DataGrid<T>({
   columnDefs,
   data,
   loading = false,
