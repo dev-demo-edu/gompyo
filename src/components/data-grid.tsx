@@ -50,7 +50,7 @@ interface DataGridProps<T> {
   searchDateField?: keyof T & string;
 }
 
-export default function DataGrid<T extends Record<string, unknown>>({
+export default function DataGrid<T>({
   columnDefs,
   data,
   loading = false,
@@ -119,9 +119,15 @@ export default function DataGrid<T extends Record<string, unknown>>({
           row[searchDateField] as string | number | Date,
         );
         const isWithinDateRange =
-          (!startDate || searchDate >= new Date(startDate)) &&
-          (!endDate || searchDate <= new Date(endDate));
-        return matchesSearch && isWithinDateRange;
+          searchDate >= new Date(startDate) && searchDate <= new Date(endDate);
+        if (startDate && endDate) {
+          return matchesSearch && isWithinDateRange;
+        } else if (startDate) {
+          return matchesSearch && searchDate >= new Date(startDate);
+        } else if (endDate) {
+          return matchesSearch && searchDate <= new Date(endDate);
+        }
+        return matchesSearch;
       }
 
       return matchesSearch;
