@@ -119,9 +119,15 @@ export default function DataGrid<T>({
           row[searchDateField] as string | number | Date,
         );
         const isWithinDateRange =
-          (!startDate || searchDate >= new Date(startDate)) &&
-          (!endDate || searchDate <= new Date(endDate));
-        return matchesSearch && isWithinDateRange;
+          searchDate >= new Date(startDate) && searchDate <= new Date(endDate);
+        if (startDate && endDate) {
+          return matchesSearch && isWithinDateRange;
+        } else if (startDate) {
+          return matchesSearch && searchDate >= new Date(startDate);
+        } else if (endDate) {
+          return matchesSearch && searchDate <= new Date(endDate);
+        }
+        return matchesSearch;
       }
 
       return matchesSearch;
