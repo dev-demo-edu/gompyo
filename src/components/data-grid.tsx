@@ -50,6 +50,12 @@ interface DataGridProps<T> {
   searchDateField?: keyof T & string;
 }
 
+// 추후 사용 여부에 따라서 utils로 빼기
+// 날짜를 'YYYY-MM-DD' 문자열로 변환하는 헬퍼 함수
+function toDateString(date: string | number | Date) {
+  return new Date(date).toISOString().slice(0, 10);
+}
+
 export default function DataGrid<T>({
   columnDefs,
   data,
@@ -115,17 +121,20 @@ export default function DataGrid<T>({
         });
 
       if (searchDateField) {
-        const searchDate = new Date(
-          row[searchDateField] as string | number | Date,
-        );
-        const isWithinDateRange =
-          searchDate >= new Date(startDate) && searchDate <= new Date(endDate);
-        if (startDate && endDate) {
+        const searchDateStr = toDateString(row[searchDateField] as Date);
+        const startDateStr = startDate ? toDateString(startDate) : null;
+        const endDateStr = endDate ? toDateString(endDate) : null;
+
+        if (startDateStr && endDateStr) {
+          const isWithinDateRange =
+            searchDateStr >= startDateStr && searchDateStr <= endDateStr;
           return matchesSearch && isWithinDateRange;
-        } else if (startDate) {
-          return matchesSearch && searchDate >= new Date(startDate);
-        } else if (endDate) {
-          return matchesSearch && searchDate <= new Date(endDate);
+        } else if (startDateStr) {
+          const isAfterStart = searchDateStr >= startDateStr;
+          return matchesSearch && isAfterStart;
+        } else if (endDateStr) {
+          const isBeforeEnd = searchDateStr <= endDateStr;
+          return matchesSearch && isBeforeEnd;
         }
         return matchesSearch;
       }
