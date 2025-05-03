@@ -36,6 +36,20 @@
       "when": 1746019095948,
       "tag": "0004_productive_cerise",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1746264294305,
+      "tag": "0005_goofy_senator_kelly",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1746274374095,
+      "tag": "0006_curvy_alex_wilder",
+      "breakpoints": true
     }
   ]
 }
