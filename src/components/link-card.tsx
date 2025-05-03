@@ -18,7 +18,7 @@ export interface LinkCardType {
   id: string;
   title: string;
   url: string;
-  thumbnailUrl?: string;
+  thumbnail?: string;
   isFavorite?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -82,9 +82,7 @@ const LinkCard = ({
           onErrorCapture={() => {
             setImageError(true);
           }}
-          image={
-            imageError ? "/gompyo.svg" : link.thumbnailUrl || "/gompyo.svg"
-          }
+          image={imageError ? "/gompyo.svg" : link.thumbnail || "/gompyo.svg"}
           alt={link.title}
           sx={{
             width: "100%",

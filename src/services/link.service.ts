@@ -4,7 +4,7 @@ import { eq, asc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { InferSelectModel } from "drizzle-orm";
 
-type Link = InferSelectModel<typeof links>;
+export type Link = InferSelectModel<typeof links>;
 
 // 링크 추가
 export class LinkService {

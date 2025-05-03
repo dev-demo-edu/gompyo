@@ -13,6 +13,7 @@
 
 //TODO: 액션들 수정 필요
 import { Link, LinkService } from "@/services/link.service";
+import { fetchOgImage } from "@/utils/fetchOgImage";
 
 // 링크 추가 액션
 export async function addLink(
@@ -20,7 +21,8 @@ export async function addLink(
   url: string,
   order: number,
 ): Promise<Link> {
-  return await LinkService.create(title, url, order);
+  const thumbnail = await fetchOgImage(url);
+  return await LinkService.create(title, url, order, thumbnail ?? "");
 }
 
 // 전체 링크 조회 액션
