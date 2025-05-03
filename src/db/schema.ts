@@ -204,6 +204,17 @@ export const businessNumbers = sqliteTable("business_numbers", {
   createdAt: text("created_at").notNull(),
 });
 
+// Links table
+export const links = sqliteTable("links", {
+  id: text("id").primaryKey(), // UUID 등 고유값
+  title: text("title").notNull(), // 링크 제목
+  url: text("url").notNull(), // 링크 URL
+  thumbnail: text("thumbnail"), // 썸네일 URL
+  order: integer("order").notNull(), // 정렬 순서(작은 값이 먼저)
+  createdAt: text("created_at").notNull(), // 생성일(ISO string)
+  updatedAt: text("updated_at").notNull(), // 수정일(ISO string)
+});
+
 // Importers relations
 export const importersRelations = relations(importers, ({ many }) => ({
   contracts: many(contracts),
