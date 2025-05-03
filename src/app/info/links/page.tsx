@@ -1,3 +1,5 @@
-export default function Links() {
-  return <div>Links</div>;
+import Links from "@/containers/info/links/links";
+
+export default function LinksPage() {
+  return <Links />;
 }
