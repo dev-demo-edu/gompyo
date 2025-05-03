@@ -22,7 +22,7 @@ import SidebarHeader from "./nav/sidebar-header";
 import MobileAppBar from "./nav/mobile-app-bar";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessIcon from "@mui/icons-material/Business";
-// import LinkIcon from "@mui/icons-material/Link";
+import LinkIcon from "@mui/icons-material/Link";
 import InfoIcon from "@mui/icons-material/Info";
 // import SavingsIcon from "@mui/icons-material/Savings";
 
@@ -102,11 +102,11 @@ export default function Navbar() {
           href: "/info/business-number",
           icon: <BusinessIcon />,
         },
-        // {
-        //   text: "링크 모음",
-        //   href: "/info/links",
-        //   icon: <LinkIcon />,
-        // },
+        {
+          text: "링크 모음",
+          href: "/info/links",
+          icon: <LinkIcon />,
+        },
       ],
     },
   ];
