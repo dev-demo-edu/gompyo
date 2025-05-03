@@ -1,110 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LinkAddModal from "./links-modal";
-import { getLinks, deleteLink } from "@/actions/info/link-actions";
-import { LinkCardType } from "@/components/link-card";
 import LinkList from "@/components/link-list";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import CircularProgress from "@mui/material/CircularProgress";
-
-const mockLinks: LinkCardType[] = [
-  {
-    id: "1",
-    title: "구글",
-    url: "https://www.google.com",
-    order: 1,
-    createdAt: "2024-06-01T10:00:00.000Z",
-    updatedAt: "2024-06-01T10:00:00.000Z",
-    isFavorite: true,
-    thumbnailUrl:
-      "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
-  },
-  {
-    id: "2",
-    title: "네이버",
-    url: "https://www.naver.com",
-    order: 2,
-    createdAt: "2024-06-01T10:01:00.000Z",
-    updatedAt: "2024-06-01T10:01:00.000Z",
-    isFavorite: false,
-    thumbnailUrl:
-      "https://s.pstatic.net/static/www/mobile/edit/20230517_1095/upload_1684304309282rTg0A.png",
-  },
-  {
-    id: "3",
-    title: "깃허브",
-    url: "https://github.com",
-    order: 3,
-    createdAt: "2024-06-01T10:02:00.000Z",
-    updatedAt: "2024-06-01T10:02:00.000Z",
-    isFavorite: true,
-    thumbnailUrl:
-      "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-  },
-  {
-    id: "4",
-    title: "유튜브",
-    url: "https://www.youtube.com",
-    order: 4,
-    createdAt: "2024-06-01T10:03:00.000Z",
-    updatedAt: "2024-06-01T10:03:00.000Z",
-    isFavorite: false,
-    thumbnailUrl:
-      "https://www.youtube.com/s/desktop/6e8e7e1d/img/favicon_144x144.png",
-  },
-  {
-    id: "5",
-    title: "유튜브",
-    url: "https://www.youtube.com",
-    order: 4,
-    createdAt: "2024-06-01T10:03:00.000Z",
-    updatedAt: "2024-06-01T10:03:00.000Z",
-    isFavorite: false,
-    thumbnailUrl:
-      "https://www.youtube.com/s/desktop/6e8e7e1d/img/favicon_144x144.png",
-  },
-];
 
 export default function Links() {
   const [openLinkAddModal, setOpenLinkAddModal] = useState(false);
-  const [links, setLinks] = useState<LinkCardType[]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // 링크 목록 불러오기
-  const fetchLinks = async () => {
-    setLoading(true);
-    const data = await getLinks();
-    setLinks(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    // 실제 데이터 연동 시 fetchLinks() 사용
-    fetchLinks();
-    setLinks(mockLinks);
-  }, []);
-
-  // 즐겨찾기 토글
-  const handleToggleFavorite = (id: string) => {
-    setLinks((prev) =>
-      prev.map((link) =>
-        link.id === id ? { ...link, isFavorite: !link.isFavorite } : link,
-      ),
-    );
-  };
-
-  // 삭제
-  const handleDelete = async (id: string) => {
-    setLinks((prev) => prev.filter((link) => link.id !== id));
-    await deleteLink(id);
-  };
-
-  return loading ? (
-    <CircularProgress />
-  ) : (
+  return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8">
         <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
@@ -155,22 +61,8 @@ export default function Links() {
             {editMode ? "편집 종료" : "편집 모드"}
           </Button>
         </Stack>
-        {/* 편집 모드일 때만 dnd-kit, 아닐 때는 일반 리스트 */}
-        {editMode ? (
-          <LinkList
-            links={links}
-            setLinks={setLinks}
-            onToggleFavorite={handleToggleFavorite}
-            onDelete={handleDelete}
-            draggable={editMode}
-          />
-        ) : (
-          <LinkList
-            links={links}
-            onToggleFavorite={handleToggleFavorite}
-            onDelete={handleDelete}
-          />
-        )}
+        {/* LinkList에서 links 상태와 핸들러를 모두 관리 */}
+        <LinkList editMode={editMode} />
       </div>
       <LinkAddModal
         open={openLinkAddModal}

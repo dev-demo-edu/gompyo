@@ -2,15 +2,9 @@ import { db } from "@/db";
 import { links } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { InferSelectModel } from "drizzle-orm";
 
-export interface Link {
-  id: string;
-  title: string;
-  url: string;
-  order: number;
-  createdAt: string;
-  updatedAt: string;
-}
+type Link = InferSelectModel<typeof links>;
 
 // 링크 추가
 export class LinkService {
@@ -18,6 +12,7 @@ export class LinkService {
     title: string,
     url: string,
     order: number,
+    thumbnail: string,
   ): Promise<Link> {
     const now = new Date().toISOString();
     const id = nanoid();
@@ -25,11 +20,12 @@ export class LinkService {
       id,
       title,
       url,
+      thumbnail,
       order,
       createdAt: now,
       updatedAt: now,
     });
-    return { id, title, url, order, createdAt: now, updatedAt: now };
+    return { id, title, url, thumbnail, order, createdAt: now, updatedAt: now };
   }
 
   // 전체 링크 조회 (order 순)
