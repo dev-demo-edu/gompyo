@@ -41,7 +41,12 @@ const LinkList = ({ editMode = false }: LinkListProps) => {
   const fetchLinks = async () => {
     setLoading(true);
     const data = await getLinks();
-    setLinks(data);
+    setLinks(
+      data.map((link) => ({
+        ...link,
+        thumbnail: link.thumbnail || undefined,
+      })),
+    );
     setLoading(false);
   };
 

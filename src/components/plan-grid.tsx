@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import type { ColDef, DragStoppedEvent } from "ag-grid-community";
 import { IPlanData } from "@/types/grid-col";
-import DataGrid, { DetailButtonRenderer } from "./data-grid";
 import { getPlanData } from "@/actions/plan";
 import {
   getUserPlanColumnOrder,
@@ -16,7 +15,8 @@ import {
   DEFAULT_PLAN_COLUMN,
   defaultPlanColumnOrderFields,
 } from "@/constants/column";
-
+import FilterGrid from "./filter-grid";
+import { DetailButtonRenderer } from "./cell-renderers";
 // 컬럼 드래그 커스텀 훅
 
 export default function PlanGrid() {
@@ -121,7 +121,7 @@ export default function PlanGrid() {
   }, [refreshTrigger]);
 
   return (
-    <DataGrid
+    <FilterGrid
       columnDefs={columnDefs}
       data={rowData}
       loading={loading}
