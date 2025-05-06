@@ -2,7 +2,7 @@ import DataGrid from "@/components/data-grid";
 // import type { ColDef, SelectionChangedEvent } from "ag-grid-community";
 import type { ColDef } from "ag-grid-community";
 // import { useMemo, useCallback, useState, useEffect } from "react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 // import { useSetAtom, useAtomValue } from "jotai";
 // import {
 //   selectedAccountNumbersAtom,
@@ -11,75 +11,52 @@ import { useMemo } from "react";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
-// import { getAccountNumbers } from "@/actions/info/account-number-actions";
-import Grid from "@mui/material/Grid";
+import { useAtomValue, useSetAtom } from "jotai";
 
 // 현금 흐름 목 데이터 타입 정의
-export interface CashflowItem {
-  id: string;
-  date: string;
-  company: string;
-  amount: number;
-  type: "income" | "expense"; // 수입 또는 지출
-  createdAt: string;
-  updatedAt: string;
-}
 
-// 목 데이터 생성 함수
-export const getMockCashflowData = (): CashflowItem[] => {
-  return [
-    {
-      id: "1",
-      date: "2023-05-01",
-      company: "(주)한국무역",
-      amount: 5000000,
-      type: "income",
-      createdAt: "2023-05-01T09:00:00Z",
-      updatedAt: "2023-05-01T09:00:00Z",
-    },
-    {
-      id: "2",
-      date: "2023-05-10",
-      company: "해운물류(주)",
-      amount: -1500000,
-      type: "expense",
-      createdAt: "2023-05-10T14:30:00Z",
-      updatedAt: "2023-05-10T14:30:00Z",
-    },
-    {
-      id: "3",
-      date: "2023-05-15",
-      company: "세관",
-      amount: -800000,
-      type: "expense",
-      createdAt: "2023-05-15T11:20:00Z",
-      updatedAt: "2023-05-15T11:20:00Z",
-    },
-    {
-      id: "4",
-      date: "2023-05-25",
-      company: "(주)대한유통",
-      amount: 8000000,
-      type: "income",
-      createdAt: "2023-05-25T16:45:00Z",
-      updatedAt: "2023-05-25T16:45:00Z",
-    },
-  ];
-};
+import {
+  CashflowItem,
+  cashflowListAtom,
+  cashflowRefreshAtom,
+  selectedCompanyFlowsAtom,
+  selectedCompanyIdAtom,
+} from "@/states/cashflow-state";
+import Typography from "@mui/material/Typography";
+import { getCashflowList } from "@/actions/cashflow";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+
+export function mapCashflowWithTotal<T extends CashflowItem>(
+  items: T[],
+): (T & { total: number; company: string })[] {
+  let sum = 0;
+  return items.map((item) => {
+    sum += item.amount;
+    return {
+      ...item,
+      company: item.counterparty,
+      total: sum,
+    };
+  });
+}
 
 export type AccountNumberRow = InferSelectModel<typeof accountNumbers>;
 
 export default function CashflowGrid() {
-  const cashflowsData = getMockCashflowData();
-  // const refresh = useAtomValue(accountNumberRefreshAtom);
+  const selectedCompanyId = useAtomValue(selectedCompanyIdAtom);
+  const selectedCompanyFlows = useAtomValue(selectedCompanyFlowsAtom);
+  const refresh = useAtomValue(cashflowRefreshAtom);
+  const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
+  const setCashflowList = useSetAtom(cashflowListAtom);
 
-  // useEffect(() => {
-  //   const fetchAccountNumbers = async () => {
-  //     const accountNumbers = await getAccountNumbers();
-  //     setAccountNumbers(accountNumbers);
-  //   };
-  //   fetchAccountNumbers();
-  // }, [refresh]);
+  useEffect(() => {
+    const fetchAccountNumbers = async () => {
+      const cashflows = await getCashflowList();
+      setCashflowList(cashflows);
+    };
+    fetchAccountNumbers();
+  }, [refresh]);
 
   // 컬럼 정의
   const columnDefs = useMemo<ColDef[]>(
@@ -98,7 +75,7 @@ export default function CashflowGrid() {
       {
         headerName: "날짜",
         field: "date",
-        minWidth: 180,
+        minWidth: 150,
         flex: 1,
       },
       {
@@ -139,27 +116,59 @@ export default function CashflowGrid() {
   // );
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-[800px] bg-slate-50 rounded-xl overflow-hidden shadow-lg p-6 gap-6">
-      <Grid container spacing={2} className="w-full h-[800px]">
-        <Grid item xs={12} md={6} className="h-full">
+    <div className="h-[75vh] flex flex-col overflow-hidden ">
+      {/* 상단 Tabs 영역: 고정 높이 */}
+      <div
+        className="flex flex-row justify-between items-end flex-shrink-0"
+        style={{ minHeight: 48 }}
+      >
+        <Tabs
+          value={selectedCompanyId}
+          onChange={(_, value) => setSelectedCompanyId(value)}
+          scrollButtons="auto"
+          className="mb-4"
+        >
+          <Tab label="곰표" value="com-1" />
+          <Tab label="램플러스" value="com-2" />
+          <Tab label="인우" value="com-3" />
+        </Tabs>
+        <Typography
+          className="text-right font-extralight text-gray-500 align-bottom pb-2 mb-0"
+          sx={{
+            fontSize: "12px",
+            verticalAlign: "bottom",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+        >
+          * 금액 단위: 100만원
+        </Typography>
+      </div>
+      {/* DataGrid 영역: 남은 영역 모두 차지 */}
+      <div className="flex flex-col md:flex-row w-full flex-1 gap-x-6 h-0">
+        <div className="w-full h-full">
           <div className="scale-[0.8] origin-top-left w-[125%] h-[125%]">
             <DataGrid<CashflowItem>
               columnDefs={columnDefs}
-              data={cashflowsData}
+              data={mapCashflowWithTotal(
+                selectedCompanyFlows.filter((flow) => flow.type === "expense"),
+              )}
               // onSelectionChanged={onSelectionChanged}
             />
           </div>
-        </Grid>
-        <Grid item xs={12} md={6} className="h-full">
+        </div>
+        <div className="w-full h-full">
           <div className="scale-[0.8] origin-top-left w-[125%] h-[125%]">
             <DataGrid<CashflowItem>
               columnDefs={columnDefs}
-              data={cashflowsData}
+              data={mapCashflowWithTotal(
+                selectedCompanyFlows.filter((flow) => flow.type === "income"),
+              )}
               // onSelectionChanged={onSelectionChanged}
             />
           </div>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </div>
   );
 }

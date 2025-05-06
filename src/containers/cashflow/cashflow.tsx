@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 import CashflowGrid from "./cashflow-grid";
 // import Box from "@mui/material/Box";
 
-export default function Links() {
+export default function CashflowContainer() {
   // const [openLinkAddModal, setOpenLinkAddModal] = useState(false);
   // const [editMode, setEditMode] = useState(false);
 
@@ -77,9 +77,7 @@ export default function Links() {
             목록 추가
           </Button>
         </Stack>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <CashflowGrid />
-        </div>
+        <CashflowGrid />
       </div>
       {/* <LinkAddModal
         open={openLinkAddModal}
