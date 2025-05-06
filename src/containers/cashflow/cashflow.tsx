@@ -5,10 +5,28 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CashflowGrid from "./cashflow-grid";
 // import Box from "@mui/material/Box";
+import { useEffect } from "react";
+import { useSetAtom } from "jotai";
+import {
+  companyListAtom,
+  selectedCompanyIdAtom,
+} from "@/states/cashflow-state";
+import { getCompanyList } from "@/actions/cashflow";
 
 export default function CashflowContainer() {
   // const [openLinkAddModal, setOpenLinkAddModal] = useState(false);
   // const [editMode, setEditMode] = useState(false);
+  const setCompanyList = useSetAtom(companyListAtom);
+  const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
+
+  useEffect(() => {
+    const fetchCompanyList = async () => {
+      const companies = await getCompanyList();
+      setCompanyList(companies);
+      setSelectedCompanyId(companies[0].id);
+    };
+    fetchCompanyList();
+  }, [setCompanyList]);
 
   return (
     <div className="w-full min-h-screen bg-gray-100">

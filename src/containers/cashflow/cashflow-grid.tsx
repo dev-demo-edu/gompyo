@@ -1,26 +1,19 @@
 import DataGrid from "@/components/data-grid";
-// import type { ColDef, SelectionChangedEvent } from "ag-grid-community";
-import type { ColDef } from "ag-grid-community";
-// import { useMemo, useCallback, useState, useEffect } from "react";
+import type { ColDef, SelectionChangedEvent } from "ag-grid-community";
 import { useEffect, useMemo } from "react";
-// import { useSetAtom, useAtomValue } from "jotai";
-// import {
-//   selectedAccountNumbersAtom,
-//   accountNumberRefreshAtom,
-// } from "@/states/account-number";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
 import { useAtomValue, useSetAtom } from "jotai";
-
-// 현금 흐름 목 데이터 타입 정의
-
 import {
   CashflowItem,
   cashflowListAtom,
   cashflowRefreshAtom,
+  companyListAtom,
   selectedCompanyFlowsAtom,
   selectedCompanyIdAtom,
+  selectedExpenseRowsAtom,
+  selectedIncomeRowsAtom,
 } from "@/states/cashflow-state";
 import Typography from "@mui/material/Typography";
 import { getCashflowList } from "@/actions/cashflow";
@@ -49,13 +42,16 @@ export default function CashflowGrid() {
   const refresh = useAtomValue(cashflowRefreshAtom);
   const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
   const setCashflowList = useSetAtom(cashflowListAtom);
+  const companyList = useAtomValue(companyListAtom);
+  const setSelectedExpenseRows = useSetAtom(selectedExpenseRowsAtom);
+  const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
 
   useEffect(() => {
-    const fetchAccountNumbers = async () => {
+    const fetchCashflowList = async () => {
       const cashflows = await getCashflowList();
       setCashflowList(cashflows);
     };
-    fetchAccountNumbers();
+    fetchCashflowList();
   }, [refresh]);
 
   // 컬럼 정의
@@ -106,14 +102,12 @@ export default function CashflowGrid() {
     [],
   );
 
-  // const setSelectedRows = useSetAtom(selectedAccountNumbersAtom);
-  // const onSelectionChanged = useCallback(
-  //   (event: SelectionChangedEvent) => {
-  //     const selectedRows = event.api.getSelectedRows();
-  //     setSelectedRows(selectedRows);
-  //   },
-  //   [setSelectedRows],
-  // );
+  const handleExpenseSelection = (event: SelectionChangedEvent) => {
+    setSelectedExpenseRows(event.api.getSelectedRows());
+  };
+  const handleIncomeSelection = (event: SelectionChangedEvent) => {
+    setSelectedIncomeRows(event.api.getSelectedRows());
+  };
 
   return (
     <div className="h-[75vh] flex flex-col overflow-hidden ">
@@ -128,9 +122,9 @@ export default function CashflowGrid() {
           scrollButtons="auto"
           className="mb-4"
         >
-          <Tab label="곰표" value="com-1" />
-          <Tab label="램플러스" value="com-2" />
-          <Tab label="인우" value="com-3" />
+          {companyList.map((company) => (
+            <Tab key={company.id} label={company.name} value={company.id} />
+          ))}
         </Tabs>
         <Typography
           className="text-right font-extralight text-gray-500 align-bottom pb-2 mb-0"
@@ -153,7 +147,7 @@ export default function CashflowGrid() {
               data={mapCashflowWithTotal(
                 selectedCompanyFlows.filter((flow) => flow.type === "expense"),
               )}
-              // onSelectionChanged={onSelectionChanged}
+              onSelectionChanged={handleExpenseSelection}
             />
           </div>
         </div>
@@ -164,7 +158,7 @@ export default function CashflowGrid() {
               data={mapCashflowWithTotal(
                 selectedCompanyFlows.filter((flow) => flow.type === "income"),
               )}
-              // onSelectionChanged={onSelectionChanged}
+              onSelectionChanged={handleIncomeSelection}
             />
           </div>
         </div>
