@@ -42,6 +42,17 @@ export default function ShipmentGrid() {
         : DEFAULT_SHIPMENT_COLUMN;
 
     return [
+      {
+        headerName: "",
+        checkboxSelection: true,
+        minWidth: 50,
+        flex: 1,
+        headerCheckboxSelection: true,
+        filter: false,
+        pinned: "left",
+        lockPinned: true,
+        width: 70,
+      },
       ...orderedColumns,
       {
         headerName: "상세",
