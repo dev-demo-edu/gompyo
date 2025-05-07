@@ -33,7 +33,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import { useSetAtom } from "jotai";
-import { refreshPlanAtom } from "@/states/document-state";
+import { cargoRefreshAtom } from "@/states/plan";
 import { getAllImporters, createImporter } from "@/actions/importer";
 import type { Importer } from "@/types/importer";
 import { CalculationType } from "@/types/importer";
@@ -252,7 +252,7 @@ export default function PlanButton() {
     setStep(1);
   };
 
-  const setRefresh = useSetAtom(refreshPlanAtom);
+  const setRefresh = useSetAtom(cargoRefreshAtom);
 
   const handleSubmit = async () => {
     if (!contractData) {
@@ -270,7 +270,7 @@ export default function PlanButton() {
       console.log("제출할 데이터:", { contractData, cargoItems });
       const result = await createPlan(contractData, cargoItems);
       if (result.success) {
-        setRefresh((prev) => !prev);
+        setRefresh((prev) => prev + 1);
         handleClose();
       } else {
         alert(result.message);
@@ -981,7 +981,7 @@ export default function PlanButton() {
 
   return (
     // 오른쪽 끝으로 설정하기 위해서 flex justify-end 추가
-    <div className="w-full flex justify-end">
+    <div>
       <Button
         variant="contained"
         onClick={handleOpen}

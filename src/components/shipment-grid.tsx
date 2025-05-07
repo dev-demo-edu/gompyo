@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import type { ColDef, DragStoppedEvent } from "ag-grid-community";
+import type {
+  ColDef,
+  DragStoppedEvent,
+  SelectionChangedEvent,
+} from "ag-grid-community";
 import { IShipmentData } from "@/types/grid-col";
 import DataGrid, { DetailButtonRenderer } from "./data-grid";
 import { getShipmentData } from "@/actions/shipment";
@@ -14,6 +18,8 @@ import {
   DEFAULT_SHIPMENT_COLUMN,
   defaultShipmentColumnOrderFields,
 } from "@/constants/column";
+import { useAtomValue, useSetAtom } from "jotai";
+import { cargoRefreshAtom, selectedCargosAtom } from "@/states/shipment";
 
 export default function ShipmentGrid() {
   const [rowData, setRowData] = useState<IShipmentData[]>([]);
@@ -42,6 +48,17 @@ export default function ShipmentGrid() {
         : DEFAULT_SHIPMENT_COLUMN;
 
     return [
+      {
+        headerName: "",
+        checkboxSelection: true,
+        minWidth: 50,
+        flex: 1,
+        headerCheckboxSelection: true,
+        filter: false,
+        pinned: "left",
+        lockPinned: true,
+        width: 70,
+      },
       ...orderedColumns,
       {
         headerName: "상세",
@@ -94,6 +111,7 @@ export default function ShipmentGrid() {
     useDragColumnChange(handleColumnDragSave);
 
   // DB 데이터 로딩
+  const refreshTrigger = useAtomValue(cargoRefreshAtom);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -115,7 +133,16 @@ export default function ShipmentGrid() {
     };
 
     fetchData();
-  }, []);
+  }, [refreshTrigger]);
+
+  const setSelectedRows = useSetAtom(selectedCargosAtom);
+  const onSelectionChanged = useCallback(
+    (event: SelectionChangedEvent) => {
+      const selectedRows = event.api.getSelectedRows();
+      setSelectedRows(selectedRows);
+    },
+    [setSelectedRows],
+  );
 
   return (
     <DataGrid
@@ -127,6 +154,7 @@ export default function ShipmentGrid() {
       onDragStopped={onDragStopped}
       onResetColumnOrder={handleResetColumnOrder}
       searchDateField="contractDate"
+      onSelectionChanged={onSelectionChanged}
     />
   );
 }
