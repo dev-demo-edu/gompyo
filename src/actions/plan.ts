@@ -13,7 +13,7 @@ import {
 } from "@/db/schema";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { contractSchema, cargoSchema } from "@/containers/plan-button";
+import { contractSchema, cargoSchema } from "@/containers/plan/plan-button";
 import { IPlanData } from "@/types/grid-col";
 import { mapAndCalculateCargoDetails } from "@/services/cargo-calculator";
 import type { CargoDetailData } from "@/types/cargo-detail";
@@ -27,6 +27,7 @@ import { PaymentService } from "@/services/payment.service";
 import { ImporterService } from "@/services/importer.service";
 import { CalculationType } from "@/types/importer";
 import { statusMapping } from "@/constants/cargo-status";
+import { inArray } from "drizzle-orm";
 type ContractData = z.infer<typeof contractSchema>;
 type CargoItem = z.infer<typeof cargoSchema>;
 
@@ -408,5 +409,15 @@ export async function getPlanData(): Promise<IPlanData[]> {
   } catch (error) {
     console.error("Failed to fetch plan data:", error);
     throw new Error("계획 데이터를 불러오는데 실패했습니다.");
+  }
+}
+
+//TODO: 추후 구현
+export async function deletePlans(ids: string[]) {
+  try {
+    await db.delete(cargos).where(inArray(cargos.id, ids));
+  } catch (error) {
+    console.error("Failed to delete plans:", error);
+    throw new Error("계획 삭제 중 오류가 발생했습니다.");
   }
 }
