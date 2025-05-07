@@ -8,15 +8,15 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { cargoRefreshAtom, selectedCargosAtom } from "@/states/plan";
 
 // 계획 삭제 확인 모달 컴포넌트
-interface PlanDeleteConfirmModalProps {
+interface CargoDeleteConfirmModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export function PlanDeleteConfirmModal({
+export function CargoDeleteConfirmModal({
   open,
   onClose,
-}: PlanDeleteConfirmModalProps) {
+}: CargoDeleteConfirmModalProps) {
   const selectedRows = useAtomValue(selectedCargosAtom);
   const setRefresh = useSetAtom(cargoRefreshAtom);
 

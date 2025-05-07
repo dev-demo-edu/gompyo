@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import { useAtom } from "jotai";
 import { selectedCargosAtom } from "@/states/plan";
 import { useEffect, useState } from "react";
-import { PlanDeleteConfirmModal } from "./plan-modal";
+import { CargoDeleteConfirmModal } from "@/containers/plan/cargo-delete-modal";
 import Stack from "@mui/material/Stack";
 
 export default function Plan() {
@@ -45,7 +45,7 @@ export default function Plan() {
           <PlanGrid />
         </div>
       </div>
-      <PlanDeleteConfirmModal
+      <CargoDeleteConfirmModal
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
       />
