@@ -24,8 +24,9 @@ import Tab from "@mui/material/Tab";
 
 export function mapCashflowWithTotal<T extends CashflowItem>(
   items: T[],
+  defaultAmount: number,
 ): (T & { total: number; company: string })[] {
-  let sum = 0;
+  let sum = defaultAmount;
   return items.map((item) => {
     sum += item.amount;
     return {
@@ -121,12 +122,15 @@ export default function CashflowGrid() {
   const expenseData = useMemo(() => {
     return mapCashflowWithTotal(
       selectedCompanyFlows.filter((flow) => flow.type === "expense"),
+      0,
     );
   }, [selectedCompanyFlows]);
 
   const incomeData = useMemo(() => {
     return mapCashflowWithTotal(
       selectedCompanyFlows.filter((flow) => flow.type === "income"),
+      companyList.find((company) => company.id === selectedCompanyId)
+        ?.companyBalance ?? 0,
     );
   }, [selectedCompanyFlows]);
 
