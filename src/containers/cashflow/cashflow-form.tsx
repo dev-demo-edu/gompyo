@@ -1,8 +1,11 @@
 import DynamicForm, { DynamicFormField } from "@/components/dynamic-form";
 import { z } from "zod";
 import { addCashflow } from "@/actions/cashflow";
-import { useSetAtom } from "jotai";
-import { cashflowRefreshAtom } from "@/states/cashflow-state";
+import { useAtom, useSetAtom } from "jotai";
+import {
+  cashflowRefreshAtom,
+  selectedCompanyIdAtom,
+} from "@/states/cashflow-state";
 import { useState } from "react";
 
 // zod 스키마 정의
@@ -71,15 +74,13 @@ export default function CashflowForm({
 }: CashflowFormProps) {
   const setRefresh = useSetAtom(cashflowRefreshAtom);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [companyId] = useAtom(selectedCompanyIdAtom);
 
   const handleSubmit = async (values: CashflowFormValues) => {
     try {
       await addCashflow({
         ...values,
-        id: "",
-        companyId: "",
-        createdAt: "",
-        updatedAt: "",
+        companyId: companyId,
       });
       setRefresh((prev) => prev + 1);
       setFieldErrors({}); // 에러 초기화

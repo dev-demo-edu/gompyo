@@ -17,7 +17,6 @@ export default function CashflowContainer() {
   const [openCashflowAddModal, setOpenCashflowAddModal] = useState(false);
   const [openCashflowDeleteConfirmModal, setOpenCashflowDeleteConfirmModal] =
     useState(false);
-  // const [editMode, setEditMode] = useState(false);
   const setCompanyList = useSetAtom(companyListAtom);
   const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
 

@@ -4,12 +4,13 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import CashflowForm from "./cashflow-form";
-import { deleteBusinessNumbers } from "@/actions/info/business-number-actions";
-import {
-  selectedBusinessNumbersAtom,
-  businessNumberRefreshAtom,
-} from "@/states/business-number";
 import { useAtomValue, useSetAtom } from "jotai";
+import {
+  cashflowRefreshAtom,
+  selectedExpenseRowsAtom,
+  selectedIncomeRowsAtom,
+} from "@/states/cashflow-state";
+import { deleteCashflows } from "@/actions/cashflow";
 
 interface CashflowAddModalProps {
   open: boolean;
@@ -40,11 +41,13 @@ export function CashflowDeleteConfirmModal({
   open,
   onClose,
 }: CashflowDeleteConfirmModalProps) {
-  const selectedRows = useAtomValue(selectedBusinessNumbersAtom);
-  const setRefresh = useSetAtom(businessNumberRefreshAtom);
+  const selectedExpenseRows = useAtomValue(selectedExpenseRowsAtom);
+  const selectedIncomeRows = useAtomValue(selectedIncomeRowsAtom);
+  const setRefresh = useSetAtom(cashflowRefreshAtom);
 
   async function onConfirm() {
-    await deleteBusinessNumbers(selectedRows.map((row) => row.id));
+    await deleteCashflows(selectedExpenseRows.map((row) => row.id));
+    await deleteCashflows(selectedIncomeRows.map((row) => row.id));
     setRefresh((prev) => prev + 1);
     onClose();
   }

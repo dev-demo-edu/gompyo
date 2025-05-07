@@ -75,34 +75,60 @@ export default function CashflowGrid() {
         field: "date",
         minWidth: 150,
         flex: 1,
+        filter: false,
+        sortable: false,
+        suppressMenu: true,
       },
       {
         headerName: "업체",
         field: "company",
         minWidth: 120,
         flex: 1,
+        filter: false,
+        sortable: false,
+        suppressMenu: true,
       },
       {
         headerName: "금액",
         field: "amount",
         minWidth: 120,
         flex: 1,
+        filter: false,
+        sortable: false,
+        suppressMenu: true,
       },
       {
         headerName: "합계",
         field: "total",
         minWidth: 120,
         flex: 1,
+        filter: false,
+        sortable: false,
+        suppressMenu: true,
       },
       {
         headerName: "우선순위",
         field: "priority",
         minWidth: 120,
         flex: 1,
+        filter: false,
+        sortable: false,
+        suppressMenu: true,
       },
     ],
     [],
   );
+  const expenseData = useMemo(() => {
+    return mapCashflowWithTotal(
+      selectedCompanyFlows.filter((flow) => flow.type === "expense"),
+    );
+  }, [selectedCompanyFlows]);
+
+  const incomeData = useMemo(() => {
+    return mapCashflowWithTotal(
+      selectedCompanyFlows.filter((flow) => flow.type === "income"),
+    );
+  }, [selectedCompanyFlows]);
 
   const handleExpenseSelection = (event: SelectionChangedEvent) => {
     setSelectedExpenseRows(event.api.getSelectedRows());
@@ -161,9 +187,7 @@ export default function CashflowGrid() {
           <div className="scale-[0.8] origin-top-left w-[125%] h-[125%]">
             <DataGrid<CashflowItem>
               columnDefs={columnDefs}
-              data={mapCashflowWithTotal(
-                selectedCompanyFlows.filter((flow) => flow.type === "expense"),
-              )}
+              data={expenseData}
               onSelectionChanged={handleExpenseSelection}
             />
           </div>
@@ -172,9 +196,7 @@ export default function CashflowGrid() {
           <div className="scale-[0.8] origin-top-left w-[125%] h-[125%]">
             <DataGrid<CashflowItem>
               columnDefs={columnDefs}
-              data={mapCashflowWithTotal(
-                selectedCompanyFlows.filter((flow) => flow.type === "income"),
-              )}
+              data={incomeData}
               onSelectionChanged={handleIncomeSelection}
             />
           </div>
