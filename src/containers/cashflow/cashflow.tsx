@@ -1,20 +1,22 @@
 "use client";
 
-// import { useState } from "react";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CashflowGrid from "./cashflow-grid";
 // import Box from "@mui/material/Box";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import {
   companyListAtom,
   selectedCompanyIdAtom,
 } from "@/states/cashflow-state";
 import { getCompanyList } from "@/actions/cashflow";
+import CashflowAddModal, { CashflowDeleteConfirmModal } from "./cashflow-modal";
 
 export default function CashflowContainer() {
-  // const [openLinkAddModal, setOpenLinkAddModal] = useState(false);
+  const [openCashflowAddModal, setOpenCashflowAddModal] = useState(false);
+  const [openCashflowDeleteConfirmModal, setOpenCashflowDeleteConfirmModal] =
+    useState(false);
   // const [editMode, setEditMode] = useState(false);
   const setCompanyList = useSetAtom(companyListAtom);
   const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
@@ -54,7 +56,7 @@ export default function CashflowContainer() {
               "&:hover": { backgroundColor: "#16A34A" },
               boxShadow: "none",
             }}
-            // onClick={() => setOpenLinkAddModal(true)}
+            onClick={() => setOpenCashflowDeleteConfirmModal(true)}
           >
             선택 목록 삭제
           </Button>
@@ -90,17 +92,21 @@ export default function CashflowContainer() {
               "&:hover": { backgroundColor: "#16A34A" },
               boxShadow: "none",
             }}
-            // onClick={() => setOpenLinkAddModal(true)}
+            onClick={() => setOpenCashflowAddModal(true)}
           >
             목록 추가
           </Button>
         </Stack>
         <CashflowGrid />
       </div>
-      {/* <LinkAddModal
-        open={openLinkAddModal}
-        onClose={() => setOpenLinkAddModal(false)}
-      /> */}
+      <CashflowAddModal
+        open={openCashflowAddModal}
+        onClose={() => setOpenCashflowAddModal(false)}
+      />
+      <CashflowDeleteConfirmModal
+        open={openCashflowDeleteConfirmModal}
+        onClose={() => setOpenCashflowDeleteConfirmModal(false)}
+      />
     </div>
   );
 }

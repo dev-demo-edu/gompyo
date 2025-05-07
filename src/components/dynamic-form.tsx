@@ -71,8 +71,14 @@ function getInitialValues<T extends Record<string, FieldValue>>(
   fields: Array<DynamicFormField<T>>,
 ): T {
   return fields.reduce((obj, f) => {
-    const value =
-      f.type === "array" ? (f.defaultValue ?? []) : (f.defaultValue ?? "");
+    let value;
+    if (f.type === "array") {
+      value = f.defaultValue ?? [];
+    } else if (f.type === "select" && f.options && f.options.length > 0) {
+      value = f.defaultValue ?? f.options[0].value;
+    } else {
+      value = f.defaultValue ?? "";
+    }
     return {
       ...obj,
       [f.name]: value,

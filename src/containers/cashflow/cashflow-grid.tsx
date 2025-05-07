@@ -19,6 +19,8 @@ import Typography from "@mui/material/Typography";
 import { getCashflowList } from "@/actions/cashflow";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+// import TextField from "@mui/material/TextField";
+// import { Button } from "@mui/material";
 
 export function mapCashflowWithTotal<T extends CashflowItem>(
   items: T[],
@@ -126,17 +128,32 @@ export default function CashflowGrid() {
             <Tab key={company.id} label={company.name} value={company.id} />
           ))}
         </Tabs>
-        <Typography
-          className="text-right font-extralight text-gray-500 align-bottom pb-2 mb-0"
-          sx={{
-            fontSize: "12px",
-            verticalAlign: "bottom",
-            display: "flex",
-            alignItems: "flex-end",
-          }}
-        >
-          * 금액 단위: 100만원
-        </Typography>
+        <div className="flex flex-row">
+          {/* <TextField
+            label="회사 잔액"
+            variant="standard"
+            size="small"
+            type="number"
+            sx={{
+              mr: 2,
+              pb: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
+            }}
+          /> */}
+          <Typography
+            className="text-right font-extralight text-gray-500 align-bottom pb-2 mb-0"
+            sx={{
+              fontSize: "12px",
+              verticalAlign: "bottom",
+              display: "flex",
+              alignItems: "flex-end",
+            }}
+          >
+            * 금액 단위: 100만원
+          </Typography>
+        </div>
       </div>
       {/* DataGrid 영역: 남은 영역 모두 차지 */}
       <div className="flex flex-col md:flex-row w-full flex-1 gap-x-6 h-0">
