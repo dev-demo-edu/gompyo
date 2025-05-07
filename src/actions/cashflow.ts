@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { cashflows, companies } from "@/db/schema";
-import { asc, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 export type Cashflow = InferSelectModel<typeof cashflows>;
@@ -34,5 +34,15 @@ export async function addCashflow(cashflow: CashflowFormValues) {
 
 export async function deleteCashflows(ids: string[]) {
   const result = await db.delete(cashflows).where(inArray(cashflows.id, ids));
+  return result;
+}
+
+export async function updateCompanyBalance(amount: number, companyId: string) {
+  const result = await db
+    .update(companies)
+    .set({
+      companyBalance: amount,
+    })
+    .where(eq(companies.id, companyId));
   return result;
 }

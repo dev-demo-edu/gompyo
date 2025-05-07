@@ -3,31 +3,56 @@
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CashflowGrid from "./cashflow-grid";
-// import Box from "@mui/material/Box";
 import { useEffect, useState } from "react";
-import { useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   companyListAtom,
   selectedCompanyIdAtom,
+  selectedExpenseRowsAtom,
+  selectedIncomeRowsAtom,
+  cashflowRefreshAtom,
 } from "@/states/cashflow-state";
-import { getCompanyList } from "@/actions/cashflow";
+import {
+  deleteCashflows,
+  getCompanyList,
+  updateCompanyBalance,
+} from "@/actions/cashflow";
 import CashflowAddModal, { CashflowDeleteConfirmModal } from "./cashflow-modal";
+import { calculateCashflowAmountByType } from "@/utils/cashflow";
 
 export default function CashflowContainer() {
   const [openCashflowAddModal, setOpenCashflowAddModal] = useState(false);
   const [openCashflowDeleteConfirmModal, setOpenCashflowDeleteConfirmModal] =
     useState(false);
-  const setCompanyList = useSetAtom(companyListAtom);
-  const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
+  const [companyList, setCompanyList] = useAtom(companyListAtom);
+  const [selectedCompanyId, setSelectedCompanyId] = useAtom(
+    selectedCompanyIdAtom,
+  );
+  const selectedIncomeRows = useAtomValue(selectedIncomeRowsAtom);
+  const selectedExpenseRows = useAtomValue(selectedExpenseRowsAtom);
+  const setCashflowRefresh = useSetAtom(cashflowRefreshAtom);
+  const fetchCompanyList = async () => {
+    const companies = await getCompanyList();
+    setCompanyList(companies);
+    setSelectedCompanyId(companies[0].id);
+  };
 
   useEffect(() => {
-    const fetchCompanyList = async () => {
-      const companies = await getCompanyList();
-      setCompanyList(companies);
-      setSelectedCompanyId(companies[0].id);
-    };
     fetchCompanyList();
   }, [setCompanyList]);
+
+  async function handleUpdateCompanyBalance() {
+    await updateCompanyBalance(
+      calculateCashflowAmountByType(selectedIncomeRows, selectedExpenseRows) +
+        (companyList.find((company) => company.id === selectedCompanyId)
+          ?.companyBalance ?? 0),
+      selectedCompanyId,
+    );
+    await deleteCashflows(selectedIncomeRows.map((row) => row.id));
+    await deleteCashflows(selectedExpenseRows.map((row) => row.id));
+    setCashflowRefresh((prev) => prev + 1);
+    fetchCompanyList();
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
@@ -73,7 +98,7 @@ export default function CashflowContainer() {
               "&:hover": { backgroundColor: "#16A34A" },
               boxShadow: "none",
             }}
-            // onClick={() => setOpenLinkAddModal(true)}
+            onClick={handleUpdateCompanyBalance}
           >
             선택 목록 반영
           </Button>
