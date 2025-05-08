@@ -10,6 +10,7 @@ import {
   FormControl,
   Typography,
   IconButton,
+  InputAdornment,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -49,6 +50,7 @@ export type DynamicFormField<T, A = T> = {
   fields?: Array<DynamicFormField<A>>; // array용 (내부 타입 A)
   render?: (props: CustomRenderProps<T, keyof T>) => React.ReactNode; // custom용
   helperText?: string;
+  endAdornment?: string;
 };
 
 export type DynamicFormStep<T> = {
@@ -71,8 +73,14 @@ function getInitialValues<T extends Record<string, FieldValue>>(
   fields: Array<DynamicFormField<T>>,
 ): T {
   return fields.reduce((obj, f) => {
-    const value =
-      f.type === "array" ? (f.defaultValue ?? []) : (f.defaultValue ?? "");
+    let value;
+    if (f.type === "array") {
+      value = f.defaultValue ?? [];
+    } else if (f.type === "select" && f.options && f.options.length > 0) {
+      value = f.defaultValue ?? f.options[0].value;
+    } else {
+      value = f.defaultValue ?? "";
+    }
     return {
       ...obj,
       [f.name]: value,
@@ -220,6 +228,25 @@ export default function DynamicForm<Schema extends ZodType>({
             helperText={fieldError || field.helperText}
             InputLabelProps={
               field.type === "date" ? { shrink: true } : undefined
+            }
+            InputProps={
+              field.endAdornment
+                ? {
+                    endAdornment: (
+                      <InputAdornment
+                        sx={{
+                          color: "inherit",
+                          "& .MuiTypography-root": {
+                            color: "inherit",
+                          },
+                        }}
+                        position="end"
+                      >
+                        {field.endAdornment}
+                      </InputAdornment>
+                    ),
+                  }
+                : undefined
             }
             sx={{ mb: 1 }}
           />

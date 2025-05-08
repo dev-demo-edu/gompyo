@@ -9,6 +9,8 @@ import {
   payments,
   paymentsTt,
   importers,
+  companies,
+  cashflows,
 } from "./schema.js"; // Drizzle ORM에 정의된 스키마
 
 import {
@@ -21,6 +23,8 @@ import {
   paymentsSeed,
   paymentsTtSeed,
   importersSeed,
+  companiesSeed,
+  cashflowsSeed,
 } from "./data/combinedSeeds.js"; // 위에서 생성한 seed 데이터
 import { users } from "./schema";
 import { nanoid } from "nanoid";
@@ -63,6 +67,8 @@ async function runSeed() {
     await db.delete(items);
     await db.delete(contracts);
     await db.delete(importers);
+    await db.delete(companies);
+    await db.delete(cashflows);
     console.log("✅ 기존 데이터 삭제 완료");
 
     // 새로운 데이터 삽입
@@ -76,6 +82,8 @@ async function runSeed() {
     await db.insert(cargos).values(cargosSeed);
     await db.insert(costs).values(costsSeed);
     await db.insert(costDetails).values(costDetailsSeed);
+    await db.insert(companies).values(companiesSeed);
+    await db.insert(cashflows).values(cashflowsSeed);
     console.log("✅ 시드 데이터 삽입 완료");
   } catch (err) {
     console.error("❌ 시드 데이터 삽입 실패:", err);

@@ -1,4 +1,3 @@
-import DataGrid from "@/components/data-grid";
 import type { ColDef, SelectionChangedEvent } from "ag-grid-community";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
@@ -6,6 +5,7 @@ import {
   selectedBusinessNumbersAtom,
   businessNumberRefreshAtom,
 } from "@/states/business-number";
+import FilterGrid from "@/components/filter-grid";
 import { dateFormatter } from "@/utils/formatter";
 
 import { InferSelectModel } from "drizzle-orm";
@@ -81,7 +81,7 @@ export default function BusinessNumberGrid() {
   );
 
   return (
-    <DataGrid<BusinessNumberRow>
+    <FilterGrid<BusinessNumberRow>
       columnDefs={columnDefs}
       data={businessNumbers}
       onSelectionChanged={onSelectionChanged}

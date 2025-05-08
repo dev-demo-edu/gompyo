@@ -7,7 +7,6 @@ import type {
   SelectionChangedEvent,
 } from "ag-grid-community";
 import { IPlanData } from "@/types/grid-col";
-import DataGrid, { DetailButtonRenderer } from "./data-grid";
 import { getPlanData } from "@/actions/plan";
 import {
   getUserPlanColumnOrder,
@@ -20,6 +19,8 @@ import {
   DEFAULT_PLAN_COLUMN,
   defaultPlanColumnOrderFields,
 } from "@/constants/column";
+import FilterGrid from "./filter-grid";
+import { DetailButtonRenderer } from "./cell-renderers";
 import { selectedCargosAtom } from "@/states/plan";
 import { useSetAtom } from "jotai";
 
@@ -147,7 +148,7 @@ export default function PlanGrid() {
   );
 
   return (
-    <DataGrid
+    <FilterGrid
       columnDefs={columnDefs}
       data={rowData}
       loading={loading}
