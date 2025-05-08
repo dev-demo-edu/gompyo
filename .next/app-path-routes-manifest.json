@@ -1,13 +1,13 @@
 {
   "/favicon.ico/route": "/favicon.ico",
-  "/_not-found/page": "/_not-found",
   "/cashflow/page": "/cashflow",
-  "/info/account-number/page": "/info/account-number",
+  "/_not-found/page": "/_not-found",
+  "/info/links/page": "/info/links",
   "/info/business-number/page": "/info/business-number",
   "/detail/[cargo_id]/page": "/detail/[cargo_id]",
   "/login/page": "/login",
-  "/page": "/",
-  "/info/links/page": "/info/links",
   "/plan/page": "/plan",
-  "/shipment/page": "/shipment"
+  "/page": "/",
+  "/shipment/page": "/shipment",
+  "/info/account-number/page": "/info/account-number"
 }
