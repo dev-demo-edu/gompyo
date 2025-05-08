@@ -9,17 +9,13 @@ import {
   CashflowItem,
   cashflowListAtom,
   cashflowRefreshAtom,
-  companyListAtom,
+  companyBalanceAtom,
   selectedCompanyFlowsAtom,
-  selectedCompanyIdAtom,
   selectedExpenseRowsAtom,
   selectedIncomeRowsAtom,
 } from "@/states/cashflow-state";
 import Typography from "@mui/material/Typography";
 import { getCashflowList } from "@/actions/cashflow";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-// import TextField from "@mui/material/TextField";
 // import { Button } from "@mui/material";
 
 export function mapCashflowWithTotal<T extends CashflowItem>(
@@ -40,14 +36,12 @@ export function mapCashflowWithTotal<T extends CashflowItem>(
 export type AccountNumberRow = InferSelectModel<typeof accountNumbers>;
 
 export default function CashflowGrid() {
-  const selectedCompanyId = useAtomValue(selectedCompanyIdAtom);
   const selectedCompanyFlows = useAtomValue(selectedCompanyFlowsAtom);
   const refresh = useAtomValue(cashflowRefreshAtom);
-  const setSelectedCompanyId = useSetAtom(selectedCompanyIdAtom);
   const setCashflowList = useSetAtom(cashflowListAtom);
-  const companyList = useAtomValue(companyListAtom);
   const setSelectedExpenseRows = useSetAtom(selectedExpenseRowsAtom);
   const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
+  const companyBalance = useAtomValue(companyBalanceAtom);
 
   useEffect(() => {
     const fetchCashflowList = async () => {
@@ -126,13 +120,25 @@ export default function CashflowGrid() {
     );
   }, [selectedCompanyFlows]);
 
+  const balanceRow: CashflowItem = {
+    id: "balance-row", // string 타입이면 string, number면 0 등으로
+    date: "",
+    companyId: "balance-row",
+    amount: companyBalance,
+    priority: null,
+    type: "income", // 혹은 "balance" 등 구분용
+    counterparty: "잔액",
+    createdAt: "",
+    updatedAt: "",
+  };
+
   const incomeData = useMemo(() => {
+    const balanceAdded = [balanceRow, ...selectedCompanyFlows];
     return mapCashflowWithTotal(
-      selectedCompanyFlows.filter((flow) => flow.type === "income"),
-      companyList.find((company) => company.id === selectedCompanyId)
-        ?.companyBalance ?? 0,
+      balanceAdded.filter((flow) => flow.type === "income"),
+      0,
     );
-  }, [selectedCompanyFlows]);
+  }, [selectedCompanyFlows, companyBalance]);
 
   const handleExpenseSelection = (event: SelectionChangedEvent) => {
     setSelectedExpenseRows(event.api.getSelectedRows());
@@ -144,50 +150,14 @@ export default function CashflowGrid() {
   return (
     <div className="h-[75vh] flex flex-col overflow-hidden ">
       {/* 상단 Tabs 영역: 고정 높이 */}
-      <div
-        className="flex flex-row justify-between items-end flex-shrink-0"
-        style={{ minHeight: 48 }}
-      >
-        <Tabs
-          value={selectedCompanyId}
-          onChange={(_, value) => setSelectedCompanyId(value)}
-          scrollButtons="auto"
-          className="mb-4"
-        >
-          {companyList.map((company) => (
-            <Tab key={company.id} label={company.name} value={company.id} />
-          ))}
-        </Tabs>
-        <div className="flex flex-row">
-          {/* <TextField
-            label="회사 잔액"
-            variant="standard"
-            size="small"
-            type="number"
-            sx={{
-              mr: 2,
-              pb: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
-            }}
-          /> */}
-          <Typography
-            className="text-right font-extralight text-gray-500 align-bottom pb-2 mb-0"
-            sx={{
-              fontSize: "12px",
-              verticalAlign: "bottom",
-              display: "flex",
-              alignItems: "flex-end",
-            }}
-          >
-            * 금액 단위: 100만원
-          </Typography>
-        </div>
-      </div>
       {/* DataGrid 영역: 남은 영역 모두 차지 */}
       <div className="flex flex-col md:flex-row w-full flex-1 gap-x-6 h-0">
         <div className="w-full h-full">
+          <div className="flex flex-row justify-between h-[44px]">
+            <Typography className="p-2" variant="h6">
+              지출
+            </Typography>
+          </div>
           <div className="scale-[0.8] origin-top-left w-[125%] h-[125%]">
             <DataGrid<CashflowItem>
               columnDefs={columnDefs}
@@ -197,6 +167,24 @@ export default function CashflowGrid() {
           </div>
         </div>
         <div className="w-full h-full">
+          <div className="flex flex-row justify-between h-[44px]">
+            <Typography className="p-2" variant="h6">
+              수금
+            </Typography>
+            <div className="flex flex-row justify-between">
+              <Typography
+                className="text-right font-extralight text-gray-500 pb-2"
+                sx={{
+                  fontSize: "12px",
+                  verticalAlign: "bottom",
+                  display: "flex",
+                  alignItems: "flex-end",
+                }}
+              >
+                * 금액 단위: 100만원
+              </Typography>
+            </div>
+          </div>
           <div className="scale-[0.8] origin-top-left w-[125%] h-[125%]">
             <DataGrid<CashflowItem>
               columnDefs={columnDefs}

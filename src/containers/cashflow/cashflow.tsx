@@ -17,11 +17,18 @@ import {
   getCompanyList,
   updateCompanyBalance,
 } from "@/actions/cashflow";
-import CashflowAddModal, { CashflowDeleteConfirmModal } from "./cashflow-modal";
+import CashflowAddModal, {
+  CashflowBalanceModal,
+  CashflowDeleteConfirmModal,
+} from "./cashflow-modal";
 import { calculateCashflowAmountByType } from "@/utils/cashflow";
+import Tabs from "@mui/material/Tabs";
+import { Tab } from "@mui/material";
 
 export default function CashflowContainer() {
   const [openCashflowAddModal, setOpenCashflowAddModal] = useState(false);
+  const [openCashflowBalanceModal, setOpenCashflowBalanceModal] =
+    useState(false);
   const [openCashflowDeleteConfirmModal, setOpenCashflowDeleteConfirmModal] =
     useState(false);
   const [companyList, setCompanyList] = useAtom(companyListAtom);
@@ -60,72 +67,121 @@ export default function CashflowContainer() {
         <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
           수금 지출 관리
         </h1>
-        <Stack
-          direction="row"
-          spacing={2}
-          className="w-full justify-end mb-4 sm:mb-6"
-        >
-          {/* TODO: 버튼 스타일 통일하기 */}
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              minWidth: 120,
-              minHeight: 44,
-              fontWeight: 600,
-              fontSize: 16,
-              lineHeight: 1.5,
-              py: 0,
-              backgroundColor: "#22C55E",
-              "&:hover": { backgroundColor: "#16A34A" },
-              boxShadow: "none",
-            }}
-            onClick={() => setOpenCashflowDeleteConfirmModal(true)}
+
+        <Stack direction="row" spacing={2}>
+          <div
+            className="flex flex-row justify-between items-end flex-shrink-0"
+            style={{ minHeight: 24 }}
           >
-            선택 목록 삭제
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              minWidth: 120,
-              minHeight: 44,
-              fontWeight: 600,
-              fontSize: 16,
-              lineHeight: 1.5,
-              py: 0,
-              backgroundColor: "#22C55E",
-              "&:hover": { backgroundColor: "#16A34A" },
-              boxShadow: "none",
-            }}
-            onClick={handleUpdateCompanyBalance}
+            <Tabs
+              value={selectedCompanyId}
+              onChange={(_, value) => setSelectedCompanyId(value)}
+              scrollButtons="auto"
+              className="mb-4"
+            >
+              {companyList.map((company) => (
+                <Tab key={company.id} label={company.name} value={company.id} />
+              ))}
+            </Tabs>
+          </div>
+          <Stack
+            direction="row"
+            spacing={2}
+            className="w-full justify-end mb-4 sm:mb-6"
           >
-            선택 목록 반영
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              minWidth: 120,
-              minHeight: 44,
-              fontWeight: 600,
-              fontSize: 16,
-              lineHeight: 1.5,
-              py: 0,
-              backgroundColor: "#22C55E",
-              "&:hover": { backgroundColor: "#16A34A" },
-              boxShadow: "none",
-            }}
-            onClick={() => setOpenCashflowAddModal(true)}
-          >
-            목록 추가
-          </Button>
+            {/* TODO: 버튼 스타일 통일하기 */}
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                boxShadow: "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={() => setOpenCashflowBalanceModal(true)}
+            >
+              잔액 설정
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                boxShadow: "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={() => setOpenCashflowDeleteConfirmModal(true)}
+            >
+              선택 목록 삭제
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                boxShadow: "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={handleUpdateCompanyBalance}
+            >
+              선택 목록 반영
+            </Button>
+            <Button
+              className="px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
+              variant="contained"
+              color="primary"
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                boxShadow: "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={() => setOpenCashflowAddModal(true)}
+            >
+              목록 추가
+            </Button>
+          </Stack>
         </Stack>
         <CashflowGrid />
       </div>
       <CashflowAddModal
         open={openCashflowAddModal}
         onClose={() => setOpenCashflowAddModal(false)}
+      />
+      <CashflowBalanceModal
+        open={openCashflowBalanceModal}
+        onClose={() => setOpenCashflowBalanceModal(false)}
       />
       <CashflowDeleteConfirmModal
         open={openCashflowDeleteConfirmModal}

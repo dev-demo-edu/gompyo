@@ -23,3 +23,22 @@ export const companyListAtom = atom<Company[]>([]);
 
 export const selectedExpenseRowsAtom = atom<CashflowItem[]>([]);
 export const selectedIncomeRowsAtom = atom<CashflowItem[]>([]);
+
+export const companyBalanceAtom = atom<number>((get) => {
+  const companyId = get(selectedCompanyIdAtom);
+  const company = get(companyListAtom).find(
+    (company) => company.id === companyId,
+  );
+  return company?.companyBalance ?? 0;
+});
+
+export const setCompanyBalanceAtom = atom(null, (get, set, update: number) => {
+  const companyId = get(selectedCompanyIdAtom);
+  set(companyListAtom, (prev) =>
+    prev.map((company) =>
+      company.id === companyId
+        ? { ...company, companyBalance: update }
+        : company,
+    ),
+  );
+});
