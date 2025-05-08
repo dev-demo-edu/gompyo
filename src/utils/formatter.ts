@@ -32,3 +32,13 @@ export const perKgFormatter = (params: ValueFormatterParams): string => {
       }).format(params.value) + "/kg"
     : "";
 };
+
+export const weekDayFormatter = (params: ValueFormatterParams): string => {
+  return params.value
+    ? new Date(params.value).toLocaleDateString("ko-KR", {
+        month: "long",
+        day: "numeric",
+        weekday: "short",
+      })
+    : "";
+};

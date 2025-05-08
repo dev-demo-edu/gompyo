@@ -7,7 +7,8 @@ import type {
   SelectionChangedEvent,
 } from "ag-grid-community";
 import { IShipmentData } from "@/types/grid-col";
-import DataGrid, { DetailButtonRenderer } from "./data-grid";
+import FilterGrid from "./filter-grid";
+import { DetailButtonRenderer } from "./cell-renderers";
 import { getShipmentData } from "@/actions/shipment";
 import {
   getUserShipmentColumnOrder,
@@ -145,7 +146,7 @@ export default function ShipmentGrid() {
   );
 
   return (
-    <DataGrid
+    <FilterGrid
       columnDefs={columnDefs}
       data={rowData}
       loading={loading}
