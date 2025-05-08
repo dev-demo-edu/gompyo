@@ -34,6 +34,11 @@ export const DetailButtonRenderer = (params: ICellRendererParams) => {
   );
 };
 
+// 날짜를 'YYYY-MM-DD' 문자열로 변환하는 헬퍼 함수
+function toDateString(date: string | number | Date) {
+  return new Date(date).toISOString().slice(0, 10);
+}
+
 interface DataGridProps<T> {
   columnDefs: ColDef[];
   data: T[];
@@ -43,6 +48,7 @@ interface DataGridProps<T> {
   onDragStopped?: (event: DragStoppedEvent) => void;
   onResetColumnOrder?: () => void;
   onSelectionChanged?: (event: SelectionChangedEvent) => void;
+  searchDateField?: keyof T & string;
 }
 
 export default function FilterGrid<T>({
@@ -54,6 +60,7 @@ export default function FilterGrid<T>({
   onDragStopped,
   onResetColumnOrder,
   onSelectionChanged,
+  searchDateField,
 }: DataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -62,6 +69,7 @@ export default function FilterGrid<T>({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // 검색어와 날짜로 데이터 필터링
+  // 검색어와 날짜로 데이터 필터링
   const filteredData = useMemo(() => {
     return data.filter((row) => {
       const matchesSearch =
@@ -69,23 +77,35 @@ export default function FilterGrid<T>({
         columnDefs.some((col) => {
           const field = col.field;
           if (!field) return false;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const value = (row as any)[field];
+          const value = row[field as keyof T];
           return (
             value &&
             value.toString().toLowerCase().includes(searchTerm.toLowerCase())
           );
         });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const contractDate = new Date((row as any).contractDate);
-      const isWithinDateRange =
-        (!startDate || contractDate >= new Date(startDate)) &&
-        (!endDate || contractDate <= new Date(endDate));
+      if (searchDateField) {
+        const searchDateStr = toDateString(row[searchDateField] as Date);
+        const startDateStr = startDate ? toDateString(startDate) : null;
+        const endDateStr = endDate ? toDateString(endDate) : null;
 
-      return matchesSearch && isWithinDateRange;
+        if (startDateStr && endDateStr) {
+          const isWithinDateRange =
+            searchDateStr >= startDateStr && searchDateStr <= endDateStr;
+          return matchesSearch && isWithinDateRange;
+        } else if (startDateStr) {
+          const isAfterStart = searchDateStr >= startDateStr;
+          return matchesSearch && isAfterStart;
+        } else if (endDateStr) {
+          const isBeforeEnd = searchDateStr <= endDateStr;
+          return matchesSearch && isBeforeEnd;
+        }
+        return matchesSearch;
+      }
+
+      return matchesSearch;
     });
-  }, [data, searchTerm, startDate, endDate, columnDefs]);
+  }, [data, searchTerm, startDate, endDate, columnDefs, searchDateField]);
 
   return (
     <div className="flex flex-col md:flex-row w-full h-[800px] bg-slate-50 rounded-xl overflow-hidden shadow-lg p-6 gap-6">

@@ -30,6 +30,8 @@ interface DataGridProps<T> {
   onRowDragEnd?: (event: RowDragEndEvent) => void;
 }
 
+// 추후 사용 여부에 따라서 utils로 빼기
+
 export default function DataGrid<T>({
   columnDefs,
   data,

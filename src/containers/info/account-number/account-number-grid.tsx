@@ -5,6 +5,7 @@ import {
   selectedAccountNumbersAtom,
   accountNumberRefreshAtom,
 } from "@/states/account-number";
+import { dateFormatter } from "@/utils/formatter";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
@@ -61,6 +62,7 @@ export default function AccountNumberGrid() {
         headerName: "등록일",
         field: "createdAt",
         minWidth: 120,
+        valueFormatter: dateFormatter,
         flex: 1,
       },
     ],
@@ -81,6 +83,7 @@ export default function AccountNumberGrid() {
       columnDefs={columnDefs}
       data={accountNumbers}
       onSelectionChanged={onSelectionChanged}
+      searchDateField="createdAt"
     />
   );
 }

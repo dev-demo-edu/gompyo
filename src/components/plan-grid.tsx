@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import type { ColDef, DragStoppedEvent } from "ag-grid-community";
+import type {
+  ColDef,
+  DragStoppedEvent,
+  SelectionChangedEvent,
+} from "ag-grid-community";
 import { IPlanData } from "@/types/grid-col";
 import { getPlanData } from "@/actions/plan";
 import {
@@ -10,13 +14,16 @@ import {
 } from "@/actions/user";
 import useDragColumnChange from "@/hooks/useDragColumnChange";
 import { useAtomValue } from "jotai";
-import { refreshPlanAtom } from "@/states/document-state";
+import { cargoRefreshAtom } from "@/states/plan";
 import {
   DEFAULT_PLAN_COLUMN,
   defaultPlanColumnOrderFields,
 } from "@/constants/column";
 import FilterGrid from "./filter-grid";
 import { DetailButtonRenderer } from "./cell-renderers";
+import { selectedCargosAtom } from "@/states/plan";
+import { useSetAtom } from "jotai";
+
 // 컬럼 드래그 커스텀 훅
 
 export default function PlanGrid() {
@@ -44,6 +51,17 @@ export default function PlanGrid() {
         : DEFAULT_PLAN_COLUMN;
 
     return [
+      {
+        headerName: "",
+        checkboxSelection: true,
+        minWidth: 50,
+        flex: 1,
+        headerCheckboxSelection: true,
+        filter: false,
+        pinned: "left",
+        lockPinned: true,
+        width: 70,
+      },
       ...orderedColumns,
       {
         headerName: "상세",
@@ -96,7 +114,7 @@ export default function PlanGrid() {
     useDragColumnChange(handleColumnDragSave);
 
   // DB 데이터 로딩
-  const refreshTrigger = useAtomValue(refreshPlanAtom);
+  const refreshTrigger = useAtomValue(cargoRefreshAtom);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -120,6 +138,15 @@ export default function PlanGrid() {
     fetchData();
   }, [refreshTrigger]);
 
+  const setSelectedRows = useSetAtom(selectedCargosAtom);
+  const onSelectionChanged = useCallback(
+    (event: SelectionChangedEvent) => {
+      const selectedRows = event.api.getSelectedRows();
+      setSelectedRows(selectedRows);
+    },
+    [setSelectedRows],
+  );
+
   return (
     <FilterGrid
       columnDefs={columnDefs}
@@ -129,6 +156,8 @@ export default function PlanGrid() {
       onDragStarted={onDragStarted}
       onDragStopped={onDragStopped}
       onResetColumnOrder={handleResetColumnOrder}
+      searchDateField="contractDate"
+      onSelectionChanged={onSelectionChanged}
     />
   );
 }
