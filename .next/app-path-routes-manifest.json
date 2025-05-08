@@ -4,10 +4,10 @@
   "/cashflow/page": "/cashflow",
   "/info/account-number/page": "/info/account-number",
   "/info/business-number/page": "/info/business-number",
-  "/login/page": "/login",
   "/detail/[cargo_id]/page": "/detail/[cargo_id]",
+  "/login/page": "/login",
+  "/page": "/",
   "/info/links/page": "/info/links",
   "/plan/page": "/plan",
-  "/page": "/",
   "/shipment/page": "/shipment"
 }
