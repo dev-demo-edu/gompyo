@@ -50,6 +50,13 @@
       "when": 1746274374095,
       "tag": "0006_curvy_alex_wilder",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1746526118906,
+      "tag": "0007_clever_warpath",
+      "breakpoints": true
     }
   ]
 }

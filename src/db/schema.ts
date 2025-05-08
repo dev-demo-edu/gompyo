@@ -326,3 +326,40 @@ export const documentsRelations = relations(documents, ({ one }) => ({
 export const historyLogsRelations = relations(historyLogs, ({}) => ({
   // 여기서는 특별한 관계 설정이 필요 없음 (targetType과 targetId로 동적 참조)
 }));
+
+export const cashflows = sqliteTable(
+  "cashflows",
+  {
+    id: text("id").primaryKey(),
+    date: text("date").notNull(), // ISO string 등으로 저장
+    companyId: text("company_id").notNull(),
+    counterparty: text("counterparty").notNull(),
+    amount: integer("amount").notNull(),
+    type: text("type").notNull(), // income | expense
+    priority: integer("priority"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    check("cashflow_type_check", sql`${table.type} IN ('income', 'expense')`),
+  ],
+);
+
+export const companies = sqliteTable("companies", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  companyBalance: integer("company_balance").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const cashflowsRelations = relations(cashflows, ({ one }) => ({
+  company: one(companies, {
+    fields: [cashflows.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const companiesRelations = relations(companies, ({ many }) => ({
+  cashflows: many(cashflows),
+}));

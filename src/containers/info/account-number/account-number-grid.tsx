@@ -1,4 +1,3 @@
-import DataGrid from "@/components/data-grid";
 import type { ColDef, SelectionChangedEvent } from "ag-grid-community";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
@@ -10,6 +9,7 @@ import {
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
 import { getAccountNumbers } from "@/actions/info/account-number-actions";
+import FilterGrid from "@/components/filter-grid";
 
 export type AccountNumberRow = InferSelectModel<typeof accountNumbers>;
 
@@ -77,7 +77,7 @@ export default function AccountNumberGrid() {
   );
 
   return (
-    <DataGrid<AccountNumberRow>
+    <FilterGrid<AccountNumberRow>
       columnDefs={columnDefs}
       data={accountNumbers}
       onSelectionChanged={onSelectionChanged}
