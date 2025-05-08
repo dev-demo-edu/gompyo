@@ -11,6 +11,7 @@ import {
   selectedExpenseRowsAtom,
   selectedIncomeRowsAtom,
   cashflowRefreshAtom,
+  editModeAtom,
 } from "@/states/cashflow-state";
 import {
   deleteCashflows,
@@ -43,6 +44,7 @@ export default function CashflowContainer() {
     setCompanyList(companies);
     setSelectedCompanyId(companies[0].id);
   };
+  const [editMode, setEditMode] = useAtom(editModeAtom);
 
   useEffect(() => {
     fetchCompanyList();
@@ -77,7 +79,6 @@ export default function CashflowContainer() {
               value={selectedCompanyId}
               onChange={(_, value) => setSelectedCompanyId(value)}
               scrollButtons="auto"
-              className="mb-4"
             >
               {companyList.map((company) => (
                 <Tab key={company.id} label={company.name} value={company.id} />
@@ -113,6 +114,10 @@ export default function CashflowContainer() {
             <Button
               variant="contained"
               color="primary"
+              disabled={
+                selectedIncomeRows.length === 0 &&
+                selectedExpenseRows.length === 0
+              }
               sx={{
                 minWidth: 120,
                 minHeight: 44,
@@ -133,6 +138,10 @@ export default function CashflowContainer() {
             <Button
               variant="contained"
               color="primary"
+              disabled={
+                selectedIncomeRows.length === 0 &&
+                selectedExpenseRows.length === 0
+              }
               sx={{
                 minWidth: 120,
                 minHeight: 44,
@@ -170,6 +179,30 @@ export default function CashflowContainer() {
               onClick={() => setOpenCashflowAddModal(true)}
             >
               목록 추가
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: editMode ? "#f3f4f6" : "#64748b",
+                color: editMode ? "#374151" : "#fff",
+                "&:hover": {
+                  backgroundColor: editMode ? "#e5e7eb" : "#475569",
+                },
+                boxShadow: "none",
+                border: editMode ? "1px solid #cbd5e1" : "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={() => setEditMode((v) => !v)}
+            >
+              {editMode ? "편집 종료" : "편집 모드"}
             </Button>
           </Stack>
         </Stack>

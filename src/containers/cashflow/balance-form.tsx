@@ -35,6 +35,7 @@ export const cashflowBalanceFields: CashflowBalanceField[] = [
     type: "number",
     required: true,
     defaultValue: 0,
+    endAdornment: "백만원",
   },
 ];
 

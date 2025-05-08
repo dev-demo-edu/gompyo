@@ -42,3 +42,5 @@ export const setCompanyBalanceAtom = atom(null, (get, set, update: number) => {
     ),
   );
 });
+
+export const editModeAtom = atom<boolean>(false);

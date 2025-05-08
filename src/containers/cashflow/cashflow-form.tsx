@@ -12,8 +12,12 @@ import { useState } from "react";
 export const cashflowSchema = z.object({
   date: z.string().min(1, "날짜를 입력해주세요."),
   counterparty: z.string().min(1, "업체를 입력해주세요."),
-  amount: z.number().min(1, "금액을 입력해주세요."),
-  priority: z.number(),
+  amount: z
+    .number({
+      required_error: "금액을 입력해주세요",
+      invalid_type_error: "숫자를 입력해주세요",
+    })
+    .min(0, { message: "0 이상의 숫자를 입력해주세요" }),
   type: z.string(),
 });
 
@@ -58,12 +62,7 @@ export const cashflowFields: CashflowField[] = [
     label: "금액",
     type: "number",
     required: true,
-  },
-  {
-    name: "priority",
-    label: "우선순위",
-    type: "number",
-    required: true,
+    endAdornment: "백만원",
   },
 ];
 

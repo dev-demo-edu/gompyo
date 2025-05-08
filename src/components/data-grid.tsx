@@ -8,6 +8,7 @@ import type {
   SelectionChangedEvent,
   GridApi,
   GridReadyEvent,
+  RowDragEndEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
@@ -24,6 +25,9 @@ interface DataGridProps<T> {
   onDragStopped?: (event: DragStoppedEvent) => void;
   onResetColumnOrder?: () => void;
   onSelectionChanged?: (event: SelectionChangedEvent) => void;
+  pagination?: boolean;
+  paginationPageSize?: number;
+  onRowDragEnd?: (event: RowDragEndEvent) => void;
 }
 
 export default function DataGrid<T>({
@@ -34,6 +38,9 @@ export default function DataGrid<T>({
   onDragStarted,
   onDragStopped,
   onSelectionChanged,
+  pagination = true,
+  paginationPageSize = 15,
+  onRowDragEnd,
 }: DataGridProps<T>) {
   const gridApiRef = useRef<GridApi | null>(null);
 
@@ -109,14 +116,18 @@ export default function DataGrid<T>({
             rowData={data}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            pagination={true}
-            paginationPageSize={15}
+            pagination={pagination}
+            paginationPageSize={paginationPageSize}
             rowSelection="multiple"
             localeText={localeText}
             onDragStarted={onDragStarted}
             onDragStopped={onDragStopped}
             onGridReady={handleGridReady}
             onSelectionChanged={onSelectionChanged}
+            rowDragManaged={true}
+            animateRows={true}
+            getRowId={(params) => params.data.id}
+            onRowDragEnd={onRowDragEnd}
           />
         </div>
       )}
