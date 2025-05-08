@@ -52,7 +52,10 @@ export default function CashflowContainer() {
 
   async function handleUpdateCompanyBalance() {
     await updateCompanyBalance(
-      calculateCashflowAmountByType(selectedIncomeRows, selectedExpenseRows) +
+      calculateCashflowAmountByType(
+        selectedIncomeRows.filter((row) => row.id !== "balance-row"),
+        selectedExpenseRows,
+      ) +
         (companyList.find((company) => company.id === selectedCompanyId)
           ?.companyBalance ?? 0),
       selectedCompanyId,
