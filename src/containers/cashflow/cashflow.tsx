@@ -42,7 +42,9 @@ export default function CashflowContainer() {
   const fetchCompanyList = async () => {
     const companies = await getCompanyList();
     setCompanyList(companies);
-    setSelectedCompanyId(companies[0].id);
+    setSelectedCompanyId(
+      selectedCompanyId === "" ? companies[0].id : selectedCompanyId,
+    );
   };
   const [editMode, setEditMode] = useAtom(editModeAtom);
 

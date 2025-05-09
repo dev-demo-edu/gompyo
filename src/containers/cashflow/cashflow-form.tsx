@@ -17,6 +17,9 @@ export const cashflowSchema = z.object({
       required_error: "금액을 입력해주세요",
       invalid_type_error: "숫자를 입력해주세요",
     })
+    .int({
+      message: "정수를 입력해주세요",
+    })
     .min(0, { message: "0 이상의 숫자를 입력해주세요" }),
   type: z.string(),
 });
