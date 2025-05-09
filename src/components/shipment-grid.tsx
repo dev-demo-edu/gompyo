@@ -59,6 +59,7 @@ export default function ShipmentGrid() {
         pinned: "left",
         lockPinned: true,
         width: 70,
+        field: "checkbox",
       },
       ...orderedColumns,
       {

@@ -39,6 +39,7 @@ export default function AccountNumberGrid() {
         pinned: "left",
         lockPinned: true,
         width: 70,
+        field: "checkbox",
       },
       {
         headerName: "계좌번호",

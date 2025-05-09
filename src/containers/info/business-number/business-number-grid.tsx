@@ -41,6 +41,7 @@ export default function BusinessNumberGrid() {
         pinned: "left",
         lockPinned: true,
         width: 70,
+        field: "checkbox",
       },
       {
         headerName: "사업자번호",

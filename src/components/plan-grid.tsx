@@ -61,6 +61,7 @@ export default function PlanGrid() {
         pinned: "left",
         lockPinned: true,
         width: 70,
+        field: "checkbox",
       },
       ...orderedColumns,
       {

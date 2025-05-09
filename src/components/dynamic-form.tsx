@@ -62,7 +62,7 @@ export type DynamicFormProps<Schema extends ZodType> = {
   zodSchema: Schema;
   steps?: DynamicFormStep<InferZod<Schema>>[];
   fields?: DynamicFormField<InferZod<Schema>>[];
-  onSubmit: (values: InferZod<Schema>) => void;
+  onSubmit: (values: InferZod<Schema>) => Promise<void>;
   submitLabel?: string;
   zodSchemas?: Schema[]; // 멀티 스텝 (optional)
   onCancel?: () => void;
@@ -111,6 +111,7 @@ export default function DynamicForm<Schema extends ZodType>({
       : getInitialValues(fields!),
   );
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 필드 값 변경 핸들러 (타입 안전)
   const handleChange = <K extends keyof T>(name: K, value: T[K]) => {
@@ -171,7 +172,8 @@ export default function DynamicForm<Schema extends ZodType>({
   };
 
   // 제출
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    if (isSubmitting) return;
     e.preventDefault();
     let result;
     if (isMultiStep && zodSchemas) {
@@ -187,10 +189,15 @@ export default function DynamicForm<Schema extends ZodType>({
       return;
     }
     setErrors({});
-    if (isMultiStep && stepIdx < steps!.length - 1) {
-      setStepIdx((prev) => prev + 1);
-    } else {
-      onSubmit(form);
+    setIsSubmitting(true);
+    try {
+      if (isMultiStep && stepIdx < steps!.length - 1) {
+        setStepIdx((prev) => prev + 1);
+      } else {
+        await onSubmit(form);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -338,11 +345,6 @@ export default function DynamicForm<Schema extends ZodType>({
                 </Box>
               ),
             )}
-            {/* {fieldError && (
-              <Typography color="error" variant="caption">
-                {fieldError}
-              </Typography>
-            )} */}
           </Box>
         );
       case "custom":
@@ -397,6 +399,7 @@ export default function DynamicForm<Schema extends ZodType>({
           variant="contained"
           color="primary"
           sx={{ fontWeight: 600 }}
+          disabled={isSubmitting}
         >
           {isMultiStep && stepIdx < steps!.length - 1 ? "다음" : submitLabel}
         </Button>

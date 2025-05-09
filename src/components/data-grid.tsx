@@ -9,6 +9,7 @@ import type {
   GridApi,
   GridReadyEvent,
   RowDragEndEvent,
+  CellClickedEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
@@ -75,6 +76,12 @@ export default function DataGrid<T>({
 
   const localeText = useMemo(() => AG_GRID_LOCALE_KR, []);
 
+  const onCellClicked = useCallback((params: CellClickedEvent) => {
+    if (params.colDef.field === "checkbox") {
+      params.node.setSelected(!params.node.isSelected());
+    }
+  }, []);
+
   // onGridReady에서 컬럼 상태 적용
   const handleGridReady = useCallback(
     (params: GridReadyEvent) => {
@@ -130,6 +137,8 @@ export default function DataGrid<T>({
             animateRows={true}
             getRowId={(params) => params.data.id}
             onRowDragEnd={onRowDragEnd}
+            suppressRowClickSelection={true}
+            onCellClicked={onCellClicked}
           />
         </div>
       )}
