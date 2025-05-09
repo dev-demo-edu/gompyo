@@ -159,6 +159,7 @@ export default function CashflowGrid() {
         checkboxSelection: (params) => {
           return params.data.id !== "balance-row";
         },
+        field: "checkbox",
         minWidth: 50,
         flex: 1,
         headerCheckboxSelection: true,
