@@ -261,27 +261,15 @@ export default function CashflowGrid() {
               지출
             </Typography>
           </div>
-          <div className="relative h-[80%]">
-            <div
-              className="absolute top-0 left-0 origin-top-left"
-              style={{
-                transform: "scale(0.8)",
-                transformOrigin: "top left",
-                width: "125%", // 보정: 1 / 0.8 = 125%
-                height: "125%", // 보정
-              }}
-            >
-              <div style={{ height: "100%", width: "100%" }}>
-                <DataGrid<CashflowItem>
-                  columnDefs={columnDefs}
-                  data={expenseData}
-                  onSelectionChanged={handleExpenseSelection}
-                  onRowDragEnd={handleRowDragEnd}
-                  onDragStopped={handleDragStopped}
-                  pagination={false}
-                />
-              </div>
-            </div>
+          <div style={{ height: "100%", width: "100%" }}>
+            <DataGrid<CashflowItem>
+              columnDefs={columnDefs}
+              data={expenseData}
+              onSelectionChanged={handleExpenseSelection}
+              onRowDragEnd={handleRowDragEnd}
+              onDragStopped={handleDragStopped}
+              pagination={false}
+            />
           </div>
         </div>
         <div className="w-full h-full flex flex-col">
@@ -303,27 +291,15 @@ export default function CashflowGrid() {
               </Typography>
             </div>
           </div>
-          <div className="relative h-[80%] overflow-hidden">
-            <div
-              className="absolute top-0 left-0 origin-top-left"
-              style={{
-                transform: "scale(0.8)",
-                transformOrigin: "top left",
-                width: "125%", // 보정: 1 / 0.8 = 125%
-                height: "125%", // 보정
-              }}
-            >
-              <div style={{ height: "100%", width: "100%" }}>
-                <DataGrid<CashflowItem>
-                  columnDefs={columnDefs}
-                  data={incomeData}
-                  onSelectionChanged={handleIncomeSelection}
-                  onRowDragEnd={handleRowDragEnd}
-                  onDragStopped={handleDragStopped}
-                  pagination={false}
-                />
-              </div>
-            </div>
+          <div style={{ height: "100%", width: "100%" }}>
+            <DataGrid<CashflowItem>
+              columnDefs={columnDefs}
+              data={incomeData}
+              onSelectionChanged={handleIncomeSelection}
+              onRowDragEnd={handleRowDragEnd}
+              onDragStopped={handleDragStopped}
+              pagination={false}
+            />
           </div>
         </div>
       </div>
