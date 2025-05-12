@@ -21,6 +21,7 @@ import {
 import CashflowAddModal, {
   CashflowBalanceModal,
   CashflowDeleteConfirmModal,
+  CashflowEditModal,
 } from "./cashflow-modal";
 import { calculateCashflowAmountByType } from "@/utils/cashflow";
 import Tabs from "@mui/material/Tabs";
@@ -32,6 +33,7 @@ export default function CashflowContainer() {
     useState(false);
   const [openCashflowDeleteConfirmModal, setOpenCashflowDeleteConfirmModal] =
     useState(false);
+  const [openCashflowEditModal, setOpenCashflowEditModal] = useState(false);
   const [companyList, setCompanyList] = useAtom(companyListAtom);
   const [selectedCompanyId, setSelectedCompanyId] = useAtom(
     selectedCompanyIdAtom,
@@ -144,6 +146,36 @@ export default function CashflowContainer() {
               variant="contained"
               color="primary"
               disabled={
+                !(
+                  selectedIncomeRows.length === 1 &&
+                  selectedExpenseRows.length === 0
+                ) &&
+                !(
+                  selectedIncomeRows.length === 0 &&
+                  selectedExpenseRows.length === 1
+                )
+              }
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                boxShadow: "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={() => setOpenCashflowEditModal(true)}
+            >
+              선택 목록 수정
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={
                 selectedIncomeRows.length === 0 &&
                 selectedExpenseRows.length === 0
               }
@@ -224,6 +256,17 @@ export default function CashflowContainer() {
       <CashflowDeleteConfirmModal
         open={openCashflowDeleteConfirmModal}
         onClose={() => setOpenCashflowDeleteConfirmModal(false)}
+      />
+      <CashflowEditModal
+        open={openCashflowEditModal}
+        onClose={() => setOpenCashflowEditModal(false)}
+        selectedCashflow={
+          selectedIncomeRows.length === 1
+            ? selectedIncomeRows[0]
+            : selectedExpenseRows.length === 1
+              ? selectedExpenseRows[0]
+              : undefined
+        }
       />
     </div>
   );

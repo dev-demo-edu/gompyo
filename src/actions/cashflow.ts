@@ -15,6 +15,11 @@ export async function getCashflowList() {
   return result;
 }
 
+export async function getCashflowById(id: string) {
+  const result = await db.select().from(cashflows).where(eq(cashflows.id, id));
+  return result[0];
+}
+
 export async function getCompanyList() {
   const result = await db.select().from(companies).orderBy(asc(companies.name));
   return result;
@@ -77,5 +82,16 @@ export async function updateCompanyBalance(amount: number, companyId: string) {
       companyBalance: amount,
     })
     .where(eq(companies.id, companyId));
+  return result;
+}
+
+export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
+  const result = await db
+    .update(cashflows)
+    .set({
+      ...cashflow,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(cashflows.id, id));
   return result;
 }
