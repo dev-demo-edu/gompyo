@@ -114,7 +114,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowBalanceModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowBalanceModal(true);
+              }}
             >
               잔액 설정
             </Button>
@@ -138,7 +141,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowDeleteConfirmModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowDeleteConfirmModal(true);
+              }}
             >
               선택 목록 삭제
             </Button>
@@ -168,7 +174,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowEditModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowEditModal(true);
+              }}
             >
               선택 목록 수정
             </Button>
@@ -192,7 +201,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={handleUpdateCompanyBalance}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                handleUpdateCompanyBalance();
+              }}
             >
               선택 목록 반영
             </Button>
@@ -213,7 +225,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowAddModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowAddModal(true);
+              }}
             >
               목록 추가
             </Button>
@@ -237,7 +252,10 @@ export default function CashflowContainer() {
                 border: editMode ? "1px solid #cbd5e1" : "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setEditMode((v) => !v)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setEditMode((v) => !v);
+              }}
             >
               {editMode ? "편집 종료" : "편집 모드"}
             </Button>

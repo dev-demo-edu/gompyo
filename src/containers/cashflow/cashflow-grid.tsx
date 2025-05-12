@@ -4,6 +4,7 @@ import type {
   DragStoppedEvent,
   RowDragEndEvent,
   SelectionChangedEvent,
+  ICellRendererParams,
 } from "ag-grid-community";
 import { useEffect, useMemo } from "react";
 
@@ -214,6 +215,20 @@ export default function CashflowGrid() {
         filter: false,
         sortable: false,
         suppressMenu: true,
+        cellRenderer: (params: ICellRendererParams) => {
+          const { date, type } = params.data as CashflowItem;
+          // DataGrid의 실제 rowData만 사용
+          const allRows: CashflowItem[] = [];
+          params.api.forEachNode((node) => {
+            if (node.data && node.data.id !== "balance-row") {
+              allRows.push(node.data as CashflowItem);
+            }
+          });
+          const sameDateRows = allRows.filter(
+            (row) => row.date === date && row.type === type,
+          );
+          return sameDateRows.length > 1 ? params.value : "";
+        },
       },
     ],
     [editMode],
@@ -246,10 +261,18 @@ export default function CashflowGrid() {
   }, [selectedCompanyFlows, companyBalance]);
 
   const handleExpenseSelection = (event: SelectionChangedEvent) => {
-    setSelectedExpenseRows(event.api.getSelectedRows());
+    // balance-row는 선택 목록에서 제외
+    const selected = event.api
+      .getSelectedRows()
+      .filter((row) => row.id !== "balance-row");
+    setSelectedExpenseRows(selected);
   };
   const handleIncomeSelection = (event: SelectionChangedEvent) => {
-    setSelectedIncomeRows(event.api.getSelectedRows());
+    // balance-row는 선택 목록에서 제외
+    const selected = event.api
+      .getSelectedRows()
+      .filter((row) => row.id !== "balance-row");
+    setSelectedIncomeRows(selected);
   };
 
   return (

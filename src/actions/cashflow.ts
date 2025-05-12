@@ -30,8 +30,7 @@ type CashflowFormValues = Omit<
   "id" | "createdAt" | "updatedAt" | "priority"
 >;
 
-export async function addCashflow(cashflow: CashflowFormValues) {
-  // 해당 날짜의 row 모두 조회
+export async function getNewPriority(cashflow: CashflowFormValues) {
   const sameDateRows = await db
     .select()
     .from(cashflows)
@@ -39,18 +38,13 @@ export async function addCashflow(cashflow: CashflowFormValues) {
       and(eq(cashflows.date, cashflow.date), eq(cashflows.type, cashflow.type)),
     );
   let newPriority: number | null = null;
-  if (sameDateRows.length === 0) {
-    newPriority = null;
-  } else if (sameDateRows.length === 1) {
-    // 기존 row priority를 1로 업데이트
-    await db
-      .update(cashflows)
-      .set({ priority: 1 })
-      .where(eq(cashflows.id, sameDateRows[0].id));
-    newPriority = 2;
-  } else {
-    newPriority = sameDateRows.length + 1;
-  }
+  newPriority = sameDateRows.length + 1;
+  return newPriority;
+}
+
+export async function addCashflow(cashflow: CashflowFormValues) {
+  // 해당 날짜의 row 모두 조회
+  const newPriority = await getNewPriority(cashflow);
   const result = await db.insert(cashflows).values({
     ...cashflow,
     id: nanoid(),
@@ -85,13 +79,55 @@ export async function updateCompanyBalance(amount: number, companyId: string) {
   return result;
 }
 
+/**
+ * 특정 날짜(date)에 해당하는 cashflow들의 priority를 1부터 재정렬합니다.
+ */
+export async function reorderCashflowPrioritiesByDate(
+  date: string,
+  type: string,
+) {
+  const rows = await db
+    .select()
+    .from(cashflows)
+    .where(and(eq(cashflows.date, date), eq(cashflows.type, type)))
+    .orderBy(asc(cashflows.priority));
+  console.log("rows", rows);
+  for (let i = 0; i < rows.length; i++) {
+    await db
+      .update(cashflows)
+      .set({ priority: i + 1 })
+      .where(eq(cashflows.id, rows[i].id));
+  }
+}
+
 export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
-  const result = await db
+  // 기존 cashflow의 날짜 조회
+  const oldCashflow = await getCashflowById(id);
+  const oldDate = oldCashflow?.date;
+  const newDate = cashflow.date;
+  const oldType = oldCashflow?.type;
+  const newType = cashflow.type;
+
+  // cashflow 업데이트
+  const newPriority = await getNewPriority(cashflow);
+  console.log("newPriority", newPriority);
+  await db
     .update(cashflows)
     .set({
       ...cashflow,
+      priority: newPriority,
       updatedAt: new Date().toISOString(),
     })
     .where(eq(cashflows.id, id));
-  return result;
+
+  // 기존 날짜의 우선순위 재정렬
+  if (oldDate) {
+    await reorderCashflowPrioritiesByDate(oldDate, oldType);
+  }
+  // 새로운 날짜가 다를 경우, 새로운 날짜의 우선순위도 재정렬
+  if (newDate && newDate !== oldDate) {
+    await reorderCashflowPrioritiesByDate(newDate, newType);
+  }
+
+  return true;
 }
