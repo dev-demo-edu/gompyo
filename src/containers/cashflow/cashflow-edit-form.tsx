@@ -72,8 +72,6 @@ export default function CashflowEditForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [companyId] = useAtom(selectedCompanyIdAtom);
   // jotai atom에서 직접 선택된 row를 읽어옴
-  const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
-  const setSelectedExpenseRows = useSetAtom(selectedExpenseRowsAtom);
   const selectedIncomeRows = useAtomValue(selectedIncomeRowsAtom);
   const selectedExpenseRows = useAtomValue(selectedExpenseRowsAtom);
   const selectedCashflow: Cashflow | undefined =
@@ -92,7 +90,7 @@ export default function CashflowEditForm({
     }
 
     try {
-      const updatedCashflow = await updateCashflow(
+      await updateCashflow(
         {
           ...values,
           companyId,
@@ -100,13 +98,6 @@ export default function CashflowEditForm({
         selectedCashflow.id,
       );
       setRefresh((prev) => prev + 1);
-      if (updatedCashflow.type === "income") {
-        setSelectedIncomeRows([updatedCashflow as Cashflow]);
-        setSelectedExpenseRows([]);
-      } else {
-        setSelectedIncomeRows([]);
-        setSelectedExpenseRows([updatedCashflow as Cashflow]);
-      }
       setFieldErrors({}); // 에러 초기화
       onClose?.();
     } catch (error) {
