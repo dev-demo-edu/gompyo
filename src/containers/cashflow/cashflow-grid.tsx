@@ -6,6 +6,8 @@ import type {
   SelectionChangedEvent,
   ICellRendererParams,
   GridApi,
+  RowDragCallbackParams,
+  CheckboxSelectionCallbackParams,
 } from "ag-grid-community";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -130,112 +132,110 @@ export default function CashflowGrid() {
   useEffect(() => {
     const fetchCashflowList = async () => {
       const cashflows = await getCashflowList();
-      setCashflowList(cashflows);
+      setCashflowList([...cashflows]);
       gridApiRef.current?.redrawRows();
     };
     fetchCashflowList();
   }, [refresh]);
 
   // 컬럼 정의
-  const columnDefs = useMemo<ColDef[]>(
-    () => [
-      {
-        headerName: "",
-        field: "dragHandle",
-        width: 70,
-        minWidth: 70,
-        pinned: "left",
-        lockPinned: true,
-        suppressMenu: true,
-        suppressMovable: true,
-        filter: false,
-        sortable: false,
-        rowDrag: (params) => {
-          return params.data.id !== "balance-row";
-        },
-        cellRenderer: () => "",
-        hide: !editMode,
+  const columnDefs: ColDef[] = [
+    {
+      headerName: "",
+      field: "dragHandle",
+      width: 70,
+      minWidth: 70,
+      pinned: "left",
+      lockPinned: true,
+      suppressMovable: true,
+      filter: false,
+      sortable: false,
+      rowDrag: (params: RowDragCallbackParams) => {
+        return params.data.id !== "balance-row";
       },
-      {
-        headerName: "",
-        checkboxSelection: (params) => {
-          return params.data.id !== "balance-row";
-        },
-        field: "checkbox",
-        minWidth: 50,
-        flex: 1,
-        headerCheckboxSelection: true,
-        filter: false,
-        pinned: "left",
-        lockPinned: true,
-        width: 70,
-        hide: editMode,
+      cellRenderer: () => "",
+      hide: !editMode,
+      suppressHeaderMenuButton: true,
+    },
+    {
+      headerName: "",
+      checkboxSelection: (params: CheckboxSelectionCallbackParams) => {
+        return params.data.id !== "balance-row";
       },
-      {
-        headerName: "날짜",
-        field: "date",
-        minWidth: 150,
-        flex: 1,
-        filter: false,
-        sortable: false,
-        suppressMenu: true,
-        valueFormatter: weekDayFormatter,
+      field: "checkbox",
+      minWidth: 50,
+      flex: 1,
+      headerCheckboxSelection: true,
+      filter: false,
+      pinned: "left",
+      lockPinned: true,
+      width: 70,
+      hide: editMode,
+      suppressHeaderMenuButton: true,
+    },
+    {
+      headerName: "날짜",
+      field: "date",
+      minWidth: 150,
+      flex: 1,
+      filter: false,
+      sortable: false,
+      valueFormatter: weekDayFormatter,
+      suppressHeaderMenuButton: true,
+    },
+    {
+      headerName: "업체",
+      field: "company",
+      minWidth: 120,
+      flex: 1,
+      filter: false,
+      sortable: false,
+      suppressHeaderMenuButton: true,
+    },
+    {
+      headerName: "금액",
+      field: "amount",
+      minWidth: 120,
+      flex: 1,
+      filter: false,
+      sortable: false,
+      valueFormatter: oneDecimalFormatter,
+      suppressHeaderMenuButton: true,
+    },
+    {
+      headerName: "합계",
+      field: "total",
+      minWidth: 120,
+      flex: 1,
+      filter: false,
+      sortable: false,
+      valueFormatter: oneDecimalFormatter,
+      suppressHeaderMenuButton: true,
+    },
+    {
+      headerName: "우선순위",
+      field: "priority",
+      minWidth: 120,
+      flex: 1,
+      filter: false,
+      sortable: false,
+      cellRenderer: (params: ICellRendererParams) => {
+        const { date, type } = params.data as CashflowItem;
+        // DataGrid의 실제 rowData만 사용
+        const allRows: CashflowItem[] = [];
+        params.api.forEachNode((node) => {
+          if (node.data && node.data.id !== "balance-row") {
+            allRows.push(node.data as CashflowItem);
+          }
+        });
+        const sameDateRows = allRows.filter(
+          (row) => row.date === date && row.type === type,
+        );
+        return sameDateRows.length > 1 ? params.value : "";
       },
-      {
-        headerName: "업체",
-        field: "company",
-        minWidth: 120,
-        flex: 1,
-        filter: false,
-        sortable: false,
-        suppressMenu: true,
-      },
-      {
-        headerName: "금액",
-        field: "amount",
-        minWidth: 120,
-        flex: 1,
-        filter: false,
-        sortable: false,
-        suppressMenu: true,
-        valueFormatter: oneDecimalFormatter,
-      },
-      {
-        headerName: "합계",
-        field: "total",
-        minWidth: 120,
-        flex: 1,
-        filter: false,
-        sortable: false,
-        suppressMenu: true,
-        valueFormatter: oneDecimalFormatter,
-      },
-      {
-        headerName: "우선순위",
-        field: "priority",
-        minWidth: 120,
-        flex: 1,
-        filter: false,
-        sortable: false,
-        suppressMenu: true,
-        cellRenderer: (params: ICellRendererParams) => {
-          const { date, type } = params.data as CashflowItem;
-          // DataGrid의 실제 rowData만 사용
-          const allRows: CashflowItem[] = [];
-          params.api.forEachNode((node) => {
-            if (node.data && node.data.id !== "balance-row") {
-              allRows.push(node.data as CashflowItem);
-            }
-          });
-          const sameDateRows = allRows.filter(
-            (row) => row.date === date && row.type === type,
-          );
-          return sameDateRows.length > 1 ? params.value : "";
-        },
-      },
-    ],
-    [editMode],
-  );
+      suppressHeaderMenuButton: true,
+    },
+  ];
   const expenseData = useMemo(() => {
     return mapCashflowWithTotal(
       selectedCompanyFlows.filter((flow) => flow.type === "expense"),
