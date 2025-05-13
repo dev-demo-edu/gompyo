@@ -61,6 +61,7 @@ export async function addCashflow(cashflow: CashflowFormValues) {
 
 export async function deleteCashflows(ids: string[]) {
   const result = await db.delete(cashflows).where(inArray(cashflows.id, ids));
+  await reorderAllCashflowPriorities();
   return result;
 }
 
@@ -100,7 +101,6 @@ export async function reorderCashflowPrioritiesByDate(
       ),
     )
     .orderBy(asc(cashflows.priority));
-  console.log("rows", rows);
   for (let i = 0; i < rows.length; i++) {
     await db
       .update(cashflows)
@@ -109,13 +109,44 @@ export async function reorderCashflowPrioritiesByDate(
   }
 }
 
+export async function reorderAllCashflowPriorities() {
+  // 모든 company, type, date 조합 조회
+  const allRows = await db.select().from(cashflows);
+  const groupMap = new Map<string, Cashflow[]>();
+
+  for (const row of allRows) {
+    const key = `${row.companyId}_${row.type}_${row.date}`;
+    if (!groupMap.has(key)) groupMap.set(key, []);
+    groupMap.get(key)!.push(row);
+  }
+
+  for (const group of groupMap.values()) {
+    // priority 오름차순 정렬
+    group.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
+    for (let i = 0; i < group.length; i++) {
+      await db
+        .update(cashflows)
+        .set({ priority: i + 1 })
+        .where(eq(cashflows.id, group[i].id));
+    }
+  }
+}
+
 export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
-  // 기존 cashflow의 날짜 조회
+  // 기존 cashflow의 날짜, 타입, priority 조회
   const oldCashflow = await getCashflowById(id);
 
+  // type/date가 바뀌었는지 체크
+  const isTypeChanged = oldCashflow?.type !== cashflow.type;
+  const isDateChanged = oldCashflow?.date !== cashflow.date;
+
+  // priority 결정
+  let newPriority = oldCashflow?.priority;
+  if (isTypeChanged || isDateChanged) {
+    newPriority = await getNewPriority(cashflow);
+  }
+
   // cashflow 업데이트
-  const newPriority = await getNewPriority(cashflow);
-  console.log("newPriority", newPriority);
   await db
     .update(cashflows)
     .set({
@@ -125,14 +156,15 @@ export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
     })
     .where(eq(cashflows.id, id));
 
-  // 기존 날짜의 우선순위 재정렬
-  if (oldCashflow) {
+  // type 또는 date가 바뀌었을 때만 우선순위 재정렬
+  if (oldCashflow && (isTypeChanged || isDateChanged)) {
     await reorderCashflowPrioritiesByDate(oldCashflow);
-  }
-  // 새로운 날짜가 다를 경우, 새로운 날짜의 우선순위도 재정렬
-  if (cashflow.date !== oldCashflow?.date) {
     await reorderCashflowPrioritiesByDate(cashflow);
   }
 
-  return true;
+  return await db
+    .select()
+    .from(cashflows)
+    .where(eq(cashflows.id, id))
+    .then((rows) => rows[0]);
 }

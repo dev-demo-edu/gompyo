@@ -10,7 +10,7 @@ import {
   selectedExpenseRowsAtom,
   selectedIncomeRowsAtom,
 } from "@/states/cashflow-state";
-import { Cashflow, deleteCashflows } from "@/actions/cashflow";
+import { deleteCashflows } from "@/actions/cashflow";
 import CashflowBalanceForm from "./balance-form";
 import CashflowEditForm from "./cashflow-edit-form";
 
@@ -93,22 +93,14 @@ export function CashflowBalanceModal({
 interface CashflowEditModalProps {
   open: boolean;
   onClose: () => void;
-  selectedCashflow?: Cashflow;
 }
 
-export function CashflowEditModal({
-  open,
-  onClose,
-  selectedCashflow,
-}: CashflowEditModalProps) {
+export function CashflowEditModal({ open, onClose }: CashflowEditModalProps) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>내역 수정</DialogTitle>
       <DialogContent>
-        <CashflowEditForm
-          onClose={onClose}
-          selectedCashflow={selectedCashflow}
-        />
+        <CashflowEditForm onClose={onClose} />
       </DialogContent>
     </Dialog>
   );

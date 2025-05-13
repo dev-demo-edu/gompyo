@@ -278,13 +278,6 @@ export default function CashflowContainer() {
       <CashflowEditModal
         open={openCashflowEditModal}
         onClose={() => setOpenCashflowEditModal(false)}
-        selectedCashflow={
-          selectedIncomeRows.length === 1
-            ? selectedIncomeRows[0]
-            : selectedExpenseRows.length === 1
-              ? selectedExpenseRows[0]
-              : undefined
-        }
       />
     </div>
   );

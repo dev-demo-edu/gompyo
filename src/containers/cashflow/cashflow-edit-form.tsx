@@ -1,25 +1,21 @@
 import DynamicForm, { DynamicFormField } from "@/components/dynamic-form";
 import { z } from "zod";
 import { updateCashflow, Cashflow } from "@/actions/cashflow";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {
   cashflowRefreshAtom,
   selectedCompanyIdAtom,
+  selectedIncomeRowsAtom,
+  selectedExpenseRowsAtom,
 } from "@/states/cashflow-state";
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { oneDecimalPositiveZod } from "@/utils/custom-zod";
+
 // zod 스키마 정의
 export const cashflowSchema = z.object({
   date: z.string().min(1, "날짜를 입력해주세요."),
   counterparty: z.string().min(1, "업체를 입력해주세요."),
-  amount: z
-    .number({
-      required_error: "금액을 입력해주세요",
-      invalid_type_error: "숫자를 입력해주세요",
-    })
-    .int({
-      message: "정수를 입력해주세요",
-    })
-    .min(0, { message: "0 이상의 숫자를 입력해주세요" }),
+  amount: oneDecimalPositiveZod,
   type: z.string(),
 });
 
@@ -33,7 +29,6 @@ export type CashflowField = DynamicFormField<CashflowFormValues>;
 export interface CashflowEditFormProps {
   onClose?: () => void;
   submitLabel?: string;
-  selectedCashflow?: Cashflow;
 }
 
 // 계좌 추가 폼 필드 정의 (필요에 따라 수정)
@@ -63,21 +58,30 @@ const baseFields: CashflowField[] = [
   {
     name: "amount",
     label: "금액",
-    type: "number",
+    type: "text",
     required: true,
     endAdornment: "백만원",
   },
 ];
 
-// 계좌 추가 폼 컴포넌트
 export default function CashflowEditForm({
   onClose,
   submitLabel = "수정",
-  selectedCashflow,
 }: CashflowEditFormProps) {
   const setRefresh = useSetAtom(cashflowRefreshAtom);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [companyId] = useAtom(selectedCompanyIdAtom);
+  // jotai atom에서 직접 선택된 row를 읽어옴
+  const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
+  const setSelectedExpenseRows = useSetAtom(selectedExpenseRowsAtom);
+  const selectedIncomeRows = useAtomValue(selectedIncomeRowsAtom);
+  const selectedExpenseRows = useAtomValue(selectedExpenseRowsAtom);
+  const selectedCashflow: Cashflow | undefined =
+    selectedIncomeRows.length === 1
+      ? selectedIncomeRows[0]
+      : selectedExpenseRows.length === 1
+        ? selectedExpenseRows[0]
+        : undefined;
 
   const handleSubmit = async (values: CashflowFormValues) => {
     if (!selectedCashflow) {
@@ -88,8 +92,21 @@ export default function CashflowEditForm({
     }
 
     try {
-      await updateCashflow({ ...values, companyId }, selectedCashflow.id);
+      const updatedCashflow = await updateCashflow(
+        {
+          ...values,
+          companyId,
+        },
+        selectedCashflow.id,
+      );
       setRefresh((prev) => prev + 1);
+      if (updatedCashflow.type === "income") {
+        setSelectedIncomeRows([updatedCashflow as Cashflow]);
+        setSelectedExpenseRows([]);
+      } else {
+        setSelectedIncomeRows([]);
+        setSelectedExpenseRows([updatedCashflow as Cashflow]);
+      }
       setFieldErrors({}); // 에러 초기화
       onClose?.();
     } catch (error) {
@@ -105,23 +122,21 @@ export default function CashflowEditForm({
     }
   };
 
-  const cashflowFields = useMemo(() => {
-    if (!selectedCashflow) return baseFields;
-
-    return baseFields.map((field, index) => ({
-      ...field,
-      defaultValue:
-        index === 0
-          ? selectedCashflow.type
-          : index === 1
-            ? selectedCashflow.date
-            : index === 2
-              ? selectedCashflow.counterparty
-              : index === 3
-                ? selectedCashflow.amount
-                : undefined,
-    }));
-  }, [selectedCashflow]);
+  const cashflowFields = !selectedCashflow
+    ? baseFields
+    : baseFields.map((field, index) => ({
+        ...field,
+        defaultValue:
+          index === 0
+            ? selectedCashflow.type
+            : index === 1
+              ? selectedCashflow.date
+              : index === 2
+                ? selectedCashflow.counterparty
+                : index === 3
+                  ? String(selectedCashflow.amount)
+                  : undefined,
+      }));
 
   if (!selectedCashflow) {
     return <div>수정할 내역을 선택해주세요.</div>;

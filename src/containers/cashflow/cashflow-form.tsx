@@ -7,20 +7,12 @@ import {
   selectedCompanyIdAtom,
 } from "@/states/cashflow-state";
 import { useState } from "react";
-
+import { oneDecimalPositiveZod } from "@/utils/custom-zod";
 // zod 스키마 정의
 export const cashflowSchema = z.object({
   date: z.string().min(1, "날짜를 입력해주세요."),
   counterparty: z.string().min(1, "업체를 입력해주세요."),
-  amount: z
-    .number({
-      required_error: "금액을 입력해주세요",
-      invalid_type_error: "숫자를 입력해주세요",
-    })
-    .int({
-      message: "정수를 입력해주세요",
-    })
-    .min(0, { message: "0 이상의 숫자를 입력해주세요" }),
+  amount: oneDecimalPositiveZod,
   type: z.string(),
 });
 
@@ -63,7 +55,7 @@ export const cashflowFields: CashflowField[] = [
   {
     name: "amount",
     label: "금액",
-    type: "number",
+    type: "text",
     required: true,
     endAdornment: "백만원",
   },

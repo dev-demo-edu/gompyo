@@ -9,12 +9,11 @@ import {
   setCompanyBalanceAtom,
 } from "@/states/cashflow-state";
 import { useState } from "react";
+import { oneDecimalZod } from "@/utils/custom-zod";
 
 // zod 스키마 정의
 export const cashflowBalanceSchema = z.object({
-  companyBalance: z.number().int({
-    message: "정수를 입력해주세요",
-  }),
+  companyBalance: oneDecimalZod,
 });
 
 // 계좌 추가 폼 값 타입 (zod에서 추론)
@@ -34,7 +33,7 @@ export const cashflowBalanceFields: CashflowBalanceField[] = [
   {
     name: "companyBalance",
     label: "잔액",
-    type: "number",
+    type: "text",
     required: true,
     defaultValue: 0,
     endAdornment: "백만원",
@@ -54,8 +53,8 @@ export default function CashflowBalanceForm({
 
   const handleSubmit = async (values: CashflowBalanceFormValues) => {
     try {
-      await updateCompanyBalance(values.companyBalance, companyId);
-      setCompanyBalance(values.companyBalance);
+      await updateCompanyBalance(Number(values.companyBalance), companyId);
+      setCompanyBalance(Number(values.companyBalance));
       setRefresh((prev) => prev + 1);
       setFieldErrors({}); // 에러 초기화
       onClose?.();
