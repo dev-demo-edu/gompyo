@@ -4,8 +4,10 @@ import type {
   DragStoppedEvent,
   RowDragEndEvent,
   SelectionChangedEvent,
+  ICellRendererParams,
+  GridApi,
 } from "ag-grid-community";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
@@ -22,7 +24,7 @@ import {
 } from "@/states/cashflow-state";
 import Typography from "@mui/material/Typography";
 import { getCashflowList, updateCashflowPriorities } from "@/actions/cashflow";
-import { weekDayFormatter } from "@/utils/formatter";
+import { weekDayFormatter, oneDecimalFormatter } from "@/utils/formatter";
 
 export function mapCashflowWithTotal<T extends CashflowItem>(
   items: T[],
@@ -49,6 +51,7 @@ export default function CashflowGrid() {
   const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
   const companyBalance = useAtomValue(companyBalanceAtom);
   const editMode = useAtomValue(editModeAtom);
+  const gridApiRef = useRef<GridApi | null>(null);
 
   const handleRowDragEnd = async (event: RowDragEndEvent) => {
     const type = event.node.data.type;
@@ -82,8 +85,6 @@ export default function CashflowGrid() {
 
     // 상태 업데이트
     setCashflowList(updatedAll);
-
-    // 서버에 저장 요청도 여기에 추가 가능
     await updateCashflowPriorities(updated);
   };
 
@@ -130,6 +131,7 @@ export default function CashflowGrid() {
     const fetchCashflowList = async () => {
       const cashflows = await getCashflowList();
       setCashflowList(cashflows);
+      gridApiRef.current?.redrawRows();
     };
     fetchCashflowList();
   }, [refresh]);
@@ -196,6 +198,7 @@ export default function CashflowGrid() {
         filter: false,
         sortable: false,
         suppressMenu: true,
+        valueFormatter: oneDecimalFormatter,
       },
       {
         headerName: "합계",
@@ -205,6 +208,7 @@ export default function CashflowGrid() {
         filter: false,
         sortable: false,
         suppressMenu: true,
+        valueFormatter: oneDecimalFormatter,
       },
       {
         headerName: "우선순위",
@@ -214,6 +218,20 @@ export default function CashflowGrid() {
         filter: false,
         sortable: false,
         suppressMenu: true,
+        cellRenderer: (params: ICellRendererParams) => {
+          const { date, type } = params.data as CashflowItem;
+          // DataGrid의 실제 rowData만 사용
+          const allRows: CashflowItem[] = [];
+          params.api.forEachNode((node) => {
+            if (node.data && node.data.id !== "balance-row") {
+              allRows.push(node.data as CashflowItem);
+            }
+          });
+          const sameDateRows = allRows.filter(
+            (row) => row.date === date && row.type === type,
+          );
+          return sameDateRows.length > 1 ? params.value : "";
+        },
       },
     ],
     [editMode],
@@ -246,10 +264,18 @@ export default function CashflowGrid() {
   }, [selectedCompanyFlows, companyBalance]);
 
   const handleExpenseSelection = (event: SelectionChangedEvent) => {
-    setSelectedExpenseRows(event.api.getSelectedRows());
+    // balance-row는 선택 목록에서 제외
+    const selected = event.api
+      .getSelectedRows()
+      .filter((row) => row.id !== "balance-row");
+    setSelectedExpenseRows(selected);
   };
   const handleIncomeSelection = (event: SelectionChangedEvent) => {
-    setSelectedIncomeRows(event.api.getSelectedRows());
+    // balance-row는 선택 목록에서 제외
+    const selected = event.api
+      .getSelectedRows()
+      .filter((row) => row.id !== "balance-row");
+    setSelectedIncomeRows(selected);
   };
 
   return (
@@ -261,27 +287,15 @@ export default function CashflowGrid() {
               지출
             </Typography>
           </div>
-          <div className="relative h-[80%]">
-            <div
-              className="absolute top-0 left-0 origin-top-left"
-              style={{
-                transform: "scale(0.8)",
-                transformOrigin: "top left",
-                width: "125%", // 보정: 1 / 0.8 = 125%
-                height: "125%", // 보정
-              }}
-            >
-              <div style={{ height: "100%", width: "100%" }}>
-                <DataGrid<CashflowItem>
-                  columnDefs={columnDefs}
-                  data={expenseData}
-                  onSelectionChanged={handleExpenseSelection}
-                  onRowDragEnd={handleRowDragEnd}
-                  onDragStopped={handleDragStopped}
-                  pagination={false}
-                />
-              </div>
-            </div>
+          <div style={{ height: "100%", width: "100%" }}>
+            <DataGrid<CashflowItem>
+              columnDefs={columnDefs}
+              data={expenseData}
+              onSelectionChanged={handleExpenseSelection}
+              onRowDragEnd={handleRowDragEnd}
+              onDragStopped={handleDragStopped}
+              pagination={false}
+            />
           </div>
         </div>
         <div className="w-full h-full flex flex-col">
@@ -303,27 +317,15 @@ export default function CashflowGrid() {
               </Typography>
             </div>
           </div>
-          <div className="relative h-[80%] overflow-hidden">
-            <div
-              className="absolute top-0 left-0 origin-top-left"
-              style={{
-                transform: "scale(0.8)",
-                transformOrigin: "top left",
-                width: "125%", // 보정: 1 / 0.8 = 125%
-                height: "125%", // 보정
-              }}
-            >
-              <div style={{ height: "100%", width: "100%" }}>
-                <DataGrid<CashflowItem>
-                  columnDefs={columnDefs}
-                  data={incomeData}
-                  onSelectionChanged={handleIncomeSelection}
-                  onRowDragEnd={handleRowDragEnd}
-                  onDragStopped={handleDragStopped}
-                  pagination={false}
-                />
-              </div>
-            </div>
+          <div style={{ height: "100%", width: "100%" }}>
+            <DataGrid<CashflowItem>
+              columnDefs={columnDefs}
+              data={incomeData}
+              onSelectionChanged={handleIncomeSelection}
+              onRowDragEnd={handleRowDragEnd}
+              onDragStopped={handleDragStopped}
+              pagination={false}
+            />
           </div>
         </div>
       </div>

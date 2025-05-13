@@ -1,13 +1,16 @@
 import DynamicForm, { DynamicFormField } from "@/components/dynamic-form";
 import { z } from "zod";
-import { addCashflow } from "@/actions/cashflow";
-import { useAtom, useSetAtom } from "jotai";
+import { updateCashflow, Cashflow } from "@/actions/cashflow";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {
   cashflowRefreshAtom,
   selectedCompanyIdAtom,
+  selectedIncomeRowsAtom,
+  selectedExpenseRowsAtom,
 } from "@/states/cashflow-state";
 import { useState } from "react";
 import { oneDecimalPositiveZod } from "@/utils/custom-zod";
+
 // zod 스키마 정의
 export const cashflowSchema = z.object({
   date: z.string().min(1, "날짜를 입력해주세요."),
@@ -23,13 +26,13 @@ export type CashflowFormValues = z.infer<typeof cashflowSchema>;
 export type CashflowField = DynamicFormField<CashflowFormValues>;
 
 // 계좌 추가 폼 props 타입
-export interface CashflowFormProps {
+export interface CashflowEditFormProps {
   onClose?: () => void;
   submitLabel?: string;
 }
 
 // 계좌 추가 폼 필드 정의 (필요에 따라 수정)
-export const cashflowFields: CashflowField[] = [
+const baseFields: CashflowField[] = [
   {
     name: "type",
     label: "타입",
@@ -61,22 +64,49 @@ export const cashflowFields: CashflowField[] = [
   },
 ];
 
-// 계좌 추가 폼 컴포넌트
-export default function CashflowForm({
+export default function CashflowEditForm({
   onClose,
-  submitLabel = "저장",
-}: CashflowFormProps) {
+  submitLabel = "수정",
+}: CashflowEditFormProps) {
   const setRefresh = useSetAtom(cashflowRefreshAtom);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [companyId] = useAtom(selectedCompanyIdAtom);
+  // jotai atom에서 직접 선택된 row를 읽어옴
+  const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
+  const setSelectedExpenseRows = useSetAtom(selectedExpenseRowsAtom);
+  const selectedIncomeRows = useAtomValue(selectedIncomeRowsAtom);
+  const selectedExpenseRows = useAtomValue(selectedExpenseRowsAtom);
+  const selectedCashflow: Cashflow | undefined =
+    selectedIncomeRows.length === 1
+      ? selectedIncomeRows[0]
+      : selectedExpenseRows.length === 1
+        ? selectedExpenseRows[0]
+        : undefined;
 
   const handleSubmit = async (values: CashflowFormValues) => {
-    try {
-      await addCashflow({
-        ...values,
-        companyId: companyId,
+    if (!selectedCashflow) {
+      setFieldErrors({
+        accountNumber: "수정할 내역이 선택되지 않았습니다.",
       });
+      return;
+    }
+
+    try {
+      const updatedCashflow = await updateCashflow(
+        {
+          ...values,
+          companyId,
+        },
+        selectedCashflow.id,
+      );
       setRefresh((prev) => prev + 1);
+      if (updatedCashflow.type === "income") {
+        setSelectedIncomeRows([updatedCashflow as Cashflow]);
+        setSelectedExpenseRows([]);
+      } else {
+        setSelectedIncomeRows([]);
+        setSelectedExpenseRows([updatedCashflow as Cashflow]);
+      }
       setFieldErrors({}); // 에러 초기화
       onClose?.();
     } catch (error) {
@@ -91,6 +121,26 @@ export default function CashflowForm({
       }
     }
   };
+
+  const cashflowFields = !selectedCashflow
+    ? baseFields
+    : baseFields.map((field, index) => ({
+        ...field,
+        defaultValue:
+          index === 0
+            ? selectedCashflow.type
+            : index === 1
+              ? selectedCashflow.date
+              : index === 2
+                ? selectedCashflow.counterparty
+                : index === 3
+                  ? String(selectedCashflow.amount)
+                  : undefined,
+      }));
+
+  if (!selectedCashflow) {
+    return <div>수정할 내역을 선택해주세요.</div>;
+  }
 
   return (
     <DynamicForm

@@ -334,7 +334,7 @@ export const cashflows = sqliteTable(
     date: text("date").notNull(), // ISO string 등으로 저장
     companyId: text("company_id").notNull(),
     counterparty: text("counterparty").notNull(),
-    amount: integer("amount").notNull(),
+    amount: real("amount").notNull(),
     type: text("type").notNull(), // income | expense
     priority: integer("priority"),
     createdAt: text("created_at").notNull(),
@@ -348,7 +348,7 @@ export const cashflows = sqliteTable(
 export const companies = sqliteTable("companies", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  companyBalance: integer("company_balance").notNull(),
+  companyBalance: real("company_balance").notNull(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
