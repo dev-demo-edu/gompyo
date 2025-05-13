@@ -35,7 +35,11 @@ export async function getNewPriority(cashflow: CashflowFormValues) {
     .select()
     .from(cashflows)
     .where(
-      and(eq(cashflows.date, cashflow.date), eq(cashflows.type, cashflow.type)),
+      and(
+        eq(cashflows.date, cashflow.date),
+        eq(cashflows.type, cashflow.type),
+        eq(cashflows.companyId, cashflow.companyId),
+      ),
     );
   let newPriority: number | null = null;
   newPriority = sameDateRows.length + 1;
@@ -83,13 +87,18 @@ export async function updateCompanyBalance(amount: number, companyId: string) {
  * 특정 날짜(date)에 해당하는 cashflow들의 priority를 1부터 재정렬합니다.
  */
 export async function reorderCashflowPrioritiesByDate(
-  date: string,
-  type: string,
+  cashflow: CashflowFormValues,
 ) {
   const rows = await db
     .select()
     .from(cashflows)
-    .where(and(eq(cashflows.date, date), eq(cashflows.type, type)))
+    .where(
+      and(
+        eq(cashflows.date, cashflow.date),
+        eq(cashflows.type, cashflow.type),
+        eq(cashflows.companyId, cashflow.companyId),
+      ),
+    )
     .orderBy(asc(cashflows.priority));
   console.log("rows", rows);
   for (let i = 0; i < rows.length; i++) {
@@ -103,10 +112,6 @@ export async function reorderCashflowPrioritiesByDate(
 export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
   // 기존 cashflow의 날짜 조회
   const oldCashflow = await getCashflowById(id);
-  const oldDate = oldCashflow?.date;
-  const newDate = cashflow.date;
-  const oldType = oldCashflow?.type;
-  const newType = cashflow.type;
 
   // cashflow 업데이트
   const newPriority = await getNewPriority(cashflow);
@@ -121,12 +126,12 @@ export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
     .where(eq(cashflows.id, id));
 
   // 기존 날짜의 우선순위 재정렬
-  if (oldDate) {
-    await reorderCashflowPrioritiesByDate(oldDate, oldType);
+  if (oldCashflow) {
+    await reorderCashflowPrioritiesByDate(oldCashflow);
   }
   // 새로운 날짜가 다를 경우, 새로운 날짜의 우선순위도 재정렬
-  if (newDate && newDate !== oldDate) {
-    await reorderCashflowPrioritiesByDate(newDate, newType);
+  if (cashflow.date !== oldCashflow?.date) {
+    await reorderCashflowPrioritiesByDate(cashflow);
   }
 
   return true;

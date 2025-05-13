@@ -5,8 +5,9 @@ import type {
   RowDragEndEvent,
   SelectionChangedEvent,
   ICellRendererParams,
+  GridApi,
 } from "ag-grid-community";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
@@ -50,6 +51,7 @@ export default function CashflowGrid() {
   const setSelectedIncomeRows = useSetAtom(selectedIncomeRowsAtom);
   const companyBalance = useAtomValue(companyBalanceAtom);
   const editMode = useAtomValue(editModeAtom);
+  const gridApiRef = useRef<GridApi | null>(null);
 
   const handleRowDragEnd = async (event: RowDragEndEvent) => {
     const type = event.node.data.type;
@@ -83,8 +85,6 @@ export default function CashflowGrid() {
 
     // 상태 업데이트
     setCashflowList(updatedAll);
-
-    // 서버에 저장 요청도 여기에 추가 가능
     await updateCashflowPriorities(updated);
   };
 
@@ -131,6 +131,7 @@ export default function CashflowGrid() {
     const fetchCashflowList = async () => {
       const cashflows = await getCashflowList();
       setCashflowList(cashflows);
+      gridApiRef.current?.redrawRows();
     };
     fetchCashflowList();
   }, [refresh]);
