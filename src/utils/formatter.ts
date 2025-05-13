@@ -33,6 +33,7 @@ export const perKgFormatter = (params: ValueFormatterParams): string => {
     : "";
 };
 
+// 날짜 포맷터 (월, 일, 요일)
 export const weekDayFormatter = (params: ValueFormatterParams): string => {
   return params.value
     ? new Date(params.value).toLocaleDateString("ko-KR", {
@@ -41,4 +42,26 @@ export const weekDayFormatter = (params: ValueFormatterParams): string => {
         weekday: "short",
       })
     : "";
+};
+
+// 소수점 첫째자리 포맷터
+export const oneDecimalFormatter = (params: ValueFormatterParams): string => {
+  if (
+    params.value === null ||
+    params.value === undefined ||
+    params.value === ""
+  )
+    return "";
+
+  const rawNumber = Number(params.value);
+  if (isNaN(rawNumber)) return "";
+
+  // 소수점 첫째 자리까지 반올림한 숫자
+  const rounded = Number(rawNumber.toFixed(1));
+
+  // 반올림한 결과가 정수면 정수로 보여줌
+  if (Number.isInteger(rounded)) return rounded.toString();
+
+  // 아니면 소수점 한 자리까지 표시
+  return rounded.toFixed(1);
 };

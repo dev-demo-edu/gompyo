@@ -24,7 +24,7 @@ import {
 } from "@/states/cashflow-state";
 import Typography from "@mui/material/Typography";
 import { getCashflowList, updateCashflowPriorities } from "@/actions/cashflow";
-import { weekDayFormatter } from "@/utils/formatter";
+import { weekDayFormatter, oneDecimalFormatter } from "@/utils/formatter";
 
 export function mapCashflowWithTotal<T extends CashflowItem>(
   items: T[],
@@ -198,6 +198,7 @@ export default function CashflowGrid() {
         filter: false,
         sortable: false,
         suppressMenu: true,
+        valueFormatter: oneDecimalFormatter,
       },
       {
         headerName: "합계",
@@ -207,6 +208,7 @@ export default function CashflowGrid() {
         filter: false,
         sortable: false,
         suppressMenu: true,
+        valueFormatter: oneDecimalFormatter,
       },
       {
         headerName: "우선순위",
