@@ -21,6 +21,7 @@ import {
 import CashflowAddModal, {
   CashflowBalanceModal,
   CashflowDeleteConfirmModal,
+  CashflowEditModal,
 } from "./cashflow-modal";
 import { calculateCashflowAmountByType } from "@/utils/cashflow";
 import Tabs from "@mui/material/Tabs";
@@ -32,6 +33,7 @@ export default function CashflowContainer() {
     useState(false);
   const [openCashflowDeleteConfirmModal, setOpenCashflowDeleteConfirmModal] =
     useState(false);
+  const [openCashflowEditModal, setOpenCashflowEditModal] = useState(false);
   const [companyList, setCompanyList] = useAtom(companyListAtom);
   const [selectedCompanyId, setSelectedCompanyId] = useAtom(
     selectedCompanyIdAtom,
@@ -112,7 +114,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowBalanceModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowBalanceModal(true);
+              }}
             >
               잔액 설정
             </Button>
@@ -136,9 +141,45 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowDeleteConfirmModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowDeleteConfirmModal(true);
+              }}
             >
               선택 목록 삭제
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={
+                !(
+                  selectedIncomeRows.length === 1 &&
+                  selectedExpenseRows.length === 0
+                ) &&
+                !(
+                  selectedIncomeRows.length === 0 &&
+                  selectedExpenseRows.length === 1
+                )
+              }
+              sx={{
+                minWidth: 120,
+                minHeight: 44,
+                maxHeight: 44,
+                fontWeight: 600,
+                fontSize: 16,
+                lineHeight: 1.5,
+                py: 0,
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                boxShadow: "none",
+                alignSelf: "flex-end",
+              }}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowEditModal(true);
+              }}
+            >
+              선택 목록 수정
             </Button>
             <Button
               variant="contained"
@@ -160,7 +201,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={handleUpdateCompanyBalance}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                handleUpdateCompanyBalance();
+              }}
             >
               선택 목록 반영
             </Button>
@@ -181,7 +225,10 @@ export default function CashflowContainer() {
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setOpenCashflowAddModal(true)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowAddModal(true);
+              }}
             >
               목록 추가
             </Button>
@@ -205,7 +252,10 @@ export default function CashflowContainer() {
                 border: editMode ? "1px solid #cbd5e1" : "none",
                 alignSelf: "flex-end",
               }}
-              onClick={() => setEditMode((v) => !v)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setEditMode((v) => !v);
+              }}
             >
               {editMode ? "편집 종료" : "편집 모드"}
             </Button>
@@ -224,6 +274,10 @@ export default function CashflowContainer() {
       <CashflowDeleteConfirmModal
         open={openCashflowDeleteConfirmModal}
         onClose={() => setOpenCashflowDeleteConfirmModal(false)}
+      />
+      <CashflowEditModal
+        open={openCashflowEditModal}
+        onClose={() => setOpenCashflowEditModal(false)}
       />
     </div>
   );
