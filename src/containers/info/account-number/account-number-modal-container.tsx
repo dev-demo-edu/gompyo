@@ -3,7 +3,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import AccountNumberForm from "./account-number-form";
+import AccountNumberForm, {
+  AccountNumberEditForm,
+} from "./account-number-form";
 import { deleteAccountNumbers } from "@/actions/info/account-number-actions";
 import {
   selectedAccountNumbersAtom,
@@ -25,6 +27,20 @@ export default function AccountNumberAddModal({
       <DialogTitle>계좌 추가</DialogTitle>
       <DialogContent>
         <AccountNumberForm onClose={onClose} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function AccountNumberEditModal({
+  open,
+  onClose,
+}: AccountNumberAddModalProps) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>계좌 수정</DialogTitle>
+      <DialogContent>
+        <AccountNumberEditForm onClose={onClose} />
       </DialogContent>
     </Dialog>
   );

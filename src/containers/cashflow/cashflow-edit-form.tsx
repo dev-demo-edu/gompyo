@@ -37,7 +37,7 @@ export interface CashflowEditFormProps {
 }
 
 // 계좌 추가 폼 필드 정의 (필요에 따라 수정)
-const baseFields: CashflowField[] = [
+const cashflowFields: CashflowField[] = [
   {
     name: "type",
     label: "타입",
@@ -118,22 +118,6 @@ export default function CashflowEditForm({
       }
     }
   };
-
-  const cashflowFields = !selectedCashflow
-    ? baseFields
-    : baseFields.map((field, index) => ({
-        ...field,
-        defaultValue:
-          index === 0
-            ? selectedCashflow.type
-            : index === 1
-              ? selectedCashflow.date
-              : index === 2
-                ? selectedCashflow.counterparty
-                : index === 3
-                  ? String(selectedCashflow.amount)
-                  : undefined,
-      }));
 
   if (!selectedCashflow) {
     return <div>수정할 내역을 선택해주세요.</div>;

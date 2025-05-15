@@ -6,7 +6,9 @@ import { selectedAccountNumbersAtom } from "@/states/account-number";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { useState, useEffect } from "react";
-import AccountNumberAddModal from "./account-number-modal-container";
+import AccountNumberAddModal, {
+  AccountNumberEditModal,
+} from "./account-number-modal-container";
 import { AccountNumberDeleteConfirmModal } from "./account-number-modal-container";
 
 export default function AccountNumber() {
@@ -14,6 +16,7 @@ export default function AccountNumber() {
   const setSelectedRows = useSetAtom(selectedAccountNumbersAtom);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
 
   useEffect(() => {
     // 페이지 진입 시 선택된 행 초기화
@@ -45,7 +48,10 @@ export default function AccountNumber() {
               },
               boxShadow: "none",
             }}
-            onClick={() => setOpenDeleteModal(true)}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenDeleteModal(true);
+            }}
           >
             선택 삭제
           </Button>
@@ -61,9 +67,32 @@ export default function AccountNumber() {
               },
               boxShadow: "none",
             }}
-            onClick={() => setOpenAddModal(true)}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenAddModal(true);
+            }}
           >
             계좌 추가
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{
+              minWidth: 120,
+              fontWeight: 600,
+              backgroundColor: "#22C55E",
+              "&:hover": {
+                backgroundColor: "#16A34A",
+              },
+              boxShadow: "none",
+            }}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenEditModal(true);
+            }}
+            disabled={selectedRows.length !== 1}
+          >
+            계좌 수정
           </Button>
         </Stack>
         {/* 그리드 */}
@@ -77,6 +106,10 @@ export default function AccountNumber() {
         <AccountNumberDeleteConfirmModal
           open={openDeleteModal}
           onClose={() => setOpenDeleteModal(false)}
+        />
+        <AccountNumberEditModal
+          open={openEditModal}
+          onClose={() => setOpenEditModal(false)}
         />
       </div>
     </div>
