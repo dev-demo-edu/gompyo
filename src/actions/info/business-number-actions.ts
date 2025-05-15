@@ -10,7 +10,10 @@ export async function deleteBusinessNumbers(ids: string[]) {
   await BusinessNumberService.deleteMany(ids);
 }
 
-export type AddBusinessNumberInput = Omit<BusinessNumberInput, "id">;
+export type AddBusinessNumberInput = Omit<
+  BusinessNumberInput,
+  "id" | "createdAt" | "updatedAt"
+>;
 
 export async function addBusinessNumber(input: AddBusinessNumberInput) {
   const businessNumber = input.businessNumber.replace(/-/g, "");
@@ -26,6 +29,8 @@ export async function addBusinessNumber(input: AddBusinessNumberInput) {
   const newBusinessNumber: BusinessNumberInput = {
     id: nanoid(),
     ...input,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
   await BusinessNumberService.create(newBusinessNumber);
 }
@@ -33,4 +38,16 @@ export async function addBusinessNumber(input: AddBusinessNumberInput) {
 export async function getBusinessNumbers() {
   const businessNumbers = await BusinessNumberService.getAll();
   return businessNumbers;
+}
+
+export type UpdateBusinessNumberInput = Omit<
+  BusinessNumberInput,
+  "createdAt" | "updatedAt"
+>;
+
+export async function updateBusinessNumber(input: UpdateBusinessNumberInput) {
+  await BusinessNumberService.update(input.id, {
+    ...input,
+    updatedAt: new Date().toISOString(),
+  });
 }

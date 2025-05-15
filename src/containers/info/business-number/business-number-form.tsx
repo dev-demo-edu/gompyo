@@ -1,9 +1,15 @@
 import DynamicForm, { DynamicFormField } from "@/components/dynamic-form";
 import { z } from "zod";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
-import { businessNumberRefreshAtom } from "@/states/business-number";
-import { addBusinessNumber } from "@/actions/info/business-number-actions";
+import {
+  businessNumberRefreshAtom,
+  selectedBusinessNumbersAtom,
+} from "@/states/business-number";
+import {
+  addBusinessNumber,
+  updateBusinessNumber,
+} from "@/actions/info/business-number-actions";
 
 // zod 스키마 정의
 export const businessNumberSchema = z.object({
@@ -56,9 +62,54 @@ export default function BusinessNumberForm({
 
   const handleSubmit = async (values: BusinessNumberFormValues) => {
     try {
-      await addBusinessNumber({
+      await addBusinessNumber(values);
+      setRefresh((prev) => prev + 1);
+      setFieldErrors({}); // 에러 초기화
+      onClose?.();
+    } catch (error) {
+      if (error instanceof Error) {
+        setFieldErrors({
+          businessNumber: error.message,
+        });
+      } else {
+        setFieldErrors({
+          businessNumber: "오류가 발생했습니다.",
+        });
+      }
+    }
+  };
+
+  return (
+    <DynamicForm
+      fields={businessNumberFields}
+      onSubmit={handleSubmit}
+      submitLabel={submitLabel}
+      zodSchema={businessNumberSchema}
+      fieldErrors={fieldErrors}
+    />
+  );
+}
+
+export function BusinessNumberEditForm({
+  onClose,
+  submitLabel = "수정",
+}: BusinessNumberFormProps) {
+  const setRefresh = useSetAtom(businessNumberRefreshAtom);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const selectedBusinessNumbers = useAtomValue(selectedBusinessNumbersAtom);
+
+  const handleSubmit = async (values: BusinessNumberFormValues) => {
+    if (!selectedBusinessNumbers) {
+      setFieldErrors({
+        businessNumber: "수정할 내역이 선택되지 않았습니다.",
+      });
+      return;
+    }
+
+    try {
+      await updateBusinessNumber({
         ...values,
-        createdAt: new Date().toISOString(),
+        id: selectedBusinessNumbers[0].id,
       });
       setRefresh((prev) => prev + 1);
       setFieldErrors({}); // 에러 초기화
@@ -83,6 +134,12 @@ export default function BusinessNumberForm({
       submitLabel={submitLabel}
       zodSchema={businessNumberSchema}
       fieldErrors={fieldErrors}
+      initialValues={{
+        businessNumber: selectedBusinessNumbers[0].businessNumber,
+        businessName: selectedBusinessNumbers[0].businessName,
+        businessRepresentative:
+          selectedBusinessNumbers[0].businessRepresentative,
+      }}
     />
   );
 }

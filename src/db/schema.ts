@@ -193,6 +193,7 @@ export const accountNumbers = sqliteTable("account_numbers", {
   bankName: text("bank_name").notNull(),
   owner: text("owner").notNull(),
   createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at"),
 });
 
 // Business Numbers table
@@ -202,6 +203,7 @@ export const businessNumbers = sqliteTable("business_numbers", {
   businessName: text("business_name").notNull(),
   businessRepresentative: text("business_representative").notNull(),
   createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at"),
 });
 
 // Links table
