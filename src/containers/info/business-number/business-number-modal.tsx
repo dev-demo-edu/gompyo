@@ -3,7 +3,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import BusinessNumberForm from "./business-number-form";
+import BusinessNumberForm, {
+  BusinessNumberEditForm,
+} from "./business-number-form";
 import { deleteBusinessNumbers } from "@/actions/info/business-number-actions";
 import {
   selectedBusinessNumbersAtom,
@@ -25,6 +27,20 @@ export default function BusinessNumberAddModal({
       <DialogTitle>사업자 번호 추가</DialogTitle>
       <DialogContent>
         <BusinessNumberForm onClose={onClose} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function BusinessNumberEditModal({
+  open,
+  onClose,
+}: BusinessNumberAddModalProps) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>사업자 번호 수정</DialogTitle>
+      <DialogContent>
+        <BusinessNumberEditForm onClose={onClose} />
       </DialogContent>
     </Dialog>
   );

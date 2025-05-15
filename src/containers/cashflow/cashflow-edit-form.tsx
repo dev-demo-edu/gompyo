@@ -20,7 +20,12 @@ export const cashflowSchema = z.object({
 });
 
 // 계좌 추가 폼 값 타입 (zod에서 추론)
-export type CashflowFormValues = z.infer<typeof cashflowSchema>;
+export type CashflowFormValues = Omit<
+  z.infer<typeof cashflowSchema>,
+  "amount"
+> & {
+  amount: string;
+};
 
 // 계좌 추가 폼 필드 타입
 export type CashflowField = DynamicFormField<CashflowFormValues>;
@@ -32,7 +37,7 @@ export interface CashflowEditFormProps {
 }
 
 // 계좌 추가 폼 필드 정의 (필요에 따라 수정)
-const baseFields: CashflowField[] = [
+const cashflowFields: CashflowField[] = [
   {
     name: "type",
     label: "타입",
@@ -81,7 +86,7 @@ export default function CashflowEditForm({
         ? selectedExpenseRows[0]
         : undefined;
 
-  const handleSubmit = async (values: CashflowFormValues) => {
+  const handleSubmit = async (values: z.infer<typeof cashflowSchema>) => {
     if (!selectedCashflow) {
       setFieldErrors({
         accountNumber: "수정할 내역이 선택되지 않았습니다.",
@@ -93,6 +98,7 @@ export default function CashflowEditForm({
       await updateCashflow(
         {
           ...values,
+          amount: Number(values.amount),
           companyId,
         },
         selectedCashflow.id,
@@ -113,33 +119,23 @@ export default function CashflowEditForm({
     }
   };
 
-  const cashflowFields = !selectedCashflow
-    ? baseFields
-    : baseFields.map((field, index) => ({
-        ...field,
-        defaultValue:
-          index === 0
-            ? selectedCashflow.type
-            : index === 1
-              ? selectedCashflow.date
-              : index === 2
-                ? selectedCashflow.counterparty
-                : index === 3
-                  ? String(selectedCashflow.amount)
-                  : undefined,
-      }));
-
   if (!selectedCashflow) {
     return <div>수정할 내역을 선택해주세요.</div>;
   }
 
   return (
-    <DynamicForm
+    <DynamicForm<CashflowFormValues, z.infer<typeof cashflowSchema>>
       fields={cashflowFields}
       onSubmit={handleSubmit}
       submitLabel={submitLabel}
       zodSchema={cashflowSchema}
       fieldErrors={fieldErrors}
+      initialValues={{
+        type: selectedCashflow.type,
+        date: selectedCashflow.date,
+        counterparty: selectedCashflow.counterparty,
+        amount: String(selectedCashflow.amount),
+      }}
     />
   );
 }
