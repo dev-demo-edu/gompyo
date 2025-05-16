@@ -1,7 +1,7 @@
 import {
-  dateFormatter,
   currencyFormatter,
   perKgFormatter,
+  dateSlashFormatter,
 } from "../utils/formatter";
 import { ColDef } from "ag-grid-community";
 
@@ -19,7 +19,7 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
   {
     field: "contractDate",
     headerName: "계약일자",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
   {
@@ -35,7 +35,7 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
   {
     field: "estimatedTimeArrival",
     headerName: "ETA",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
   {
@@ -74,7 +74,7 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
   {
     field: "warehouseEntryDate",
     headerName: "입고일",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
   {
@@ -135,7 +135,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   {
     field: "contractDate",
     headerName: "계약일자",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
   {
@@ -216,7 +216,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   {
     field: "etd",
     headerName: "ETD",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
   {
@@ -227,7 +227,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   {
     field: "eta",
     headerName: "ETA",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
   {
@@ -238,7 +238,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   {
     field: "customsDate",
     headerName: "통관일자",
-    valueFormatter: dateFormatter,
+    valueFormatter: dateSlashFormatter,
     width: 150,
   },
 ];
