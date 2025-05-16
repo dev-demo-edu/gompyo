@@ -76,7 +76,12 @@ export async function getUserShipmentColumnOrder() {
   return columnOrder;
 }
 
-export async function saveUserPlanColumnOrder(columnOrder: string[]) {
+export interface ColumnOrder {
+  field: string;
+  width: number;
+}
+
+export async function saveUserPlanColumnOrder(columnOrder: ColumnOrder[]) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
@@ -97,7 +102,7 @@ export async function saveUserPlanColumnOrder(columnOrder: string[]) {
   }
 }
 
-export async function saveUserShipmentColumnOrder(columnOrder: string[]) {
+export async function saveUserShipmentColumnOrder(columnOrder: ColumnOrder[]) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 

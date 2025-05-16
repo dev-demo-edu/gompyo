@@ -1,3 +1,4 @@
+import { ColumnOrder } from "@/actions/user";
 import {
   currencyFormatter,
   perKgFormatter,
@@ -243,9 +244,14 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   },
 ];
 
-export const defaultPlanColumnOrderFields: string[] = DEFAULT_PLAN_COLUMN.map(
-  (col) => col.field as string,
-);
+export const defaultPlanColumnOrderFields: ColumnOrder[] =
+  DEFAULT_PLAN_COLUMN.map((col) => ({
+    field: col.field as string,
+    width: col.width || 100,
+  })) as ColumnOrder[];
 
-export const defaultShipmentColumnOrderFields: string[] =
-  DEFAULT_SHIPMENT_COLUMN.map((col) => col.field as string);
+export const defaultShipmentColumnOrderFields: ColumnOrder[] =
+  DEFAULT_SHIPMENT_COLUMN.map((col) => ({
+    field: col.field as string,
+    width: col.width || 100,
+  })) as ColumnOrder[];

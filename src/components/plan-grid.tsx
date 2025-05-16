@@ -23,12 +23,12 @@ import FilterGrid from "./filter-grid";
 import { DetailButtonRenderer } from "./cell-renderers";
 import { selectedCargosAtom } from "@/states/plan";
 import { useSetAtom } from "jotai";
-
+import { ColumnOrder } from "@/actions/user";
 // 컬럼 드래그 커스텀 훅
 
 export default function PlanGrid() {
   const [rowData, setRowData] = useState<IPlanData[]>([]);
-  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +37,7 @@ export default function PlanGrid() {
     const orderedColumns =
       columnOrder.length > 0
         ? columnOrder
-            .map((field) => {
+            .map(({ field, width }) => {
               const col = DEFAULT_PLAN_COLUMN.find((c) => c.field === field);
               if (!col) {
                 console.warn(
@@ -45,6 +45,7 @@ export default function PlanGrid() {
                 );
                 return null;
               }
+              col.width = width;
               return col;
             })
             .filter((col): col is ColDef => col !== null)
@@ -81,12 +82,15 @@ export default function PlanGrid() {
   const handleColumnDragSave = useCallback(async (e: DragStoppedEvent) => {
     const newColumnOrder = e.api
       .getColumnState()
-      .map((c) => c.colId as string)
-      .filter((colId) => colId !== "detail");
+      .filter((c) => c.colId !== "detail")
+      .map((c) => ({
+        field: c.colId as string,
+        width: c.width,
+      })) as ColumnOrder[];
 
     try {
       const result = await saveUserPlanColumnOrder(newColumnOrder);
-      console.log("Column order save result:", result);
+      // console.log("Column order save result:", result);
 
       if (result.success) {
         setColumnOrder(newColumnOrder);

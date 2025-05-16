@@ -11,6 +11,7 @@ import FilterGrid from "./filter-grid";
 import { DetailButtonRenderer } from "./cell-renderers";
 import { getShipmentData } from "@/actions/shipment";
 import {
+  ColumnOrder,
   getUserShipmentColumnOrder,
   saveUserShipmentColumnOrder,
 } from "@/actions/user";
@@ -24,16 +25,17 @@ import { cargoRefreshAtom, selectedCargosAtom } from "@/states/shipment";
 
 export default function ShipmentGrid() {
   const [rowData, setRowData] = useState<IShipmentData[]>([]);
-  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 컬럼 정의
   const columnDefs = useMemo<ColDef[]>(() => {
+    console.log("columnOrder", columnOrder);
     const orderedColumns =
       columnOrder.length > 0
         ? columnOrder
-            .map((field) => {
+            .map(({ field, width }) => {
               const col = DEFAULT_SHIPMENT_COLUMN.find(
                 (c) => c.field === field,
               );
@@ -43,6 +45,7 @@ export default function ShipmentGrid() {
                 );
                 return null;
               }
+              col.width = width;
               return col;
             })
             .filter((col): col is ColDef => col !== null)
@@ -79,8 +82,11 @@ export default function ShipmentGrid() {
   const handleColumnDragSave = useCallback(async (e: DragStoppedEvent) => {
     const newColumnOrder = e.api
       .getColumnState()
-      .map((c) => c.colId as string)
-      .filter((colId) => colId !== "detail");
+      .filter((c) => c.colId !== "detail")
+      .map((c) => ({
+        field: c.colId as string,
+        width: c.width,
+      })) as ColumnOrder[];
 
     try {
       const result = await saveUserShipmentColumnOrder(newColumnOrder);
