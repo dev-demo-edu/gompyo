@@ -17,7 +17,12 @@ export const cashflowSchema = z.object({
 });
 
 // 계좌 추가 폼 값 타입 (zod에서 추론)
-export type CashflowFormValues = z.infer<typeof cashflowSchema>;
+export type CashflowFormValues = Omit<
+  z.infer<typeof cashflowSchema>,
+  "amount"
+> & {
+  amount: string;
+};
 
 // 계좌 추가 폼 필드 타입
 export type CashflowField = DynamicFormField<CashflowFormValues>;
@@ -70,11 +75,12 @@ export default function CashflowForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [companyId] = useAtom(selectedCompanyIdAtom);
 
-  const handleSubmit = async (values: CashflowFormValues) => {
+  const handleSubmit = async (values: z.infer<typeof cashflowSchema>) => {
     try {
       await addCashflow({
         ...values,
         companyId: companyId,
+        amount: Number(values.amount),
       });
       setRefresh((prev) => prev + 1);
       setFieldErrors({}); // 에러 초기화
@@ -93,7 +99,7 @@ export default function CashflowForm({
   };
 
   return (
-    <DynamicForm
+    <DynamicForm<CashflowFormValues, z.infer<typeof cashflowSchema>>
       fields={cashflowFields}
       onSubmit={handleSubmit}
       submitLabel={submitLabel}

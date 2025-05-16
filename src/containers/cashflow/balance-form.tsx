@@ -17,7 +17,12 @@ export const cashflowBalanceSchema = z.object({
 });
 
 // 계좌 추가 폼 값 타입 (zod에서 추론)
-export type CashflowBalanceFormValues = z.infer<typeof cashflowBalanceSchema>;
+export type CashflowBalanceFormValues = Omit<
+  z.infer<typeof cashflowBalanceSchema>,
+  "companyBalance"
+> & {
+  companyBalance: string;
+};
 
 // 계좌 추가 폼 필드 타입
 export type CashflowBalanceField = DynamicFormField<CashflowBalanceFormValues>;
@@ -35,7 +40,7 @@ export const cashflowBalanceFields: CashflowBalanceField[] = [
     label: "잔액",
     type: "text",
     required: true,
-    defaultValue: 0,
+    defaultValue: "0",
     endAdornment: "백만원",
   },
 ];
@@ -51,7 +56,9 @@ export default function CashflowBalanceForm({
   const [companyBalance] = useAtom(companyBalanceAtom);
   const setCompanyBalance = useSetAtom(setCompanyBalanceAtom);
 
-  const handleSubmit = async (values: CashflowBalanceFormValues) => {
+  const handleSubmit = async (
+    values: z.infer<typeof cashflowBalanceSchema>,
+  ) => {
     try {
       await updateCompanyBalance(Number(values.companyBalance), companyId);
       setCompanyBalance(Number(values.companyBalance));
@@ -71,15 +78,19 @@ export default function CashflowBalanceForm({
     }
   };
 
-  cashflowBalanceFields[0].defaultValue = companyBalance;
-
   return (
-    <DynamicForm
+    <DynamicForm<
+      CashflowBalanceFormValues,
+      z.infer<typeof cashflowBalanceSchema>
+    >
       fields={cashflowBalanceFields}
       onSubmit={handleSubmit}
       submitLabel={submitLabel}
       zodSchema={cashflowBalanceSchema}
       fieldErrors={fieldErrors}
+      initialValues={{
+        companyBalance: companyBalance.toString(),
+      }}
     />
   );
 }
