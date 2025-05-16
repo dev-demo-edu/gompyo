@@ -65,7 +65,7 @@ export const costDetails = sqliteTable("cost_details", {
   unitPrice: real("unit_price"),
   exchangeRate: real("exchange_rate"),
   customsTaxRate: real("customs_tax_rate"),
-  customTaxAmount: real("custom_tax_amount"),
+  // customTaxAmount: real("custom_tax_amount"),
   customsFee: real("customs_fee"),
   inspectionFee: real("inspection_fee"),
   doCharge: real("do_charge"),

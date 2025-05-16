@@ -31,7 +31,7 @@ type CostDetail = {
   unitPrice: number | null;
   exchangeRate: number | null;
   customsTaxRate: number | null;
-  customTaxAmount: number | null;
+  // customTaxAmount: number | null;
   customsFee: number | null;
   inspectionFee: number | null;
   doCharge: number | null;

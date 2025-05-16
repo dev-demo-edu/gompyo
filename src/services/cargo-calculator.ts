@@ -39,6 +39,7 @@ export type CalculatedPayment = typeof payments.$inferSelect & {
 export type CalculatedCostDetail = typeof costDetails.$inferSelect & {
   totalContractPrice: number;
   costPerKg: number;
+  customTaxAmount: number;
 };
 
 export type CalculatedCost = typeof costs.$inferSelect & {
@@ -79,6 +80,7 @@ export class CargoCalculator {
     contractorCost: number;
     contractorProfit: number;
     totalCost: number;
+    customTaxAmount: number;
   };
   private calculationStrategy: CalculationStrategy;
 
@@ -102,10 +104,12 @@ export class CargoCalculator {
       unitPrice * exchangeRate * contractTon,
     );
     const costPerKg = (unitPrice * exchangeRate) / 1000;
+    const customTaxAmount =
+      (totalContractPrice * (this.data.costDetail.customsTaxRate || 0)) / 100;
 
     const contractorCostAmount =
       totalContractPrice +
-      (this.data.costDetail.customTaxAmount || 0) +
+      customTaxAmount +
       (this.data.costDetail.transferFee || 0) +
       (this.data.costDetail.customsFee || 0) +
       (this.data.costDetail.inspectionFee || 0) +
@@ -142,6 +146,7 @@ export class CargoCalculator {
       contractorCost,
       contractorProfit: calculated.contractorProfit,
       totalCost: calculated.totalCost,
+      customTaxAmount,
     };
   }
 
@@ -224,7 +229,7 @@ export class CargoCalculator {
       exchangeRate: costDetail.exchangeRate || 0,
       costPerKg: this.calculatedValues.costPerKg,
       costId: costDetail.costId,
-      customTaxAmount: costDetail.customTaxAmount || 0,
+      customTaxAmount: this.calculatedValues.customTaxAmount,
       customsTaxRate: costDetail.customsTaxRate || 0,
       customsFee: costDetail.customsFee || 0,
       inspectionFee: costDetail.inspectionFee || 0,
