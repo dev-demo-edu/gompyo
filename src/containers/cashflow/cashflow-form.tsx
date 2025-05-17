@@ -81,7 +81,6 @@ export default function CashflowForm({
         ...values,
         amount: Number(values.amount),
         companyId: companyId,
-        amount: Number(values.amount),
       });
       setRefresh((prev) => prev + 1);
       setFieldErrors({}); // 에러 초기화
