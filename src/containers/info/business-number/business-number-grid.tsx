@@ -6,7 +6,7 @@ import {
   businessNumberRefreshAtom,
 } from "@/states/business-number";
 import FilterGrid from "@/components/filter-grid";
-import { dateFormatter } from "@/utils/formatter";
+import { dateSlashFormatter } from "@/utils/formatter";
 
 import { InferSelectModel } from "drizzle-orm";
 import { businessNumbers } from "@/db/schema";
@@ -65,7 +65,7 @@ export default function BusinessNumberGrid() {
         headerName: "등록일",
         field: "createdAt",
         minWidth: 120,
-        valueFormatter: dateFormatter,
+        valueFormatter: dateSlashFormatter,
         flex: 1,
       },
     ],

@@ -7,6 +7,8 @@ type Contract = {
   exporter: string | null;
   importerId: string | null;
   incoterms: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 type Payment = {
@@ -31,7 +33,7 @@ type CostDetail = {
   unitPrice: number | null;
   exchangeRate: number | null;
   customsTaxRate: number | null;
-  customTaxAmount: number | null;
+  // customTaxAmount: number | null;
   customsFee: number | null;
   inspectionFee: number | null;
   doCharge: number | null;
@@ -68,6 +70,8 @@ type Cargo = {
   totalProfit: number | null;
   purchaseFeeRate: number | null;
   remark: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export type CargoDetailData = {
@@ -92,6 +96,8 @@ export type Shipment = {
   blNumber: string | null;
   palletOrderDate: string | null;
   palletType: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export type Item = {

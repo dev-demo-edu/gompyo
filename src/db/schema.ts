@@ -65,7 +65,7 @@ export const costDetails = sqliteTable("cost_details", {
   unitPrice: real("unit_price"),
   exchangeRate: real("exchange_rate"),
   customsTaxRate: real("customs_tax_rate"),
-  customTaxAmount: real("custom_tax_amount"),
+  // customTaxAmount: real("custom_tax_amount"),
   customsFee: real("customs_fee"),
   inspectionFee: real("inspection_fee"),
   doCharge: real("do_charge"),
@@ -82,6 +82,8 @@ export const contracts = sqliteTable("contracts", {
   exporter: text("exporter"),
   importerId: text("importer_id").references(() => importers.id),
   incoterms: text("incoterms"),
+  createdAt: text("created_at"),
+  updatedAt: text("updated_at"),
 });
 
 // Items table
@@ -132,6 +134,8 @@ export const shipments = sqliteTable("shipments", {
   blNumber: text("bl_number"),
   palletOrderDate: text("pallet_order_date"),
   palletType: text("pallet_type"),
+  createdAt: text("created_at"),
+  updatedAt: text("updated_at"),
 });
 
 // Cargos table
@@ -154,6 +158,8 @@ export const cargos = sqliteTable(
     totalProfit: real("total_profit"),
     purchaseFeeRate: real("purchase_fee_rate"),
     remark: text("remark"),
+    createdAt: text("created_at"),
+    updatedAt: text("updated_at"),
   },
   (table) => [
     check(

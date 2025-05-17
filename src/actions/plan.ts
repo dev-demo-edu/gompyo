@@ -17,14 +17,6 @@ import { contractSchema, cargoSchema } from "@/containers/plan/plan-button";
 import { IPlanData } from "@/types/grid-col";
 import { mapAndCalculateCargoDetails } from "@/services/cargo-calculator";
 import type { CargoDetailData } from "@/types/cargo-detail";
-import { ContractService } from "@/services/contract.service";
-import { ShipmentService } from "@/services/shipment.service";
-import { CargoService } from "@/services/cargo.service";
-import { ItemService } from "@/services/item.service";
-import { CostService } from "@/services/cost.service";
-import { CostDetailService } from "@/services/cost-detail.service";
-import { PaymentService } from "@/services/payment.service";
-import { ImporterService } from "@/services/importer.service";
 import { CalculationType } from "@/types/importer";
 import { statusMapping } from "@/constants/cargo-status";
 import { inArray } from "drizzle-orm";
@@ -37,16 +29,13 @@ export async function createPlan(
   cargoItems: CargoItem[],
 ) {
   try {
-    console.log("계약 정보 저장 시작:", contractData);
-    console.log("화물 정보 저장 시작:", cargoItems);
-
     // 각 항목별 ID 생성
     const contractId = nanoid();
     const shipmentId = nanoid();
 
     // 계약 정보 저장
     try {
-      const [contract] = await db
+      await db
         .insert(contracts)
         .values({
           id: contractId,
@@ -57,7 +46,6 @@ export async function createPlan(
           incoterms: contractData.incoterms,
         })
         .returning();
-      console.log("계약 정보 저장 완료:", contract);
     } catch (error) {
       console.error("계약 정보 저장 중 오류:", error);
       throw new Error(
@@ -68,7 +56,7 @@ export async function createPlan(
     // 결제 정보 저장 (기본값으로 T/T 결제 방식 설정)
     try {
       const paymentId = nanoid();
-      const [payment] = await db
+      await db
         .insert(payments)
         .values({
           id: paymentId,
@@ -77,10 +65,9 @@ export async function createPlan(
           contractId: contractId,
         })
         .returning();
-      console.log("결제 정보 저장 완료:", payment);
 
       // T/T 결제 상세 정보 저장
-      const [paymentTt] = await db
+      await db
         .insert(paymentsTt)
         .values({
           paymentId: paymentId,
@@ -93,7 +80,6 @@ export async function createPlan(
           counterpartBank: "", // 나중에 입력
         })
         .returning();
-      console.log("T/T 결제 상세 정보 저장 완료:", paymentTt);
     } catch (error) {
       console.error("결제 정보 저장 중 오류:", error);
       throw new Error(
@@ -103,7 +89,7 @@ export async function createPlan(
 
     // 선적 정보 저장
     try {
-      const [shipment] = await db
+      await db
         .insert(shipments)
         .values({
           id: shipmentId,
@@ -114,7 +100,6 @@ export async function createPlan(
           departurePort: contractData.departurePort,
         })
         .returning();
-      console.log("선적 정보 저장 완료:", shipment);
     } catch (error) {
       console.error("선적 정보 저장 중 오류:", error);
       throw new Error(
@@ -157,14 +142,13 @@ export async function createPlan(
             })
             .returning();
           itemId = newItem.id;
-          console.log("새로운 품목 정보 저장 완료:", newItem);
         }
 
         // 화물 정보 저장
         const cargoId = nanoid();
         const supplyPrice =
           (cargo.unitPrice! * cargo.exchangeRate * cargo.contractTon) / 1000;
-        const [cargoResult] = await db
+        await db
           .insert(cargos)
           .values({
             id: cargoId,
@@ -178,12 +162,13 @@ export async function createPlan(
             totalProfit:
               (cargo.sellingPrice - supplyPrice) * cargo.contractTon * 1000,
             purchaseFeeRate: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           })
           .returning();
-        console.log("화물 정보 저장 완료:", cargoResult);
 
         // 비용 정보 저장
-        const [cost] = await db
+        await db
           .insert(costs)
           .values({
             id: costId,
@@ -194,10 +179,9 @@ export async function createPlan(
             loadingUnloadingFee: 0,
           })
           .returning();
-        console.log("비용 정보 저장 완료:", cost);
 
         // 비용 상세 정보 저장
-        const [costDetail] = await db
+        await db
           .insert(costDetails)
           .values({
             id: nanoid(),
@@ -205,14 +189,12 @@ export async function createPlan(
             unitPrice: cargo.unitPrice,
             exchangeRate: cargo.exchangeRate,
             customsTaxRate: cargo.customsTaxRate,
-            customTaxAmount: cargo.customTaxAmount,
             customsFee: cargo.customsFee,
             inspectionFee: cargo.inspectionFee,
             doCharge: 0,
             otherCosts: cargo.otherCosts,
           })
           .returning();
-        console.log("비용 상세 정보 저장 완료:", costDetail);
       } catch (error) {
         console.error("화물 정보 저장 중 오류:", error);
         throw new Error(
@@ -239,177 +221,175 @@ export async function createPlan(
 }
 
 export async function getPlanData(): Promise<IPlanData[]> {
-  try {
-    // 서비스 인스턴스 생성
-    const contractService = new ContractService();
-    const shipmentService = new ShipmentService();
-    const cargoService = new CargoService();
-    const itemService = new ItemService();
-    const costService = new CostService();
-    const costDetailService = new CostDetailService();
-    const paymentService = new PaymentService();
-    const importerService = new ImporterService();
+  // DB에서 화물 데이터와 연관된 모든 데이터 조회
+  const result = await db.query.cargos.findMany({
+    with: {
+      item: true,
+      shipment: {
+        with: {
+          contract: {
+            with: {
+              importer: true,
+              payments: {
+                with: {
+                  paymentsTt: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      costs: {
+        with: {
+          costDetails: true,
+        },
+      },
+    },
+    orderBy: (cargos, { desc }) => [desc(cargos.createdAt)],
+  });
 
-    // 각 서비스를 통해 데이터 가져오기
-    const [
-      contracts,
-      shipments,
-      cargos,
-      items,
-      costs,
-      costDetails,
-      payments,
-      importers,
-    ] = await Promise.all([
-      contractService.findAll(),
-      shipmentService.findAll(),
-      cargoService.findAll(),
-      itemService.findAll(),
-      costService.findAll(),
-      costDetailService.findAll(),
-      paymentService.findAll(),
-      importerService.getAllImporters(),
-    ]);
+  // result를 map으로 순회하며 cargoDetailData 생성 및 계산
+  const planData: IPlanData[] = result.map((cargo) => {
+    const item = cargo.item;
+    const shipment = cargo.shipment;
+    const contract = shipment?.contract;
+    const importer = contract?.importer;
+    const payment = contract?.payments?.[0];
+    const paymentTt = payment?.paymentsTt;
+    const cost = cargo.costs?.[0];
+    const costDetail = cost?.costDetails?.[0];
 
-    // 데이터 매핑 및 계산
-    return cargos.map((cargo) => {
-      // 관련 데이터 찾기
-      const shipment = shipments.find((s) => s.id === cargo.shipmentId);
-      const contract = contracts.find((c) => c.id === shipment?.contractId);
-      const item = items.find((i) => i.id === cargo?.itemsId);
-      const cost = costs.find((c) => c.cargoId === cargo?.id);
-      const costDetail = costDetails.find((cd) => cd.costId === cost?.id);
-      const payment = payments.find((p) => p.contractId === contract?.id);
-      const importer = importers.find((i) => i.id === contract?.importerId);
-
-      // cargo-calculator를 사용하기 위한 데이터 구조로 변환
-      const cargoDetailData: CargoDetailData = {
-        contract: {
-          id: contract?.id || "",
-          contractNumber: contract?.contractNumber || "",
-          contractDate: contract?.contractDate || "",
-          exporter: contract?.exporter || "",
-          importerId: contract?.importerId || "",
-          incoterms: contract?.incoterms || "",
-        },
-        shipment: {
-          id: shipment?.id || "",
-          contractId: contract?.id || "",
-          estimatedTimeDeparture: shipment?.estimatedTimeDeparture || "",
-          estimatedTimeArrival: shipment?.estimatedTimeArrival || "",
-          shippingCompany: shipment?.shippingCompany || "",
-          departurePort: shipment?.departurePort || "",
-          arrivalPort: shipment?.arrivalPort || "",
-          blNumber: shipment?.blNumber || "",
-          palletOrderDate: shipment?.palletOrderDate || "",
-          palletType: shipment?.palletType || "",
-        },
-        cargo: {
-          id: cargo?.id || "",
-          remark: cargo?.remark || "",
-          itemsId: cargo?.itemsId || "",
-          shipmentId: shipment?.id || "",
-          containerCount: cargo?.containerCount || 0,
-          contractTon: cargo?.contractTon || 0,
-          progressStatus: cargo?.progressStatus || "예정",
-          customsClearanceDate: cargo?.customsClearanceDate || "",
-          quarantineDate: cargo?.quarantineDate || "",
-          warehouseEntryDate: cargo?.warehouseEntryDate || "",
-          sellingPrice: cargo?.sellingPrice || 0,
-          margin: cargo?.margin || 0,
-          totalProfit: cargo?.totalProfit || 0,
-          purchaseFeeRate: cargo?.purchaseFeeRate || 0,
-          sellingPriceWholesale: cargo?.sellingPriceWholesale || 0,
-          sellingPriceRetail: cargo?.sellingPriceRetail || 0,
-        },
-        cost: {
-          id: cost?.id || "",
-          cargoId: cargo?.id || "",
-          supplyPrice: cost?.supplyPrice || 0,
-          shippingCost: cost?.shippingCost || 0,
-          laborCost: cost?.laborCost || 0,
-          transportStorageFee: cost?.transportStorageFee || 0,
-          loadingUnloadingFee: cost?.loadingUnloadingFee || 0,
-          usanceInterest: cost?.usanceInterest || 0,
-        },
-        costDetail: {
-          id: costDetail?.id || "",
-          costId: cost?.id || "",
-          unitPrice: costDetail?.unitPrice || 0,
-          exchangeRate: costDetail?.exchangeRate || 0,
-          customsTaxRate: costDetail?.customsTaxRate || 0,
-          customTaxAmount: costDetail?.customTaxAmount || 0,
-          customsFee: costDetail?.customsFee || 0,
-          inspectionFee: costDetail?.inspectionFee || 0,
-          doCharge: costDetail?.doCharge || 0,
-          otherCosts: costDetail?.otherCosts || 0,
-          transferFee: costDetail?.transferFee || 0,
-        },
-        payment: {
-          id: payment?.id || "",
-          contractId: contract?.id || "",
-          paymentMethod: payment?.paymentMethod || "",
-          paymentDueDate: payment?.paymentDueDate || "",
-          advancePaymentDate: payment?.advancePaymentDate || "",
-          advancePaymentRatio: payment?.advancePaymentRatio || 0,
-          advancePaymentAmount: payment?.advancePaymentAmount || 0,
-          remainingPaymentDate: payment?.remainingPaymentDate || "",
-          remainingPaymentRatio: payment?.remainingPaymentRatio || 0,
-          remainingPaymentAmount: payment?.remainingPaymentAmount || 0,
-          counterpartBank: payment?.counterpartBank || "",
-          paymentTerm: payment?.paymentTerm || "",
-          totalContractAmount: payment?.totalContractAmount || 0,
-        },
-        item: {
-          id: item?.id || "",
-          itemName: item?.itemName || "",
-          itemVariety: item?.itemVariety || "",
-          packingUnit: item?.packingUnit || "",
-          originCountry: item?.originCountry || "",
-          hsCode: item?.hsCode || "",
-        },
-        importer: {
-          id: importer?.id || "",
-          importerName: importer?.importerName || "",
-          calculationType:
-            (importer?.calculationType as CalculationType) ||
-            CalculationType.STANDARD,
-        },
-      };
-
-      // cargo-calculator를 사용하여 계산된 데이터 가져오기
-      const calculatedData = mapAndCalculateCargoDetails(cargoDetailData);
-
-      return {
-        id: cargo?.id || "",
+    // cargo-calculator를 사용하기 위한 데이터 구조로 변환
+    const cargoDetailData: CargoDetailData = {
+      contract: {
+        id: contract?.id || "",
         contractNumber: contract?.contractNumber || "",
-        progressStatus:
-          statusMapping[cargo?.progressStatus as keyof typeof statusMapping] ||
-          "예정",
         contractDate: contract?.contractDate || "",
-        importer: importer?.importerName || "",
         exporter: contract?.exporter || "",
+        importerId: contract?.importerId || "",
+        incoterms: contract?.incoterms || "",
+        createdAt: contract?.createdAt || "",
+        updatedAt: contract?.updatedAt || "",
+      },
+      shipment: {
+        id: shipment?.id || "",
+        contractId: contract?.id || "",
+        estimatedTimeDeparture: shipment?.estimatedTimeDeparture || "",
         estimatedTimeArrival: shipment?.estimatedTimeArrival || "",
+        shippingCompany: shipment?.shippingCompany || "",
+        departurePort: shipment?.departurePort || "",
         arrivalPort: shipment?.arrivalPort || "",
-        itemName: item?.itemName || "",
+        blNumber: shipment?.blNumber || "",
+        palletOrderDate: shipment?.palletOrderDate || "",
+        palletType: shipment?.palletType || "",
+        createdAt: shipment?.createdAt || "",
+        updatedAt: shipment?.updatedAt || "",
+      },
+      cargo: {
+        id: cargo?.id || "",
+        remark: cargo?.remark || "",
+        itemsId: cargo?.itemsId || "",
+        shipmentId: shipment?.id || "",
+        containerCount: cargo?.containerCount || 0,
         contractTon: cargo?.contractTon || 0,
-        unitPrice: calculatedData.costDetail.unitPrice || 0,
-        totalPrice: calculatedData.costDetail.totalContractPrice || 0,
-        paymentMethod: payment?.paymentMethod || "",
+        progressStatus: cargo?.progressStatus || "예정",
+        customsClearanceDate: cargo?.customsClearanceDate || "",
+        quarantineDate: cargo?.quarantineDate || "",
         warehouseEntryDate: cargo?.warehouseEntryDate || "",
-        importCostPerKg: calculatedData.costDetail.costPerKg || 0,
-        supplyCostPerKg: calculatedData.cost.supplyPrice || 0,
-        totalCost: calculatedData.cost.contractorCost || 0,
-        totalCostPerKg: calculatedData.costDetail.costPerKg || 0,
-        sellingPrice: calculatedData.cargo.sellingPrice || 0,
-        margin: calculatedData.cargo.margin || 0,
-        totalProfit: calculatedData.cargo.totalProfit || 0,
-      };
-    });
-  } catch (error) {
-    console.error("Failed to fetch plan data:", error);
-    throw new Error("계획 데이터를 불러오는데 실패했습니다.");
-  }
+        sellingPrice: cargo?.sellingPrice || 0,
+        margin: cargo?.margin || 0,
+        totalProfit: cargo?.totalProfit || 0,
+        purchaseFeeRate: cargo?.purchaseFeeRate || 0,
+        sellingPriceWholesale: cargo?.sellingPriceWholesale || 0,
+        sellingPriceRetail: cargo?.sellingPriceRetail || 0,
+        createdAt: cargo?.createdAt || "",
+        updatedAt: cargo?.updatedAt || "",
+      },
+      cost: {
+        id: cost?.id || "",
+        cargoId: cargo?.id || "",
+        supplyPrice: cost?.supplyPrice || 0,
+        shippingCost: cost?.shippingCost || 0,
+        laborCost: cost?.laborCost || 0,
+        transportStorageFee: cost?.transportStorageFee || 0,
+        loadingUnloadingFee: cost?.loadingUnloadingFee || 0,
+        usanceInterest: cost?.usanceInterest || 0,
+      },
+      costDetail: {
+        id: costDetail?.id || "",
+        costId: cost?.id || "",
+        unitPrice: costDetail?.unitPrice || 0,
+        exchangeRate: costDetail?.exchangeRate || 0,
+        customsTaxRate: costDetail?.customsTaxRate || 0,
+        customsFee: costDetail?.customsFee || 0,
+        inspectionFee: costDetail?.inspectionFee || 0,
+        doCharge: costDetail?.doCharge || 0,
+        otherCosts: costDetail?.otherCosts || 0,
+        transferFee: costDetail?.transferFee || 0,
+      },
+      payment: {
+        id: payment?.id || "",
+        contractId: contract?.id || "",
+        paymentMethod: payment?.paymentMethod || "",
+        paymentDueDate: payment?.paymentDueDate || "",
+        advancePaymentDate: paymentTt?.advancePaymentDate || "",
+        advancePaymentRatio: paymentTt?.advancePaymentRatio || 0,
+        advancePaymentAmount: paymentTt?.advancePaymentAmount || 0,
+        remainingPaymentDate: paymentTt?.remainingPaymentDate || "",
+        remainingPaymentRatio: paymentTt?.remainingPaymentRatio || 0,
+        remainingPaymentAmount: paymentTt?.remainingPaymentAmount || 0,
+        counterpartBank: paymentTt?.counterpartBank || "",
+        paymentTerm: "",
+        totalContractAmount: 0,
+      },
+      item: {
+        id: item?.id || "",
+        itemName: item?.itemName || "",
+        itemVariety: item?.itemVariety || "",
+        packingUnit: item?.packingUnit || "",
+        originCountry: item?.originCountry || "",
+        hsCode: item?.hsCode || "",
+      },
+      importer: {
+        id: importer?.id || "",
+        importerName: importer?.importerName || "",
+        calculationType:
+          (importer?.calculationType as CalculationType) ||
+          CalculationType.STANDARD,
+      },
+    };
+
+    // cargo-calculator를 사용하여 계산된 데이터 가져오기
+    const calculatedData = mapAndCalculateCargoDetails(cargoDetailData);
+
+    return {
+      id: cargo?.id || "",
+      contractNumber: contract?.contractNumber || "",
+      progressStatus:
+        statusMapping[cargo?.progressStatus as keyof typeof statusMapping] ||
+        "예정",
+      contractDate: contract?.contractDate || "",
+      importer: importer?.importerName || "",
+      exporter: contract?.exporter || "",
+      estimatedTimeArrival: shipment?.estimatedTimeArrival || "",
+      arrivalPort: shipment?.arrivalPort || "",
+      itemName: item?.itemName || "",
+      contractTon: cargo?.contractTon || 0,
+      unitPrice: calculatedData.costDetail.unitPrice || 0,
+      totalPrice: calculatedData.costDetail.totalContractPrice || 0,
+      paymentMethod: payment?.paymentMethod || "",
+      warehouseEntryDate: cargo?.warehouseEntryDate || "",
+      importCostPerKg: calculatedData.costDetail.costPerKg || 0,
+      supplyCostPerKg: calculatedData.cost.supplyPrice || 0,
+      totalCost: calculatedData.cost.contractorCost || 0,
+      totalCostPerKg: calculatedData.costDetail.costPerKg || 0,
+      sellingPrice: calculatedData.cargo.sellingPrice || 0,
+      margin: calculatedData.cargo.margin || 0,
+      totalProfit: calculatedData.cargo.totalProfit || 0,
+    };
+  });
+
+  return planData;
 }
 
 //TODO: 추후 구현
