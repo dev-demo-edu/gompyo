@@ -5,7 +5,7 @@ import {
   selectedAccountNumbersAtom,
   accountNumberRefreshAtom,
 } from "@/states/account-number";
-import { dateFormatter } from "@/utils/formatter";
+import { dateSlashFormatter } from "@/utils/formatter";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
@@ -63,7 +63,7 @@ export default function AccountNumberGrid() {
         headerName: "등록일",
         field: "createdAt",
         minWidth: 120,
-        valueFormatter: dateFormatter,
+        valueFormatter: dateSlashFormatter,
         flex: 1,
       },
     ],

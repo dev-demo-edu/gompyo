@@ -46,7 +46,7 @@ export const accountNumberFields: AccountNumberField[] = [
 ];
 
 // 계좌 추가 폼 props 타입
-export interface AccountNumberAddFormProps {
+export interface AccountNumberFormProps {
   onClose?: () => void;
   submitLabel?: string;
 }
@@ -55,7 +55,7 @@ export interface AccountNumberAddFormProps {
 export default function AccountNumberAddForm({
   onClose,
   submitLabel = "저장",
-}: AccountNumberAddFormProps) {
+}: AccountNumberFormProps) {
   const setRefresh = useSetAtom(accountNumberRefreshAtom);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -92,7 +92,7 @@ export default function AccountNumberAddForm({
 export function AccountNumberEditForm({
   onClose,
   submitLabel = "수정",
-}: AccountNumberAddFormProps) {
+}: AccountNumberFormProps) {
   const setRefresh = useSetAtom(accountNumberRefreshAtom);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const selectedAccountNumbers = useAtomValue(selectedAccountNumbersAtom);

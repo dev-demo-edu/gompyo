@@ -79,6 +79,7 @@ export default function CashflowForm({
     try {
       await addCashflow({
         ...values,
+        amount: Number(values.amount),
         companyId: companyId,
         amount: Number(values.amount),
       });

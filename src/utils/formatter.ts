@@ -65,3 +65,15 @@ export const oneDecimalFormatter = (params: ValueFormatterParams): string => {
   // 아니면 소수점 한 자리까지 표시
   return rounded.toFixed(1);
 };
+
+// 날짜 포매터 (년/월/일)
+export const dateSlashFormatter = (params: ValueFormatterParams): string => {
+  if (!params.value) return "";
+
+  const date = new Date(params.value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}/${month}/${day}`;
+};
