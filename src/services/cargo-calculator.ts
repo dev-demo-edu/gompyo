@@ -175,6 +175,8 @@ export class CargoCalculator {
       palletType: shipment.palletType || "",
       shippingCompany: shipment.shippingCompany || "",
       contractId: shipment.contractId || "",
+      createdAt: shipment.createdAt || "",
+      updatedAt: shipment.updatedAt || "",
     };
   }
 
@@ -196,6 +198,8 @@ export class CargoCalculator {
       estimatedTimeArrival: shipment.estimatedTimeArrival || "",
       blNumber: shipment.blNumber || "",
       importerName: importer?.importerName || "",
+      createdAt: contract.createdAt || "",
+      updatedAt: contract.updatedAt || "",
     };
   }
 
@@ -278,6 +282,8 @@ export class CargoCalculator {
       totalProfit: this.calculatedValues.totalProfit,
       purchaseFeeRate: cargo.purchaseFeeRate,
       remark: cargo.remark,
+      createdAt: cargo.createdAt,
+      updatedAt: cargo.updatedAt,
     };
   }
 

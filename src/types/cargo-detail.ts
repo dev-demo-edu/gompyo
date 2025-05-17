@@ -7,6 +7,8 @@ type Contract = {
   exporter: string | null;
   importerId: string | null;
   incoterms: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 type Payment = {
@@ -68,6 +70,8 @@ type Cargo = {
   totalProfit: number | null;
   purchaseFeeRate: number | null;
   remark: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export type CargoDetailData = {
@@ -92,6 +96,8 @@ export type Shipment = {
   blNumber: string | null;
   palletOrderDate: string | null;
   palletType: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export type Item = {
