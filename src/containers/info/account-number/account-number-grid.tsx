@@ -17,11 +17,14 @@ export type AccountNumberRow = InferSelectModel<typeof accountNumbers>;
 export default function AccountNumberGrid() {
   const [accountNumbers, setAccountNumbers] = useState<AccountNumberRow[]>([]);
   const refresh = useAtomValue(accountNumberRefreshAtom);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchAccountNumbers = async () => {
+      setLoading(true);
       const accountNumbers = await getAccountNumbers();
       setAccountNumbers(accountNumbers);
+      setLoading(false);
     };
     fetchAccountNumbers();
   }, [refresh]);
@@ -85,6 +88,7 @@ export default function AccountNumberGrid() {
       data={accountNumbers}
       onSelectionChanged={onSelectionChanged}
       searchDateField="createdAt"
+      loading={loading}
     />
   );
 }

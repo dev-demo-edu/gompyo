@@ -9,7 +9,7 @@ import type {
   RowDragCallbackParams,
   CheckboxSelectionCallbackParams,
 } from "ag-grid-community";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
@@ -54,6 +54,7 @@ export default function CashflowGrid() {
   const companyBalance = useAtomValue(companyBalanceAtom);
   const editMode = useAtomValue(editModeAtom);
   const gridApiRef = useRef<GridApi | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleRowDragEnd = async (event: RowDragEndEvent) => {
     const type = event.node.data.type;
@@ -131,9 +132,11 @@ export default function CashflowGrid() {
 
   useEffect(() => {
     const fetchCashflowList = async () => {
+      setLoading(true);
       const cashflows = await getCashflowList();
       setCashflowList([...cashflows]);
       gridApiRef.current?.redrawRows();
+      setLoading(false);
     };
     fetchCashflowList();
   }, [refresh]);
@@ -295,6 +298,7 @@ export default function CashflowGrid() {
               onRowDragEnd={handleRowDragEnd}
               onDragStopped={handleDragStopped}
               pagination={false}
+              loading={loading}
             />
           </div>
         </div>
@@ -325,6 +329,7 @@ export default function CashflowGrid() {
               onRowDragEnd={handleRowDragEnd}
               onDragStopped={handleDragStopped}
               pagination={false}
+              loading={loading}
             />
           </div>
         </div>

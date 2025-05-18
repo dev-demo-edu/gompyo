@@ -19,11 +19,14 @@ export default function BusinessNumberGrid() {
     [],
   );
   const refresh = useAtomValue(businessNumberRefreshAtom);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchBusinessNumbers = async () => {
+      setLoading(true);
       const businessNumbers = await getBusinessNumbers();
       setBusinessNumbers(businessNumbers);
+      setLoading(false);
     };
     fetchBusinessNumbers();
   }, [refresh]);
@@ -87,6 +90,7 @@ export default function BusinessNumberGrid() {
       data={businessNumbers}
       onSelectionChanged={onSelectionChanged}
       searchDateField="createdAt"
+      loading={loading}
     />
   );
 }
