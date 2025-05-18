@@ -160,6 +160,7 @@ export default function PlanButton() {
     formState: { errors: cargoErrors },
     reset: resetCargo,
     setValue,
+    watch,
   } = useForm<CargoFormData>({
     resolver: zodResolver(cargoSchema),
   });
@@ -669,16 +670,31 @@ export default function PlanButton() {
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
-          <TextField
-            label="포장단위"
-            {...registerCargo("packingUnit")}
-            error={!!cargoErrors.packingUnit}
-            helperText={cargoErrors.packingUnit?.message}
-            placeholder="입력해주세요."
+          <FormControl
             fullWidth
-            InputLabelProps={{ shrink: true }}
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
+            error={!!cargoErrors.packingUnit}
+            sx={{ mb: 1 }}
+          >
+            <InputLabel id="packing-unit-label">포장단위</InputLabel>
+            <Select
+              labelId="packing-unit-label"
+              value={watch("packingUnit") || ""}
+              label="포장단위"
+              onChange={(e) =>
+                setValue("packingUnit", e.target.value, {
+                  shouldValidate: true,
+                })
+              }
+            >
+              <MenuItem value="1.2ton">1.2ton</MenuItem>
+              <MenuItem value="25kg">25kg</MenuItem>
+            </Select>
+            {cargoErrors.packingUnit && (
+              <Typography color="error" variant="caption">
+                {cargoErrors.packingUnit.message}
+              </Typography>
+            )}
+          </FormControl>
         </Box>
       </Box>
 
