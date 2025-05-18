@@ -15,6 +15,8 @@ import {
 import {
   FilterList as FilterListIcon,
   RestartAlt as RestartAltIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import DataGrid from "./data-grid";
@@ -66,7 +68,7 @@ export default function FilterGrid<T>({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showFilter, setShowFilter] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // 검색어와 날짜로 데이터 필터링
   // 검색어와 날짜로 데이터 필터링
@@ -129,7 +131,7 @@ export default function FilterGrid<T>({
           onClick={() => setIsCollapsed((prev) => !prev)}
           className="absolute right-2 top-2 w-8 h-8 bg-gray-200 text-gray-600 rounded-full shadow-md hover:bg-gray-300 transition z-10 hidden md:block"
         >
-          {isCollapsed ? ">" : "<"}
+          {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </button>
         {/* 내용 */}
         {!isCollapsed && (
