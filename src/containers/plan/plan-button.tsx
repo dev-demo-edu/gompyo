@@ -57,7 +57,7 @@ export const contractSchema = z.object({
 // 화물 정보 스키마
 export const cargoSchema = z.object({
   itemName: z.string().min(1, "품목을 입력해주세요."),
-  itemVariety: z.string().min(1, "품종을 입력해주세요."),
+  itemVariety: z.string().optional(),
   hsCode: z.string().optional(),
   contractTon: z.coerce
     .number({
@@ -82,77 +82,12 @@ export const cargoSchema = z.object({
     })
     .min(0, "0 이상의 숫자를 입력해주세요")
     .default(0),
-  customTaxAmount: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  customsFee: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  inspectionFee: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  doCharge: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  otherCosts: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
   purchaseFeeRate: z.coerce
     .number({
       message: "숫자를 입력해주세요",
     })
     .min(0, "0 이상의 숫자를 입력해주세요")
     .default(0),
-  supplyPrice: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  shippingCost: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  laborCost: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  transportStorageFee: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  loadingUnloadingFee: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요")
-    .default(0),
-  sellingPrice: z.coerce
-    .number({
-      message: "숫자를 입력해주세요",
-    })
-    .min(0, "0 이상의 숫자를 입력해주세요"),
 });
 
 type ContractFormData = z.infer<typeof contractSchema>;
@@ -225,6 +160,7 @@ export default function PlanButton() {
     formState: { errors: cargoErrors },
     reset: resetCargo,
     setValue,
+    watch,
   } = useForm<CargoFormData>({
     resolver: zodResolver(cargoSchema),
   });
@@ -734,16 +670,31 @@ export default function PlanButton() {
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
           />
 
-          <TextField
-            label="포장단위"
-            {...registerCargo("packingUnit")}
-            error={!!cargoErrors.packingUnit}
-            helperText={cargoErrors.packingUnit?.message}
-            placeholder="입력해주세요."
+          <FormControl
             fullWidth
-            InputLabelProps={{ shrink: true }}
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
+            error={!!cargoErrors.packingUnit}
+            sx={{ mb: 1 }}
+          >
+            <InputLabel id="packing-unit-label">포장단위</InputLabel>
+            <Select
+              labelId="packing-unit-label"
+              value={watch("packingUnit") || ""}
+              label="포장단위"
+              onChange={(e) =>
+                setValue("packingUnit", e.target.value, {
+                  shouldValidate: true,
+                })
+              }
+            >
+              <MenuItem value="1.2ton">1.2ton</MenuItem>
+              <MenuItem value="25kg">25kg</MenuItem>
+            </Select>
+            {cargoErrors.packingUnit && (
+              <Typography color="error" variant="caption">
+                {cargoErrors.packingUnit.message}
+              </Typography>
+            )}
+          </FormControl>
         </Box>
       </Box>
 
@@ -789,66 +740,11 @@ export default function PlanButton() {
           />
 
           <TextField
-            label="관세금액"
-            type="text"
-            {...registerCargo("customTaxAmount")}
-            error={!!cargoErrors.customTaxAmount}
-            helperText={cargoErrors.customTaxAmount?.message}
-            placeholder="입력해주세요."
-            fullWidth
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
-
-          <TextField
-            label="관세수수료"
-            type="text"
-            {...registerCargo("customsFee")}
-            error={!!cargoErrors.customsFee}
-            helperText={cargoErrors.customsFee?.message}
-            placeholder="입력해주세요."
-            fullWidth
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
-
-          <TextField
-            label="검사료"
-            type="text"
-            {...registerCargo("inspectionFee")}
-            error={!!cargoErrors.inspectionFee}
-            helperText={cargoErrors.inspectionFee?.message}
-            placeholder="입력해주세요."
-            fullWidth
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
-
-          <TextField
-            label="기타비용"
-            type="text"
-            {...registerCargo("otherCosts")}
-            error={!!cargoErrors.otherCosts}
-            helperText={cargoErrors.otherCosts?.message}
-            placeholder="입력해주세요."
-            fullWidth
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
-
-          <TextField
             label="매입 수수료율"
             type="text"
             {...registerCargo("purchaseFeeRate")}
             error={!!cargoErrors.purchaseFeeRate}
             helperText={cargoErrors.purchaseFeeRate?.message}
-            placeholder="입력해주세요."
-            fullWidth
-            className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
-          />
-          {/* TODO: 매입 수수율 추가 */}
-
-          <TextField
-            label="판매가"
-            {...registerCargo("sellingPrice")}
-            error={!!cargoErrors.sellingPrice}
-            helperText={cargoErrors.sellingPrice?.message}
             placeholder="입력해주세요."
             fullWidth
             className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"

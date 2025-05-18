@@ -96,7 +96,7 @@ export default function AccountNumber() {
           </Button>
         </Stack>
         {/* 그리드 */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-hidden">
           <AccountNumberGrid />
         </div>
         <AccountNumberAddModal

@@ -3,6 +3,7 @@ import {
   currencyFormatter,
   perKgFormatter,
   dateSlashFormatter,
+  currencyDollarFormatter,
 } from "../utils/formatter";
 import { ColDef } from "ag-grid-community";
 
@@ -58,7 +59,7 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
   {
     field: "unitPrice",
     headerName: "단가",
-    valueFormatter: currencyFormatter,
+    valueFormatter: currencyDollarFormatter,
     width: 130,
   },
   {
@@ -146,7 +147,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   },
   {
     field: "productName",
-    headerName: "제품명",
+    headerName: "품종",
     width: 150,
   },
   {
@@ -173,7 +174,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   {
     field: "unitPrice",
     headerName: "단가",
-    valueFormatter: currencyFormatter,
+    valueFormatter: currencyDollarFormatter,
     width: 130,
   },
   {

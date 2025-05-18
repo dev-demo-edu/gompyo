@@ -43,10 +43,8 @@ export const paymentsTt = sqliteTable("payments_tt", {
     .references(() => payments.id, { onDelete: "cascade" }),
   advancePaymentDate: text("advance_payment_date"),
   advancePaymentRatio: real("advance_payment_ratio"),
-  advancePaymentAmount: real("advance_payment_amount"),
   remainingPaymentDate: text("remaining_payment_date"),
   remainingPaymentRatio: real("remaining_payment_ratio"),
-  remainingPaymentAmount: real("remaining_payment_amount"),
   counterpartBank: text("counterpart_bank"),
 });
 

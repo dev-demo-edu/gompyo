@@ -51,6 +51,10 @@ export default function EntireView({ cargoId }: EntireViewProps) {
     fetchImporters();
   }, []);
 
+  useEffect(() => {
+    console.log(mappedData);
+  }, [mappedData]);
+
   // 결제 정보 필드 상태 관리
   const [currentPaymentFields, setCurrentPaymentFields] = useState(() => {
     console.log("Initializing currentPaymentFields");
@@ -227,7 +231,10 @@ export default function EntireView({ cargoId }: EntireViewProps) {
           title="계약 정보"
           fields={createContractFields(importers)}
           className="w-full"
-          data={mappedData.contract}
+          data={{
+            ...mappedData.contract,
+            contractTon: mappedData.cargo.contractTon,
+          }}
           onSave={(formData) => handleDataUpdate(formData)}
         />
 

@@ -18,14 +18,10 @@ type Payment = {
   contractId: string;
   advancePaymentDate: string | null;
   advancePaymentRatio: number | null;
-  advancePaymentAmount: number | null;
   remainingPaymentDate: string | null;
   remainingPaymentRatio: number | null;
-  remainingPaymentAmount: number | null;
   counterpartBank: string | null;
   paymentTerm: string | null;
-  // contractExchangeRate: string | null;
-  totalContractAmount: number | null;
 };
 
 type CostDetail = {

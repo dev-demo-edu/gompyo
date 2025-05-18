@@ -41,7 +41,7 @@ export default function Plan() {
           <PlanButton />
         </Stack>
         {/* 그리드 */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-transparent rounded-lg overflow-hidden">
           <PlanGrid />
         </div>
       </div>

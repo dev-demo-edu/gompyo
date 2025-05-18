@@ -96,7 +96,7 @@ export default function BusinessNumber() {
           </Button>
         </Stack>
         {/* 그리드 */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-hidden">
           <BusinessNumberGrid />
         </div>
         <BusinessNumberAddModal

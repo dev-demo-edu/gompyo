@@ -31,7 +31,7 @@ const COLLAPSED_WIDTH = 64;
 
 export default function Navbar() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isDesktopDrawerOpen, setIsDesktopDrawerOpen] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery("(max-width:640px)");
@@ -43,7 +43,7 @@ export default function Navbar() {
     if (isTablet && !isMobile) {
       setIsSidebarCollapsed(true);
     } else if (!isTablet) {
-      setIsSidebarCollapsed(false);
+      setIsSidebarCollapsed(true);
     }
   }, [isTablet, isMobile]);
 
