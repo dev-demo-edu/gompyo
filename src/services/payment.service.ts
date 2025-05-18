@@ -127,10 +127,6 @@ export class PaymentService {
           .where(eq(paymentsUsance.paymentId, payment.id));
 
         // 계약금액 계산
-        const totalContractAmount = paymentTt
-          ? (paymentTt.advancePaymentAmount || 0) +
-            (paymentTt.remainingPaymentAmount || 0)
-          : 0;
 
         return {
           ...payment,
@@ -138,16 +134,13 @@ export class PaymentService {
           // T/T 관련 필드
           advancePaymentDate: paymentTt?.advancePaymentDate ?? null,
           advancePaymentRatio: paymentTt?.advancePaymentRatio ?? null,
-          advancePaymentAmount: paymentTt?.advancePaymentAmount ?? null,
           remainingPaymentDate: paymentTt?.remainingPaymentDate ?? null,
           remainingPaymentRatio: paymentTt?.remainingPaymentRatio ?? null,
-          remainingPaymentAmount: paymentTt?.remainingPaymentAmount ?? null,
           counterpartBank: paymentTt?.counterpartBank ?? null,
           // Usance 관련 필드
           paymentTerm: paymentUsance?.paymentTerm ?? null,
           contractExchangeRate: paymentUsance?.contractExchangeRate ?? null,
           // 계약금액
-          totalContractAmount,
         };
       }),
     );
@@ -175,28 +168,18 @@ export class PaymentService {
       .from(paymentsUsance)
       .where(eq(paymentsUsance.paymentId, payment.id));
 
-    // 계약금액 계산
-    const totalContractAmount = paymentTt
-      ? (paymentTt.advancePaymentAmount || 0) +
-        (paymentTt.remainingPaymentAmount || 0)
-      : 0;
-
     return {
       ...payment,
       paymentDueDate: payment.paymentDueDate,
       // T/T 관련 필드
       advancePaymentDate: paymentTt?.advancePaymentDate ?? null,
       advancePaymentRatio: paymentTt?.advancePaymentRatio ?? null,
-      advancePaymentAmount: paymentTt?.advancePaymentAmount ?? null,
       remainingPaymentDate: paymentTt?.remainingPaymentDate ?? null,
       remainingPaymentRatio: paymentTt?.remainingPaymentRatio ?? null,
-      remainingPaymentAmount: paymentTt?.remainingPaymentAmount ?? null,
       counterpartBank: paymentTt?.counterpartBank ?? null,
       // Usance 관련 필드
       paymentTerm: paymentUsance?.paymentTerm ?? null,
       contractExchangeRate: paymentUsance?.contractExchangeRate ?? null,
-      // 계약금액
-      totalContractAmount,
     };
   }
 
@@ -239,16 +222,8 @@ export class PaymentService {
               paymentId: id,
               advancePaymentDate: data.advancePaymentDate,
               advancePaymentRatio: data.advancePaymentRatio || 30,
-              advancePaymentAmount:
-                ((data.totalContractAmount || 0) *
-                  (data.advancePaymentRatio || 30)) /
-                100,
               remainingPaymentDate: data.remainingPaymentDate,
               remainingPaymentRatio: data.remainingPaymentRatio || 70,
-              remainingPaymentAmount:
-                ((data.totalContractAmount || 0) *
-                  (data.remainingPaymentRatio || 70)) /
-                100,
               counterpartBank: data.counterpartBank || "",
             });
             break;
@@ -279,14 +254,6 @@ export class PaymentService {
               remainingPaymentDate: data.remainingPaymentDate,
               remainingPaymentRatio: data.remainingPaymentRatio,
               counterpartBank: data.counterpartBank || "",
-              advancePaymentAmount:
-                ((data.totalContractAmount || 0) *
-                  (data.advancePaymentRatio || 30)) /
-                100,
-              remainingPaymentAmount:
-                ((data.totalContractAmount || 0) *
-                  (data.remainingPaymentRatio || 70)) /
-                100,
             });
             break;
 
@@ -320,24 +287,6 @@ export class PaymentService {
 
   async updateTt(paymentId: string, data: Partial<NewPaymentTt>) {
     // 저장 시에만 금액 계산
-    if (
-      data.advancePaymentRatio !== undefined &&
-      data.advancePaymentRatio !== null
-    ) {
-      const totalAmount =
-        (data.advancePaymentAmount || 0) + (data.remainingPaymentAmount || 0);
-      const ratios = this.calculatePaymentRatios({
-        totalContractAmount: totalAmount,
-        advancePaymentRatio: data.advancePaymentRatio,
-      });
-
-      data = {
-        ...data,
-        advancePaymentAmount: ratios.advancePaymentAmount,
-        remainingPaymentAmount: ratios.remainingPaymentAmount,
-      };
-    }
-
     const [paymentTt] = await db
       .update(paymentsTt)
       .set(data)

@@ -83,6 +83,8 @@ export class CargoCalculator {
     totalCost: number;
     customTaxAmount: number;
     totalCostPerKg: number;
+    advancePaymentAmount: number;
+    remainingPaymentAmount: number;
   };
   private calculationStrategy: CalculationStrategy;
 
@@ -119,6 +121,12 @@ export class CargoCalculator {
       (this.data.costDetail.otherCosts || 0);
     const contractorCost = contractorCostAmount / contractTon / 1000;
 
+    const advancePaymentAmount =
+      (totalContractPrice * (this.data.payment.advancePaymentRatio || 0)) / 100;
+    const remainingPaymentAmount =
+      (totalContractPrice * (this.data.payment.remainingPaymentRatio || 0)) /
+      100;
+
     // 회사별 계산 로직 적용
     const calculated = this.calculationStrategy.calculate(
       {
@@ -150,6 +158,8 @@ export class CargoCalculator {
       totalCost: calculated.totalCost,
       totalCostPerKg: calculated.totalCostPerKg,
       customTaxAmount,
+      advancePaymentAmount,
+      remainingPaymentAmount,
     };
   }
 
@@ -215,10 +225,10 @@ export class CargoCalculator {
       // T/T 관련 필드
       advancePaymentDate: payment.advancePaymentDate || "",
       advancePaymentRatio: payment.advancePaymentRatio || 0,
-      advancePaymentAmount: payment.advancePaymentAmount || 0,
+      advancePaymentAmount: this.calculatedValues.advancePaymentAmount,
       remainingPaymentDate: payment.remainingPaymentDate || "",
       remainingPaymentRatio: payment.remainingPaymentRatio || 0,
-      remainingPaymentAmount: payment.remainingPaymentAmount || 0,
+      remainingPaymentAmount: this.calculatedValues.remainingPaymentAmount,
       counterpartBank: payment.counterpartBank || "",
       // Usance 관련 필드
       paymentTerm: payment.paymentTerm || "",
