@@ -188,6 +188,7 @@ export default function FilterGrid<T>({
           onDragStarted={onDragStarted}
           onDragStopped={onDragStopped}
           onSelectionChanged={onSelectionChanged}
+          pagination={false}
         />
       </div>
     </div>
