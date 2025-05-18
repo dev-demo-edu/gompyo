@@ -227,7 +227,10 @@ export default function EntireView({ cargoId }: EntireViewProps) {
           title="계약 정보"
           fields={createContractFields(importers)}
           className="w-full"
-          data={mappedData.contract}
+          data={{
+            ...mappedData.contract,
+            contractTon: mappedData.cargo.contractTon,
+          }}
           onSave={(formData) => handleDataUpdate(formData)}
         />
 

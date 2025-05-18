@@ -52,6 +52,12 @@ export const createContractFields = (importers: Importer[]): BaseField[] => [
   },
   { name: "exporter", label: "공급업체", valueType: "string" },
   { name: "incoterms", label: "인코텀즈", valueType: "string" },
+  {
+    name: "contractTon",
+    label: "계약 톤수",
+    valueType: "number",
+    endAdornment: "톤",
+  },
   { name: "departurePort", label: "출발항", gridSize: 6, valueType: "string" },
   { name: "arrivalPort", label: "도착항", gridSize: 6, valueType: "string" },
   {
