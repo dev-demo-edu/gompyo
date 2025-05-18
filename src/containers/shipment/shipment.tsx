@@ -31,7 +31,7 @@ export default function Shipment() {
             삭제하기
           </Button>
         </Stack>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-hidden">
           <ShipmentGrid />
         </div>
         <CargoDeleteConfirmModal

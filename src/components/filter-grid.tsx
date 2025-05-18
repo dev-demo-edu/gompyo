@@ -110,11 +110,11 @@ export default function FilterGrid<T>({
   }, [data, searchTerm, startDate, endDate, columnDefs, searchDateField]);
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-[800px] bg-slate-50 rounded-xl overflow-hidden shadow-lg p-6 gap-6">
+    <div className="flex flex-col md:flex-row w-full h-[800px] bg-transparent rounded-xl overflow-hidden shadow-lg  gap-6">
       {/* 필터 토글 버튼 (모바일) */}
       <button
         onClick={() => setShowFilter(!showFilter)}
-        className="md:hidden flex items-center justify-center gap-2 mb-4 px-4 py-2 bg-white rounded-lg shadow-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        className="md:hidden flex items-center justify-center gap-2 mb-4 px-4 py-2 bg-white rounded-lg shadow-sm text-gray-700 hover:bg-gray-100 transition-colors"
       >
         <FilterListIcon className="w-5 h-5" />
         <span>필터 {showFilter ? "숨기기" : "보기"}</span>
@@ -123,13 +123,13 @@ export default function FilterGrid<T>({
       <div
         className={`relative transition-all duration-300 p-6 space-y-6
         ${showFilter ? "block" : "hidden md:block"}
-        ${isCollapsed ? "w-12 bg-slate-50" : "w-full md:w-80 bg-white rounded-xl shadow-sm"}
+        ${isCollapsed ? "w-12 bg-transparent" : "w-full md:w-80 bg-white rounded-xl shadow-sm"}
         md:shrink-0 overflow-hidden`}
       >
         {/* 접기/펼치기 토글 버튼 */}
         <button
           onClick={() => setIsCollapsed((prev) => !prev)}
-          className="absolute right-2 top-2 w-8 h-8 bg-gray-200 text-gray-600 rounded-full shadow-md hover:bg-gray-300 transition z-10 hidden md:block"
+          className="absolute right-2 top-2 w-8 h-8 bg-white text-gray-600 rounded-full shadow-md hover:bg-gray-300 transition z-10 hidden md:block"
         >
           {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </button>
