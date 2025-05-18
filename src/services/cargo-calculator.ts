@@ -50,6 +50,7 @@ export type CalculatedCost = typeof costs.$inferSelect & {
 
 export type CalculatedCargo = typeof cargos.$inferSelect & {
   totalCost: number;
+  totalCostPerKg: number;
 };
 
 export type CalculatedItem = typeof items.$inferSelect;
@@ -81,6 +82,7 @@ export class CargoCalculator {
     contractorProfit: number;
     totalCost: number;
     customTaxAmount: number;
+    totalCostPerKg: number;
   };
   private calculationStrategy: CalculationStrategy;
 
@@ -146,6 +148,7 @@ export class CargoCalculator {
       contractorCost,
       contractorProfit: calculated.contractorProfit,
       totalCost: calculated.totalCost,
+      totalCostPerKg: calculated.totalCostPerKg,
       customTaxAmount,
     };
   }
@@ -275,6 +278,7 @@ export class CargoCalculator {
       warehouseEntryDate: cargo.warehouseEntryDate,
       progressStatus: cargo.progressStatus,
       totalCost: this.calculatedValues.totalCost,
+      totalCostPerKg: this.calculatedValues.totalCostPerKg,
       sellingPrice: cargo.sellingPrice || 0,
       sellingPriceWholesale: cargo.sellingPriceWholesale || 0,
       sellingPriceRetail: cargo.sellingPriceRetail || 0,

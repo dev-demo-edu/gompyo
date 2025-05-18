@@ -25,6 +25,7 @@ export interface CalculationStrategy {
     totalCost: number;
     margin: number;
     totalProfit: number;
+    totalCostPerKg: number;
   };
 }
 
@@ -65,12 +66,15 @@ export class StandardCalculationStrategy implements CalculationStrategy {
 
     const totalProfit = margin * data.contractTon * 1000;
 
+    const totalCostPerKg = totalCost / data.contractTon / 1000;
+
     return {
       supplyPrice,
       contractorProfit,
       totalCost,
       margin,
       totalProfit,
+      totalCostPerKg,
     };
   }
 }
@@ -114,12 +118,15 @@ export class DnbCalculationStrategy implements CalculationStrategy {
 
     const totalProfit = margin * data.contractTon * 1000;
 
+    const totalCostPerKg = totalCost / data.contractTon / 1000;
+
     return {
       supplyPrice,
       contractorProfit,
       totalCost,
       margin,
       totalProfit,
+      totalCostPerKg,
     };
   }
 }
@@ -160,12 +167,15 @@ export class NamhaeCalculationStrategy implements CalculationStrategy {
 
     const totalProfit = margin * data.contractTon * 1000;
 
+    const totalCostPerKg = totalCost / data.contractTon / 1000;
+
     return {
       supplyPrice,
       contractorProfit,
       totalCost,
       margin,
       totalProfit,
+      totalCostPerKg,
     };
   }
 }
