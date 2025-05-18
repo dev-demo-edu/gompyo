@@ -73,10 +73,8 @@ export async function createPlan(
           paymentId: paymentId,
           advancePaymentDate: contractData.contractDate,
           advancePaymentRatio: 30, // 기본값 30%
-          advancePaymentAmount: 0, // 나중에 계산
           remainingPaymentDate: contractData.contractDate, // 계약일로 설정
           remainingPaymentRatio: 70, // 기본값 70%
-          remainingPaymentAmount: 0, // 나중에 계산
           counterpartBank: "", // 나중에 입력
         })
         .returning();
@@ -117,7 +115,9 @@ export async function createPlan(
           where: (items, { eq, and }) =>
             and(
               eq(items.itemName, cargo.itemName),
-              eq(items.itemVariety, cargo.itemVariety),
+              cargo.itemVariety
+                ? eq(items.itemVariety, cargo.itemVariety)
+                : undefined,
               cargo.hsCode ? eq(items.hsCode, cargo.hsCode) : undefined,
               eq(items.packingUnit, cargo.packingUnit),
             ),
@@ -146,8 +146,6 @@ export async function createPlan(
 
         // 화물 정보 저장
         const cargoId = nanoid();
-        const supplyPrice =
-          (cargo.unitPrice! * cargo.exchangeRate * cargo.contractTon) / 1000;
         await db
           .insert(cargos)
           .values({
@@ -157,11 +155,7 @@ export async function createPlan(
             containerCount: 1,
             contractTon: cargo.contractTon,
             progressStatus: "REVIEW",
-            sellingPrice: cargo.sellingPrice,
-            margin: cargo.sellingPrice - supplyPrice,
-            totalProfit:
-              (cargo.sellingPrice - supplyPrice) * cargo.contractTon * 1000,
-            purchaseFeeRate: 0,
+            purchaseFeeRate: cargo.purchaseFeeRate,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
@@ -189,10 +183,11 @@ export async function createPlan(
             unitPrice: cargo.unitPrice,
             exchangeRate: cargo.exchangeRate,
             customsTaxRate: cargo.customsTaxRate,
-            customsFee: cargo.customsFee,
-            inspectionFee: cargo.inspectionFee,
+            customsFee: 0,
+            inspectionFee: 0,
             doCharge: 0,
-            otherCosts: cargo.otherCosts,
+            otherCosts: 0,
+            transferFee: 0,
           })
           .returning();
       } catch (error) {
@@ -334,13 +329,10 @@ export async function getPlanData(): Promise<IPlanData[]> {
         paymentDueDate: payment?.paymentDueDate || "",
         advancePaymentDate: paymentTt?.advancePaymentDate || "",
         advancePaymentRatio: paymentTt?.advancePaymentRatio || 0,
-        advancePaymentAmount: paymentTt?.advancePaymentAmount || 0,
         remainingPaymentDate: paymentTt?.remainingPaymentDate || "",
         remainingPaymentRatio: paymentTt?.remainingPaymentRatio || 0,
-        remainingPaymentAmount: paymentTt?.remainingPaymentAmount || 0,
         counterpartBank: paymentTt?.counterpartBank || "",
         paymentTerm: "",
-        totalContractAmount: 0,
       },
       item: {
         id: item?.id || "",
@@ -381,8 +373,8 @@ export async function getPlanData(): Promise<IPlanData[]> {
       warehouseEntryDate: cargo?.warehouseEntryDate || "",
       importCostPerKg: calculatedData.costDetail.costPerKg || 0,
       supplyCostPerKg: calculatedData.cost.supplyPrice || 0,
-      totalCost: calculatedData.cost.contractorCost || 0,
-      totalCostPerKg: calculatedData.costDetail.costPerKg || 0,
+      totalCost: calculatedData.cargo.totalCost || 0,
+      totalCostPerKg: calculatedData.cargo.totalCostPerKg || 0,
       sellingPrice: calculatedData.cargo.sellingPrice || 0,
       margin: calculatedData.cargo.margin || 0,
       totalProfit: calculatedData.cargo.totalProfit || 0,

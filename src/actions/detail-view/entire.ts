@@ -41,6 +41,8 @@ export async function createNewShipmentAndUpdateCargo(
           departurePort: shipment.departurePort,
           palletOrderDate: shipment.palletOrderDate,
           palletType: shipment.palletType,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         } as const);
 
         return newShipment;

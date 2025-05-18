@@ -21,6 +21,30 @@ export const currencyFormatter = (params: ValueFormatterParams): string => {
     : "";
 };
 
+export const currencyDollarFormatter = (
+  params: ValueFormatterParams,
+): string => {
+  // 빈값 예외처리
+  if (
+    params.value === null ||
+    params.value === undefined ||
+    params.value === ""
+  )
+    return "";
+
+  const value = Number(params.value);
+  if (isNaN(value)) return "";
+
+  const hasDecimal = !Number.isInteger(value);
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: hasDecimal ? 2 : 0,
+    maximumFractionDigits: hasDecimal ? 2 : 0,
+  }).format(value);
+};
+
 // 숫자 포맷터 (kg당)
 export const perKgFormatter = (params: ValueFormatterParams): string => {
   return params.value
