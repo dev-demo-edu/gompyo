@@ -147,7 +147,7 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
   },
   {
     field: "productName",
-    headerName: "제품명",
+    headerName: "품종",
     width: 150,
   },
   {
