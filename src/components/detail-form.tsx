@@ -285,12 +285,8 @@ export default function DetailForm({
                         borderWidth: "1px",
                       },
                       "& .MuiInputBase-input": {
-                        color: "rgba(0, 0, 0, 0.7)",
-                        WebkitTextFillColor: "rgba(0, 0, 0, 0.7)",
-                        fontWeight: 500,
-                      },
-                      "& .MuiInputLabel-root": {
-                        color: "rgba(0, 0, 0, 0.7)",
+                        color: "rgba(0, 0, 0, 0.6)",
+                        WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
                       },
                     },
                   },
@@ -337,12 +333,8 @@ export default function DetailForm({
               borderWidth: "1px",
             },
             "& .MuiInputBase-input": {
-              color: "rgba(0, 0, 0, 0.7)",
-              WebkitTextFillColor: "rgba(0, 0, 0, 0.7)",
-              fontWeight: 500,
-            },
-            "& .MuiInputLabel-root": {
-              color: "rgba(0, 0, 0, 0.7)",
+              color: "rgba(0, 0, 0, 0.6)",
+              WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
             },
           },
         },
