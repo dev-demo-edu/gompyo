@@ -18,6 +18,10 @@ import { useAtom } from "jotai";
 import { cancelEditAtom, cargoDetailAtom } from "@/states/detail";
 import { addChangeLog } from "@/actions/detail-view/history";
 import { userAtom } from "@/states/user";
+import {
+  formatNumberWithCommas,
+  parseNumberWithCommas,
+} from "@/utils/formatter";
 
 interface FieldConfig {
   name: string;
@@ -76,7 +80,7 @@ export default function DetailForm({
     if (value === null) return null;
     switch (valueType) {
       case "number":
-        return value === "" ? null : Number(value);
+        return value === "" ? null : parseNumberWithCommas(value);
       case "date":
         return value === "" ? null : value;
       case "string":
@@ -219,7 +223,13 @@ export default function DetailForm({
 
   const handleTextChange =
     (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = event.target.value || null;
+      let newValue = event.target.value || null;
+      // 숫자 타입 필드에 대해 콤마 포맷팅 적용
+      const fieldConfig = fields.find((f) => f.name === field);
+      if (fieldConfig?.valueType === "number" && newValue !== null) {
+        // 입력값에서 숫자만 추출 후 콤마 추가
+        newValue = formatNumberWithCommas(newValue);
+      }
       setFormData((prev) => ({
         ...prev,
         [field]: newValue,
@@ -337,16 +347,15 @@ export default function DetailForm({
       rows: field.type === "textarea" ? 4 : undefined,
     };
     if (field.valueType === "number") {
-      if (
-        !isFinite(Number(textFieldProps.value)) ||
-        isNaN(Number(textFieldProps.value))
-      ) {
-        textFieldProps.value = "0";
-      } else {
-        const num = Number(textFieldProps.value);
-        if (!Number.isInteger(num)) {
-          textFieldProps.value = Math.floor(num).toString();
-        }
+      // 콤마가 포함된 값을 숫자로 변환하여 저장
+      textFieldProps.value = formData[field.name] ?? "";
+      if (isEditing && textFieldProps.value) {
+        textFieldProps.value = formatNumberWithCommas(textFieldProps.value);
+      }
+      textFieldProps.onChange = handleTextChange(field.name);
+      // 저장 시 콤마 제거
+      if (!isEditing && textFieldProps.value) {
+        textFieldProps.value = formatNumberWithCommas(textFieldProps.value);
       }
     }
 

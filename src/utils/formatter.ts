@@ -101,3 +101,31 @@ export const dateSlashFormatter = (params: ValueFormatterParams): string => {
 
   return `${year}/${month}/${day}`;
 };
+
+// 금액에 콤마 추가하는 함수
+export const formatNumberWithCommas = (
+  value: string | number | null | undefined,
+): string => {
+  if (value === null || value === undefined || value === "") return "";
+
+  // 숫자가 아닌 문자 제거
+  const numericString = String(value).replace(/[^0-9.-]/g, "");
+
+  // 숫자로 변환
+  const number = parseFloat(numericString);
+  if (isNaN(number)) return "";
+
+  // 콤마 추가
+  return new Intl.NumberFormat("ko-KR").format(number);
+};
+
+// 콤마가 포함된 문자열을 숫자로 변환하는 함수
+export const parseNumberWithCommas = (value: string): number => {
+  if (!value) return 0;
+
+  // 콤마 제거 후 숫자로 변환
+  const numericString = value.replace(/,/g, "");
+  const number = parseFloat(numericString);
+
+  return isNaN(number) ? 0 : number;
+};
