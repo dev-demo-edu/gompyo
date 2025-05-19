@@ -152,10 +152,12 @@ export async function createPlan(
             id: cargoId,
             itemsId: itemId,
             shipmentId: shipmentId,
-            containerCount: 1,
+            containerCount: Math.ceil(cargo.contractTon / 24),
             contractTon: cargo.contractTon,
             progressStatus: "REVIEW",
-            purchaseFeeRate: await getPurchaseFeeRate(contractData.importer),
+            purchaseFeeRate:
+              cargo.purchaseFeeRate ||
+              (await getPurchaseFeeRate(contractData.importer)),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
@@ -168,9 +170,9 @@ export async function createPlan(
             id: costId,
             cargoId: cargoId,
             supplyPrice: cargo.unitPrice,
-            laborCost: 0,
-            transportStorageFee: 0,
-            loadingUnloadingFee: 0,
+            laborCost: 30 * cargo.contractTon * 1000,
+            transportStorageFee: 30 * cargo.contractTon * 1000,
+            loadingUnloadingFee: 30 * cargo.contractTon * 1000,
           })
           .returning();
 
