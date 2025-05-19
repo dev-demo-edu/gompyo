@@ -380,6 +380,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       sellingPrice: calculatedData.cargo.sellingPrice || 0,
       margin: calculatedData.cargo.margin || 0,
       totalProfit: calculatedData.cargo.totalProfit || 0,
+      packingUnit: item?.packingUnit || "",
     };
   });
 
