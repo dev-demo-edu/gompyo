@@ -155,7 +155,7 @@ export async function createPlan(
             containerCount: 1,
             contractTon: cargo.contractTon,
             progressStatus: "REVIEW",
-            purchaseFeeRate: cargo.purchaseFeeRate,
+            purchaseFeeRate: await getPurchaseFeeRate(contractData.importer),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
@@ -391,5 +391,20 @@ export async function deletePlans(ids: string[]) {
   } catch (error) {
     console.error("Failed to delete plans:", error);
     throw new Error("계획 삭제 중 오류가 발생했습니다.");
+  }
+}
+
+async function getPurchaseFeeRate(ImporterId: string) {
+  const importer = await db.query.importers.findFirst({
+    where: (importers, { eq }) => eq(importers.id, ImporterId),
+  });
+  if (importer?.calculationType === CalculationType.NAMHAE) {
+    return 6;
+  } else if (importer?.calculationType === CalculationType.DNB) {
+    return 6;
+  } else if (importer?.calculationType === CalculationType.STANDARD) {
+    return 0;
+  } else {
+    return 0;
   }
 }
