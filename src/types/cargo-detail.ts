@@ -47,6 +47,9 @@ type ContractAmount = {
   loadingUnloadingFee: number | null;
   usanceInterest: number | null;
   cargoId: string;
+  gompyoLaborCost: number | null;
+  gompyoTransportStorageFee: number | null;
+  gompyoLoadingUnloadingFee: number | null;
 };
 
 type Cargo = {

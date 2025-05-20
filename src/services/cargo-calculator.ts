@@ -144,6 +144,11 @@ export class CargoCalculator {
         transportStorageFee: this.data.cost.transportStorageFee || 0,
         loadingUnloadingFee: this.data.cost.loadingUnloadingFee || 0,
         usanceInterest: this.data.cost.usanceInterest || 0,
+        gompyoLaborCost: this.data.cost.gompyoLaborCost || 0,
+        gompyoTransportStorageFee:
+          this.data.cost.gompyoTransportStorageFee || 0,
+        gompyoLoadingUnloadingFee:
+          this.data.cost.gompyoLoadingUnloadingFee || 0,
       },
     );
 
@@ -271,6 +276,9 @@ export class CargoCalculator {
       transportStorageFee: cost.transportStorageFee || 0,
       loadingUnloadingFee: cost.loadingUnloadingFee || 0,
       usanceInterest: cost.usanceInterest || 0,
+      gompyoLaborCost: cost.gompyoLaborCost || 0,
+      gompyoTransportStorageFee: cost.gompyoTransportStorageFee || 0,
+      gompyoLoadingUnloadingFee: cost.gompyoLoadingUnloadingFee || 0,
     };
   }
 

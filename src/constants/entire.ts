@@ -394,3 +394,24 @@ export const expenseFields: BaseField[] = [
     endAdornment: "₩",
   },
 ];
+
+export const gompyoCostFields: BaseField[] = [
+  {
+    name: "gompyoLaborCost",
+    label: "곰표 작업료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "gompyoTransportStorageFee",
+    label: "곰표 운송/보관료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "gompyoLoadingUnloadingFee",
+    label: "곰표 상하차 비용",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+];
