@@ -57,6 +57,11 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
     width: 100,
   },
   {
+    field: "packingUnit",
+    headerName: "포장 단위",
+    width: 130,
+  },
+  {
     field: "unitPrice",
     headerName: "단가",
     valueFormatter: currencyDollarFormatter,

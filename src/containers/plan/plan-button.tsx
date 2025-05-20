@@ -688,6 +688,7 @@ export default function PlanButton() {
             >
               <MenuItem value="1.2ton">1.2ton</MenuItem>
               <MenuItem value="25kg">25kg</MenuItem>
+              <MenuItem value="bulk">bulk</MenuItem>
             </Select>
             {cargoErrors.packingUnit && (
               <Typography color="error" variant="caption">

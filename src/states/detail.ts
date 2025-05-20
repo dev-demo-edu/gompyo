@@ -106,6 +106,12 @@ export const updateCargoAtom = atom(
         updateData.shipment = { ...originalData.shipment, ...formData };
       }
 
+      if (updateData.cargo.contractTon !== originalData.cargo.contractTon) {
+        updateData.cargo.containerCount = Math.ceil(
+          Number(updateData.cargo.contractTon) / 24,
+        );
+      }
+
       // 서버 업데이트
       const updatedData = await updateCargoDetail(cargoId, updateData);
       set(privateCargoDetailAtom, updatedData);
