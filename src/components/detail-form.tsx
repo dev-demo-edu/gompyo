@@ -13,12 +13,16 @@ import Grid from "@mui/material/Grid";
 import { Edit, Save, Close } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { z } from "zod";
-import { FieldValue, FieldValueType } from "@/constants/entire";
+import {
+  FieldValue,
+  FieldValueType,
+  formatNumberWithCommas,
+  formatKRWAmount,
+} from "@/constants/entire";
 import { useAtom } from "jotai";
 import { cancelEditAtom, cargoDetailAtom } from "@/states/detail";
 import { addChangeLog } from "@/actions/detail-view/history";
 import { userAtom } from "@/states/user";
-import { formatNumberWithCommas } from "@/utils/formatter";
 
 interface FieldConfig {
   name: string;
@@ -31,6 +35,7 @@ interface FieldConfig {
   valueType: FieldValueType;
   disabled?: boolean;
   endAdornment?: string;
+  removeDecimal?: boolean; // 👈 간단하게 소수점 제거 여부만
 }
 
 interface DetailFormProps {
@@ -77,10 +82,7 @@ export default function DetailForm({
     if (value === null) return null;
     switch (valueType) {
       case "number":
-        // 콤마 제거 후 정수로 변환
-        return value === ""
-          ? null
-          : Number(String(value).replace(/[^0-9]/g, ""));
+        return value === "" ? null : Number(value);
       case "date":
         return value === "" ? null : value;
       case "string":
@@ -224,12 +226,13 @@ export default function DetailForm({
   const handleTextChange =
     (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
       let newValue = event.target.value || null;
+
+      // 숫자 필드의 경우 콤마 제거
       const fieldConfig = fields.find((f) => f.name === field);
-      if (fieldConfig?.valueType === "number" && newValue !== null) {
-        // 소수점 이하 버리고 콤마 추가
-        const numericString = String(newValue).replace(/[^0-9]/g, "");
-        newValue = formatNumberWithCommas(numericString);
+      if (fieldConfig?.valueType === "number" && newValue) {
+        newValue = newValue.replace(/[^0-9.-]/g, "");
       }
+
       setFormData((prev) => ({
         ...prev,
         [field]: newValue,
@@ -284,8 +287,21 @@ export default function DetailForm({
                 error={!!formErrors[field.name]}
                 helperText={formErrors[field.name]}
                 sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(145, 158, 171, 0.2)",
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "rgba(145, 158, 171, 0.2)",
+                    },
+                    "&.Mui-disabled": {
+                      backgroundColor: "rgba(0, 0, 0, 0.02)",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(0, 0, 0, 0.3)",
+                        borderWidth: "1px",
+                      },
+                      "& .MuiInputBase-input": {
+                        color: "rgba(0, 0, 0, 0.6)",
+                        WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
+                      },
+                    },
                   },
                 }}
               />
@@ -306,6 +322,19 @@ export default function DetailForm({
       );
     }
 
+    // 표시할 값 계산 (편집 모드가 아닐 때만 포맷팅 적용)
+    let displayValue = formData[field.name] ?? "";
+
+    if (!isEditing && field.valueType === "number" && displayValue) {
+      if (field.removeDecimal) {
+        // 원화 금액: 소수점 제거 + 콤마
+        displayValue = formatKRWAmount(displayValue);
+      } else {
+        // 일반 숫자: 소수점 유지 + 콤마
+        displayValue = formatNumberWithCommas(displayValue);
+      }
+    }
+
     const textFieldProps = {
       fullWidth: true,
       label: field.label,
@@ -313,7 +342,7 @@ export default function DetailForm({
       placeholder: field.placeholder || "입력해주세요.",
       className: "bg-background-paper",
       disabled: !isEditing || field.disabled,
-      value: formData[field.name] ?? "",
+      value: displayValue,
       type: field.type === "textarea" ? undefined : field.type,
       onChange: handleTextChange(field.name),
       error: !!formErrors[field.name],
@@ -322,6 +351,17 @@ export default function DetailForm({
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
             borderColor: "rgba(145, 158, 171, 0.2)",
+          },
+          "&.Mui-disabled": {
+            backgroundColor: "rgba(0, 0, 0, 0.02)",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0, 0, 0, 0.3)",
+              borderWidth: "1px",
+            },
+            "& .MuiInputBase-input": {
+              color: "rgba(0, 0, 0, 0.6)",
+              WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
+            },
           },
         },
       },
@@ -346,18 +386,6 @@ export default function DetailForm({
       multiline: field.type === "textarea",
       rows: field.type === "textarea" ? 4 : undefined,
     };
-    if (field.valueType === "number") {
-      // 읽기 전용(disabled) 필드는 계산된 값이 소수점일 경우 정수로 변환 후 콤마 표시
-      if (field.disabled) {
-        const rawValue = formData[field.name] ?? "";
-        const intValue = Math.floor(
-          Number(String(rawValue).replace(/[^0-9.-]/g, "")),
-        );
-        textFieldProps.value = intValue
-          ? formatNumberWithCommas(intValue)
-          : "0";
-      }
-    }
 
     return <TextField {...textFieldProps} />;
   };
