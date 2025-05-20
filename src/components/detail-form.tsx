@@ -325,7 +325,7 @@ export default function DetailForm({
     // 표시할 값 계산 (편집 모드가 아닐 때만 포맷팅 적용)
     let displayValue = formData[field.name] ?? "";
 
-    if (!isEditing && field.valueType === "number" && displayValue) {
+    if (field.valueType === "number" && displayValue) {
       if (field.removeDecimal) {
         // 원화 금액: 소수점 제거 + 콤마
         displayValue = formatKRWAmount(displayValue);
