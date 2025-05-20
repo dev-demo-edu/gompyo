@@ -78,6 +78,13 @@
       "when": 1747556478805,
       "tag": "0010_graceful_living_tribunal",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1747716335343,
+      "tag": "0011_loose_boom_boom",
+      "breakpoints": true
     }
   ]
 }
