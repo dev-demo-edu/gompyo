@@ -118,14 +118,3 @@ export const formatNumberWithCommas = (
   // 콤마 추가
   return new Intl.NumberFormat("ko-KR").format(number);
 };
-
-// 콤마가 포함된 문자열을 숫자로 변환하는 함수
-export const parseNumberWithCommas = (value: string): number => {
-  if (!value) return 0;
-
-  // 콤마 제거 후 숫자로 변환
-  const numericString = value.replace(/,/g, "");
-  const number = parseFloat(numericString);
-
-  return isNaN(number) ? 0 : number;
-};
