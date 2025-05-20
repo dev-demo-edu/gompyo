@@ -311,6 +311,9 @@ export async function getPlanData(): Promise<IPlanData[]> {
         transportStorageFee: cost?.transportStorageFee || 0,
         loadingUnloadingFee: cost?.loadingUnloadingFee || 0,
         usanceInterest: cost?.usanceInterest || 0,
+        gompyoLaborCost: cost?.gompyoLaborCost || 0,
+        gompyoTransportStorageFee: cost?.gompyoTransportStorageFee || 0,
+        gompyoLoadingUnloadingFee: cost?.gompyoLoadingUnloadingFee || 0,
       },
       costDetail: {
         id: costDetail?.id || "",
