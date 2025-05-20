@@ -76,6 +76,7 @@ export const packagingFields: BaseField[] = [
     options: [
       { value: "25kg", label: "25kg" },
       { value: "1.2ton", label: "1.2ton" },
+      { value: "bulk", label: "bulk" },
     ],
   },
   {

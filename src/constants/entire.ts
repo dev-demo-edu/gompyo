@@ -238,7 +238,7 @@ export const costFields: BaseField[] = [
     name: "costPerKg",
     label: "원가",
     valueType: "number",
-    endAdornment: "Kg/₩",
+    endAdornment: "₩/Kg",
     disabled: true,
   },
   {
@@ -298,14 +298,14 @@ export const contractAmountFields: BaseField[] = [
     label: "수입회사 원가",
     valueType: "number",
     disabled: true,
-    endAdornment: "Kg/₩",
+    endAdornment: "₩/Kg",
   },
   {
     name: "supplyPrice",
     label: "수입회사 수급가",
     valueType: "number",
     disabled: true,
-    endAdornment: "Kg/₩",
+    endAdornment: "₩/Kg",
   },
   {
     name: "contractorProfit",
@@ -355,6 +355,13 @@ export const expenseFields: BaseField[] = [
     endAdornment: "₩",
   },
   {
+    name: "totalCostPerKg",
+    label: "총비용/Kg",
+    valueType: "number",
+    disabled: true,
+    endAdornment: "₩/Kg",
+  },
+  {
     name: "sellingPrice",
     label: "판매가(총판)",
     valueType: "number",
@@ -377,7 +384,7 @@ export const expenseFields: BaseField[] = [
     label: "마진",
     valueType: "number",
     disabled: true,
-    endAdornment: "Kg/₩",
+    endAdornment: "₩/Kg",
   },
   {
     name: "totalProfit",

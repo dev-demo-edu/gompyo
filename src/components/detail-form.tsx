@@ -274,8 +274,21 @@ export default function DetailForm({
                 error={!!formErrors[field.name]}
                 helperText={formErrors[field.name]}
                 sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(145, 158, 171, 0.2)",
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "rgba(145, 158, 171, 0.2)",
+                    },
+                    "&.Mui-disabled": {
+                      backgroundColor: "rgba(0, 0, 0, 0.02)",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(0, 0, 0, 0.3)",
+                        borderWidth: "1px",
+                      },
+                      "& .MuiInputBase-input": {
+                        color: "rgba(0, 0, 0, 0.6)",
+                        WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
+                      },
+                    },
                   },
                 }}
               />
@@ -312,6 +325,17 @@ export default function DetailForm({
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
             borderColor: "rgba(145, 158, 171, 0.2)",
+          },
+          "&.Mui-disabled": {
+            backgroundColor: "rgba(0, 0, 0, 0.02)",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0, 0, 0, 0.3)",
+              borderWidth: "1px",
+            },
+            "& .MuiInputBase-input": {
+              color: "rgba(0, 0, 0, 0.6)",
+              WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
+            },
           },
         },
       },
