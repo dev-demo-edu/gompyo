@@ -888,7 +888,10 @@ export default function PlanButton() {
 
       <Modal
         open={open}
-        onClose={handleClose}
+        onClose={(event, reason) => {
+          if (reason === "backdropClick") return;
+          handleClose();
+        }}
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
         className="flex items-center justify-center p-4"
