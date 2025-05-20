@@ -174,7 +174,7 @@ export default function NavigationItem({
                     primaryTypographyProps={{
                       noWrap: true,
                       fontSize: 14,
-                      fontWeight: isActive ? 600 : 500,
+                      fontWeight: isSubItemActive ? 600 : 500,
                       lineHeight: "20px",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
