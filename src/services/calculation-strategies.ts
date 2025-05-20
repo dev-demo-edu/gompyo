@@ -18,6 +18,9 @@ export interface CalculationStrategy {
       transportStorageFee: number;
       loadingUnloadingFee: number;
       usanceInterest: number;
+      gompyoLaborCost: number;
+      gompyoTransportStorageFee: number;
+      gompyoLoadingUnloadingFee: number;
     },
   ): {
     supplyPrice: number;
@@ -47,6 +50,9 @@ export class StandardCalculationStrategy implements CalculationStrategy {
       transportStorageFee: number;
       loadingUnloadingFee: number;
       usanceInterest: number;
+      gompyoLaborCost: number;
+      gompyoTransportStorageFee: number;
+      gompyoLoadingUnloadingFee: number;
     },
   ) {
     const supplyPrice =
@@ -60,7 +66,10 @@ export class StandardCalculationStrategy implements CalculationStrategy {
       data.shippingCost +
       data.laborCost +
       data.transportStorageFee +
-      data.loadingUnloadingFee;
+      data.loadingUnloadingFee +
+      data.gompyoLaborCost +
+      data.gompyoTransportStorageFee +
+      data.gompyoLoadingUnloadingFee;
 
     const margin = data.sellingPrice - totalCost / data.contractTon / 1000;
 
@@ -96,6 +105,9 @@ export class DnbCalculationStrategy implements CalculationStrategy {
       transportStorageFee: number;
       loadingUnloadingFee: number;
       usanceInterest: number;
+      gompyoLaborCost: number;
+      gompyoTransportStorageFee: number;
+      gompyoLoadingUnloadingFee: number;
     },
   ) {
     const supplyPrice =
@@ -112,7 +124,11 @@ export class DnbCalculationStrategy implements CalculationStrategy {
     const contractorProfit =
       (supplyPrice - baseValues.contractorCost) * data.contractTon * 1000;
 
-    const totalCost = supplyPrice * data.contractTon * 1000;
+    const totalCost =
+      supplyPrice * data.contractTon * 1000 +
+      data.gompyoLaborCost +
+      data.gompyoLoadingUnloadingFee +
+      data.gompyoTransportStorageFee;
 
     const margin = data.sellingPrice - totalCost / data.contractTon / 1000;
 
@@ -148,6 +164,9 @@ export class NamhaeCalculationStrategy implements CalculationStrategy {
       transportStorageFee: number;
       loadingUnloadingFee: number;
       usanceInterest: number;
+      gompyoLaborCost: number;
+      gompyoTransportStorageFee: number;
+      gompyoLoadingUnloadingFee: number;
     },
   ) {
     const supplyPrice =
@@ -161,7 +180,10 @@ export class NamhaeCalculationStrategy implements CalculationStrategy {
       data.shippingCost +
       data.laborCost +
       data.transportStorageFee +
-      data.loadingUnloadingFee;
+      data.loadingUnloadingFee +
+      data.gompyoLaborCost +
+      data.gompyoTransportStorageFee +
+      data.gompyoLoadingUnloadingFee;
 
     const margin = data.sellingPrice - totalCost / data.contractTon / 1000;
 
