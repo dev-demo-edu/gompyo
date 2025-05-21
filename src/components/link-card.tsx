@@ -79,6 +79,7 @@ const LinkCard = ({
         <CardMedia
           component="img"
           height="140"
+          draggable={false}
           onErrorCapture={() => {
             setImageError(true);
           }}
