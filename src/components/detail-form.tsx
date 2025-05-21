@@ -13,7 +13,12 @@ import Grid from "@mui/material/Grid";
 import { Edit, Save, Close } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { z } from "zod";
-import { FieldValue, FieldValueType } from "@/constants/entire";
+import {
+  FieldValue,
+  FieldValueType,
+  formatNumberWithCommas,
+  formatKRWAmount,
+} from "@/constants/entire";
 import { useAtom } from "jotai";
 import { cancelEditAtom, cargoDetailAtom } from "@/states/detail";
 import { addChangeLog } from "@/actions/detail-view/history";
@@ -30,6 +35,7 @@ interface FieldConfig {
   valueType: FieldValueType;
   disabled?: boolean;
   endAdornment?: string;
+  removeDecimal?: boolean; // 👈 간단하게 소수점 제거 여부만
 }
 
 interface DetailFormProps {
@@ -219,7 +225,14 @@ export default function DetailForm({
 
   const handleTextChange =
     (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = event.target.value || null;
+      let newValue = event.target.value || null;
+
+      // 숫자 필드의 경우 콤마 제거
+      const fieldConfig = fields.find((f) => f.name === field);
+      if (fieldConfig?.valueType === "number" && newValue) {
+        newValue = newValue.replace(/[^0-9.-]/g, "");
+      }
+
       setFormData((prev) => ({
         ...prev,
         [field]: newValue,
@@ -309,6 +322,19 @@ export default function DetailForm({
       );
     }
 
+    // 표시할 값 계산 (편집 모드가 아닐 때만 포맷팅 적용)
+    let displayValue = formData[field.name] ?? "";
+
+    if (field.valueType === "number" && displayValue) {
+      if (field.removeDecimal) {
+        // 원화 금액: 소수점 제거 + 콤마
+        displayValue = formatKRWAmount(displayValue);
+      } else {
+        // 일반 숫자: 소수점 유지 + 콤마
+        displayValue = formatNumberWithCommas(displayValue);
+      }
+    }
+
     const textFieldProps = {
       fullWidth: true,
       label: field.label,
@@ -316,7 +342,7 @@ export default function DetailForm({
       placeholder: field.placeholder || "입력해주세요.",
       className: "bg-background-paper",
       disabled: !isEditing || field.disabled,
-      value: formData[field.name] ?? "",
+      value: displayValue,
       type: field.type === "textarea" ? undefined : field.type,
       onChange: handleTextChange(field.name),
       error: !!formErrors[field.name],
@@ -360,19 +386,6 @@ export default function DetailForm({
       multiline: field.type === "textarea",
       rows: field.type === "textarea" ? 4 : undefined,
     };
-    if (field.valueType === "number") {
-      if (
-        !isFinite(Number(textFieldProps.value)) ||
-        isNaN(Number(textFieldProps.value))
-      ) {
-        textFieldProps.value = "0";
-      } else {
-        const num = Number(textFieldProps.value);
-        if (!Number.isInteger(num)) {
-          textFieldProps.value = Math.floor(num).toString();
-        }
-      }
-    }
 
     return <TextField {...textFieldProps} />;
   };

@@ -24,7 +24,34 @@ interface BaseField {
   options?: Option[];
   disabled?: boolean;
   endAdornment?: string;
+  removeDecimal?: boolean;
 }
+
+// 금액에 콤마 추가하는 함수
+export const formatNumberWithCommas = (
+  value: string | number | null | undefined,
+): string => {
+  if (value === null || value === undefined || value === "") return "";
+  // 숫자가 아닌 문자 제거
+  const numericString = String(value).replace(/[^0-9.-]/g, "");
+  // 숫자로 변환
+  const number = parseFloat(numericString);
+  if (isNaN(number)) return "";
+  // 콤마 추가
+  return new Intl.NumberFormat("ko-KR").format(number);
+};
+
+// 원화 금액용 포맷터 (소수점 제거 + 콤마)
+export const formatKRWAmount = (
+  value: string | number | null | undefined,
+): string => {
+  if (value === null || value === undefined || value === "") return "";
+  const numericString = String(value).replace(/[^0-9.-]/g, "");
+  const number = parseFloat(numericString);
+  if (isNaN(number)) return "";
+  // 소수점 제거 후 콤마 추가
+  return new Intl.NumberFormat("ko-KR").format(Math.floor(number));
+};
 
 // 수입회사 옵션을 설정하는 함수
 export const setImporterOptions = (importers: Importer[]) => {
@@ -55,7 +82,8 @@ export const createContractFields = (importers: Importer[]): BaseField[] => [
   {
     name: "contractTon",
     label: "계약 톤수",
-    valueType: "number",
+    valueType: "string",
+    type: "number",
     endAdornment: "톤",
   },
   { name: "departurePort", label: "출발항", gridSize: 6, valueType: "string" },
@@ -151,6 +179,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       valueType: "number",
       disabled: true,
       endAdornment: "₩",
+      removeDecimal: true,
     },
     {
       name: "remainingPaymentAmount",
@@ -159,6 +188,7 @@ export const paymentMethodFields: Record<string, BaseField[]> = {
       valueType: "number",
       disabled: true,
       endAdornment: "₩",
+      removeDecimal: true,
     },
   ],
   CAD: [
@@ -220,6 +250,7 @@ export const costFields: BaseField[] = [
     label: "단가",
     valueType: "number",
     endAdornment: "MT/USD",
+    removeDecimal: true,
   },
   {
     name: "totalContractPrice",
@@ -227,12 +258,14 @@ export const costFields: BaseField[] = [
     valueType: "number",
     endAdornment: "₩",
     disabled: true,
+    removeDecimal: true,
   },
   {
     name: "exchangeRate",
     label: "환율",
     valueType: "number",
     endAdornment: "₩/USD",
+    removeDecimal: true,
   },
   {
     name: "costPerKg",
@@ -240,12 +273,14 @@ export const costFields: BaseField[] = [
     valueType: "number",
     endAdornment: "₩/Kg",
     disabled: true,
+    removeDecimal: true,
   },
   {
     name: "customsTaxRate",
     label: "관세율",
     valueType: "number",
     endAdornment: "%",
+    removeDecimal: true,
   },
   {
     name: "customTaxAmount",
@@ -253,42 +288,50 @@ export const costFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "transferFee",
     label: "송금수수료",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "customsFee",
     label: "관세수수료",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "inspectionFee",
     label: "검사료",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "doCharge",
     label: "D/O Charge",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "otherCosts",
     label: "기타비용",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "purchaseFeeRate",
     label: "매입 수수료율",
     valueType: "number",
+    type: "text",
     endAdornment: "%",
+    removeDecimal: true,
   },
 ];
 
@@ -298,6 +341,7 @@ export const contractAmountFields: BaseField[] = [
     label: "수입회사 원가",
     valueType: "number",
     disabled: true,
+    removeDecimal: true,
     endAdornment: "₩/Kg",
   },
   {
@@ -305,6 +349,7 @@ export const contractAmountFields: BaseField[] = [
     label: "수입회사 수급가",
     valueType: "number",
     disabled: true,
+    removeDecimal: true,
     endAdornment: "₩/Kg",
   },
   {
@@ -313,36 +358,42 @@ export const contractAmountFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "shippingCost",
     label: "배송비",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "laborCost",
     label: "작업료",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "transportStorageFee",
     label: "운송/보관료",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "loadingUnloadingFee",
     label: "상하차 비용",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "usanceInterest",
     label: "Usance 이자(환차손)",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
 ];
 
@@ -353,6 +404,7 @@ export const expenseFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "totalCostPerKg",
@@ -366,24 +418,28 @@ export const expenseFields: BaseField[] = [
     label: "판매가(총판)",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "sellingPriceWholesale",
     label: "판매가(도매)",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "sellingPriceRetail",
     label: "판매가(소매)",
     valueType: "number",
     endAdornment: "₩",
+    removeDecimal: true,
   },
   {
     name: "margin",
     label: "마진",
     valueType: "number",
     disabled: true,
+    removeDecimal: true,
     endAdornment: "₩/Kg",
   },
   {
@@ -392,6 +448,7 @@ export const expenseFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "₩",
+    removeDecimal: true,
   },
 ];
 
