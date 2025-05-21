@@ -183,9 +183,21 @@ const LinkList = ({ editMode = false }: LinkListProps) => {
   // 일반 리스트
   if (links === null || loading) {
     return (
-      <Box bgcolor="background.paper" p={2} borderRadius={2}>
+      <Box
+        bgcolor="background.paper"
+        p={2}
+        borderRadius={2}
+        minHeight={435}
+        display="flex"
+        flexDirection="column"
+      >
         {filterSortUI}
-        <Box className="w-full h-full flex items-center justify-center">
+        <Box
+          flex={1}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
           <CircularProgress />
         </Box>
       </Box>
