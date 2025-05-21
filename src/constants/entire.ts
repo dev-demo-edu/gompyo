@@ -82,7 +82,8 @@ export const createContractFields = (importers: Importer[]): BaseField[] => [
   {
     name: "contractTon",
     label: "계약 톤수",
-    valueType: "number",
+    valueType: "string",
+    type: "number",
     endAdornment: "톤",
   },
   { name: "departurePort", label: "출발항", gridSize: 6, valueType: "string" },
@@ -324,6 +325,7 @@ export const costFields: BaseField[] = [
     name: "purchaseFeeRate",
     label: "매입 수수료율",
     valueType: "number",
+    type: "text",
     endAdornment: "%",
   },
 ];
