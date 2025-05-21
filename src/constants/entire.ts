@@ -271,7 +271,7 @@ export const costFields: BaseField[] = [
     name: "costPerKg",
     label: "원가",
     valueType: "number",
-    endAdornment: "Kg/₩",
+    endAdornment: "₩/Kg",
     disabled: true,
     removeDecimal: true,
   },
@@ -341,16 +341,16 @@ export const contractAmountFields: BaseField[] = [
     label: "수입회사 원가",
     valueType: "number",
     disabled: true,
-    endAdornment: "Kg/₩",
     removeDecimal: true,
+    endAdornment: "₩/Kg",
   },
   {
     name: "supplyPrice",
     label: "수입회사 수급가",
     valueType: "number",
     disabled: true,
-    endAdornment: "Kg/₩",
     removeDecimal: true,
+    endAdornment: "₩/Kg",
   },
   {
     name: "contractorProfit",
@@ -407,6 +407,13 @@ export const expenseFields: BaseField[] = [
     removeDecimal: true,
   },
   {
+    name: "totalCostPerKg",
+    label: "총비용/Kg",
+    valueType: "number",
+    disabled: true,
+    endAdornment: "₩/Kg",
+  },
+  {
     name: "sellingPrice",
     label: "판매가(총판)",
     valueType: "number",
@@ -432,8 +439,8 @@ export const expenseFields: BaseField[] = [
     label: "마진",
     valueType: "number",
     disabled: true,
-    endAdornment: "Kg/₩",
     removeDecimal: true,
+    endAdornment: "₩/Kg",
   },
   {
     name: "totalProfit",
@@ -442,5 +449,26 @@ export const expenseFields: BaseField[] = [
     disabled: true,
     endAdornment: "₩",
     removeDecimal: true,
+  },
+];
+
+export const gompyoCostFields: BaseField[] = [
+  {
+    name: "gompyoLaborCost",
+    label: "곰표 작업료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "gompyoTransportStorageFee",
+    label: "곰표 운송/보관료",
+    valueType: "number",
+    endAdornment: "₩",
+  },
+  {
+    name: "gompyoLoadingUnloadingFee",
+    label: "곰표 상하차 비용",
+    valueType: "number",
+    endAdornment: "₩",
   },
 ];

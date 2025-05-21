@@ -104,6 +104,9 @@ export const costs = sqliteTable("costs", {
   loadingUnloadingFee: real("loading_unloading_fee"),
   usanceInterest: real("usance_interest"),
   cargoId: text("cargo_id").notNull(),
+  gompyoLaborCost: real("gompyo_labor_cost"),
+  gompyoTransportStorageFee: real("gompyo_transport_storage_fee"),
+  gompyoLoadingUnloadingFee: real("gompyo_loading_unloading_fee"),
 });
 
 // Users table

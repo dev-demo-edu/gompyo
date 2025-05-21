@@ -152,10 +152,12 @@ export async function createPlan(
             id: cargoId,
             itemsId: itemId,
             shipmentId: shipmentId,
-            containerCount: 1,
+            containerCount: Math.ceil(cargo.contractTon / 24),
             contractTon: cargo.contractTon,
             progressStatus: "REVIEW",
-            purchaseFeeRate: cargo.purchaseFeeRate,
+            purchaseFeeRate:
+              cargo.purchaseFeeRate ||
+              (await getPurchaseFeeRate(contractData.importer)),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
@@ -168,9 +170,9 @@ export async function createPlan(
             id: costId,
             cargoId: cargoId,
             supplyPrice: cargo.unitPrice,
-            laborCost: 0,
-            transportStorageFee: 0,
-            loadingUnloadingFee: 0,
+            laborCost: 30 * cargo.contractTon * 1000,
+            transportStorageFee: 30 * cargo.contractTon * 1000,
+            loadingUnloadingFee: 30 * cargo.contractTon * 1000,
           })
           .returning();
 
@@ -378,6 +380,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       sellingPrice: calculatedData.cargo.sellingPrice || 0,
       margin: calculatedData.cargo.margin || 0,
       totalProfit: calculatedData.cargo.totalProfit || 0,
+      packingUnit: item?.packingUnit || "",
     };
   });
 
@@ -391,5 +394,20 @@ export async function deletePlans(ids: string[]) {
   } catch (error) {
     console.error("Failed to delete plans:", error);
     throw new Error("계획 삭제 중 오류가 발생했습니다.");
+  }
+}
+
+async function getPurchaseFeeRate(ImporterId: string) {
+  const importer = await db.query.importers.findFirst({
+    where: (importers, { eq }) => eq(importers.id, ImporterId),
+  });
+  if (importer?.calculationType === CalculationType.NAMHAE) {
+    return 6;
+  } else if (importer?.calculationType === CalculationType.DNB) {
+    return 6;
+  } else if (importer?.calculationType === CalculationType.STANDARD) {
+    return 0;
+  } else {
+    return 0;
   }
 }

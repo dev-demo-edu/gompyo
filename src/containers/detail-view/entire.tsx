@@ -1,7 +1,7 @@
 "use client";
 import { Box, CircularProgress } from "@mui/material";
 import DetailForm from "@/components/detail-form";
-import { FieldValue } from "@/constants/entire";
+import { FieldValue, gompyoCostFields } from "@/constants/entire";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAtom, useSetAtom } from "jotai";
@@ -274,7 +274,14 @@ export default function EntireView({ cargoId }: EntireViewProps) {
           data={mappedData.cost}
           onSave={(formData) => handleDataUpdate(formData)}
         />
-
+        {/* 곰표 비용 정보 */}
+        <DetailForm
+          title="곰표 비용 정보"
+          fields={gompyoCostFields}
+          className="w-full"
+          data={mappedData.cost}
+          onSave={(formData) => handleDataUpdate(formData)}
+        />
         {/* 비용 정보 */}
         <DetailForm
           title="비용 정보"

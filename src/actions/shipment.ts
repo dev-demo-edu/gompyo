@@ -120,13 +120,10 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
         paymentDueDate: payment?.paymentDueDate || "",
         advancePaymentDate: paymentTt?.advancePaymentDate || "",
         advancePaymentRatio: paymentTt?.advancePaymentRatio || 0,
-        advancePaymentAmount: paymentTt?.advancePaymentAmount || 0,
         remainingPaymentDate: paymentTt?.remainingPaymentDate || "",
         remainingPaymentRatio: paymentTt?.remainingPaymentRatio || 0,
-        remainingPaymentAmount: paymentTt?.remainingPaymentAmount || 0,
         counterpartBank: paymentTt?.counterpartBank || "",
         paymentTerm: "",
-        totalContractAmount: 0,
       },
       item: {
         id: item?.id || "",

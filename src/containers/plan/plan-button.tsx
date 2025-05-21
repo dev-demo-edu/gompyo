@@ -688,6 +688,7 @@ export default function PlanButton() {
             >
               <MenuItem value="1.2ton">1.2ton</MenuItem>
               <MenuItem value="25kg">25kg</MenuItem>
+              <MenuItem value="bulk">bulk</MenuItem>
             </Select>
             {cargoErrors.packingUnit && (
               <Typography color="error" variant="caption">
@@ -888,7 +889,10 @@ export default function PlanButton() {
 
       <Modal
         open={open}
-        onClose={handleClose}
+        onClose={(event, reason) => {
+          if (reason === "backdropClick") return;
+          handleClose();
+        }}
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
         className="flex items-center justify-center p-4"

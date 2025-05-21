@@ -4,26 +4,26 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CashflowGrid from "./cashflow-grid";
 import { useEffect, useState } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   companyListAtom,
   selectedCompanyIdAtom,
   selectedExpenseRowsAtom,
   selectedIncomeRowsAtom,
-  cashflowRefreshAtom,
+  // cashflowRefreshAtom,
   editModeAtom,
 } from "@/states/cashflow-state";
 import {
-  deleteCashflows,
+  // deleteCashflows,
   getCompanyList,
-  updateCompanyBalance,
+  // updateCompanyBalance,
 } from "@/actions/cashflow";
 import CashflowAddModal, {
   CashflowBalanceModal,
   CashflowDeleteConfirmModal,
   CashflowEditModal,
 } from "./cashflow-modal";
-import { calculateCashflowAmountByType } from "@/utils/cashflow";
+// import { calculateCashflowAmountByType } from "@/utils/cashflow";
 import Tabs from "@mui/material/Tabs";
 import { Tab } from "@mui/material";
 
@@ -40,7 +40,7 @@ export default function CashflowContainer() {
   );
   const selectedIncomeRows = useAtomValue(selectedIncomeRowsAtom);
   const selectedExpenseRows = useAtomValue(selectedExpenseRowsAtom);
-  const setCashflowRefresh = useSetAtom(cashflowRefreshAtom);
+  // const setCashflowRefresh = useSetAtom(cashflowRefreshAtom);
   const fetchCompanyList = async () => {
     const companies = await getCompanyList();
     setCompanyList(companies);
@@ -54,21 +54,21 @@ export default function CashflowContainer() {
     fetchCompanyList();
   }, [setCompanyList]);
 
-  async function handleUpdateCompanyBalance() {
-    await updateCompanyBalance(
-      calculateCashflowAmountByType(
-        selectedIncomeRows.filter((row) => row.id !== "balance-row"),
-        selectedExpenseRows,
-      ) +
-        (companyList.find((company) => company.id === selectedCompanyId)
-          ?.companyBalance ?? 0),
-      selectedCompanyId,
-    );
-    await deleteCashflows(selectedIncomeRows.map((row) => row.id));
-    await deleteCashflows(selectedExpenseRows.map((row) => row.id));
-    setCashflowRefresh((prev) => prev + 1);
-    fetchCompanyList();
-  }
+  // async function handleUpdateCompanyBalance() {
+  //   await updateCompanyBalance(
+  //     calculateCashflowAmountByType(
+  //       selectedIncomeRows.filter((row) => row.id !== "balance-row"),
+  //       selectedExpenseRows,
+  //     ) +
+  //       (companyList.find((company) => company.id === selectedCompanyId)
+  //         ?.companyBalance ?? 0),
+  //     selectedCompanyId,
+  //   );
+  //   await deleteCashflows(selectedIncomeRows.map((row) => row.id));
+  //   await deleteCashflows(selectedExpenseRows.map((row) => row.id));
+  //   setCashflowRefresh((prev) => prev + 1);
+  //   fetchCompanyList();
+  // }
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
@@ -181,7 +181,7 @@ export default function CashflowContainer() {
             >
               선택 목록 수정
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               color="primary"
               disabled={
@@ -207,7 +207,7 @@ export default function CashflowContainer() {
               }}
             >
               선택 목록 반영
-            </Button>
+            </Button> */}
             <Button
               className="px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
               variant="contained"
