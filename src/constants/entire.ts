@@ -250,6 +250,7 @@ export const costFields: BaseField[] = [
     label: "단가",
     valueType: "number",
     endAdornment: "MT/USD",
+    removeDecimal: true,
   },
   {
     name: "totalContractPrice",
@@ -264,6 +265,7 @@ export const costFields: BaseField[] = [
     label: "환율",
     valueType: "number",
     endAdornment: "₩/USD",
+    removeDecimal: true,
   },
   {
     name: "costPerKg",
@@ -271,12 +273,14 @@ export const costFields: BaseField[] = [
     valueType: "number",
     endAdornment: "Kg/₩",
     disabled: true,
+    removeDecimal: true,
   },
   {
     name: "customsTaxRate",
     label: "관세율",
     valueType: "number",
     endAdornment: "%",
+    removeDecimal: true,
   },
   {
     name: "customTaxAmount",
@@ -327,6 +331,7 @@ export const costFields: BaseField[] = [
     valueType: "number",
     type: "text",
     endAdornment: "%",
+    removeDecimal: true,
   },
 ];
 
@@ -337,6 +342,7 @@ export const contractAmountFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "Kg/₩",
+    removeDecimal: true,
   },
   {
     name: "supplyPrice",
@@ -344,6 +350,7 @@ export const contractAmountFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "Kg/₩",
+    removeDecimal: true,
   },
   {
     name: "contractorProfit",
@@ -426,6 +433,7 @@ export const expenseFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "Kg/₩",
+    removeDecimal: true,
   },
   {
     name: "totalProfit",
