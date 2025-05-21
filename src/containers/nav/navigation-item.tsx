@@ -150,11 +150,16 @@ export default function NavigationItem({
                     marginY: "4px",
                     marginX: "12px",
                     marginLeft: "24px",
+                    "&:hover": {
+                      "& .MuiListItemIcon-root": {
+                        color: isSubItemActive ? "inherit" : "text-primary-900",
+                      },
+                    },
                   }}
-                  className={`transition-all duration-200 ease-in-out hover:bg-gray-100 ${
+                  className={`my-1 mx-3 rounded-lg transition-all duration-200 ease-in-out ${
                     isSubItemActive
                       ? "bg-primary-100 text-primary-900 font-medium"
-                      : ""
+                      : "hover:bg-gray-100"
                   }`}
                 >
                   <ListItemIcon
@@ -162,9 +167,7 @@ export default function NavigationItem({
                       minWidth: 32,
                       mr: 2,
                       justifyContent: "center",
-                      color: isSubItemActive
-                        ? "primary.main"
-                        : "text.secondary",
+                      color: "text.secondary",
                     }}
                   >
                     {sub.icon}
