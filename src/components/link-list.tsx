@@ -141,7 +141,14 @@ const LinkList = ({ editMode = false }: LinkListProps) => {
   // DnD 모드
   if (editMode) {
     return (
-      <Box bgcolor="background.paper" p={2} borderRadius={2}>
+      <Box
+        bgcolor="background.paper"
+        p={2}
+        borderRadius={2}
+        sx={{
+          overflow: "hidden",
+        }}
+      >
         {filterSortUI}
         {loading ? (
           <Box className="w-full h-full flex items-center justify-center">
@@ -226,7 +233,7 @@ const LinkList = ({ editMode = false }: LinkListProps) => {
         </Box>
       ) : (
         <div
-          className="grid gap-4"
+          className="grid gap-4 max-w-"
           style={{
             gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
           }}
