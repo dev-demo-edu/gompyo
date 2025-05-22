@@ -16,6 +16,7 @@ import {
 export const importers = sqliteTable("importers", {
   id: text("id").primaryKey(),
   importerName: text("importer_name").notNull(),
+  importerCode: text("importer_code"),
   calculationType: text("calculation_type").notNull(),
 });
 

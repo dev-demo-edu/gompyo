@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DataGrid from "@/components/data-grid";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { CellValueChangedEvent } from "ag-grid-community";
+import { getStock } from "@/actions/detail-view/stock";
+import type { Stock } from "@/actions/detail-view/stock";
+import { cargoDetailAtom } from "@/states/detail";
+import { useAtomValue } from "jotai";
+import { CalculatedCargoDetailData } from "@/services/cargo-calculator";
 
 interface StockProps {
   cargoId: string;
@@ -49,8 +54,15 @@ const columnDefs = [
   },
 ];
 
+interface StockRows {
+  id: string;
+  name: string;
+  cleared: number;
+  uncleared: number;
+}
+
 // 목업 데이터 (pivot 형태)
-const initialRows = [
+const initialRows: StockRows[] = [
   { id: "dnb", name: "디앤비 재고", cleared: 120, uncleared: 50 },
   { id: "namhae", name: "남해 재고", cleared: 80, uncleared: 20 },
   { id: "interliving", name: "인터리빙 재고", cleared: 45, uncleared: 10 },
@@ -60,9 +72,26 @@ const initialRows = [
 ];
 
 export default function Stock({ cargoId }: StockProps) {
-  //   const [rows, setRows] = useState(initialRows);
-  console.log("cargoId", cargoId);
   const [editedRows, setEditedRows] = useState(initialRows);
+  const [loading, setLoading] = useState(false);
+  const cargoData = useAtomValue(cargoDetailAtom);
+
+  useEffect(() => {
+    const fetchStock = async () => {
+      try {
+        setLoading(true);
+        const stockValue = await getStock(cargoId);
+        const rows = stockValue ? stockConvertToRows(stockValue) : [];
+        rows.push(getSalesRow(cargoData, rows));
+        setEditedRows(rows);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching stock:", error);
+        setLoading(false);
+      }
+    };
+    fetchStock();
+  }, []);
 
   // ag-grid의 onCellValueChanged 핸들러
   const handleCellValueChanged = (params: CellValueChangedEvent) => {
@@ -83,7 +112,11 @@ export default function Stock({ cargoId }: StockProps) {
     );
   };
 
-  return (
+  return loading ? (
+    <Box className="w-full h-full flex items-center justify-center">
+      <CircularProgress />
+    </Box>
+  ) : (
     <Box>
       <Box
         sx={{
@@ -105,4 +138,67 @@ export default function Stock({ cargoId }: StockProps) {
       </Box>
     </Box>
   );
+}
+
+function stockConvertToRows(stock: Stock) {
+  return [
+    {
+      id: "dnb",
+      name: "디앤비 재고",
+      cleared: stock.dnbCleared ?? 0,
+      uncleared: stock.dnbUncleared ?? 0,
+    },
+    {
+      id: "namhae",
+      name: "남해 재고",
+      cleared: stock.namhaeCleared ?? 0,
+      uncleared: stock.namhaeUncleared ?? 0,
+    },
+    {
+      id: "interliving",
+      name: "인터리빙 재고",
+      cleared: stock.interlivingCleared ?? 0,
+      uncleared: stock.interlivingUncleared ?? 0,
+    },
+    {
+      id: "gompyo",
+      name: "곰표 재고",
+      cleared: stock.gompyoCleared ?? 0,
+      uncleared: stock.gompyoUncleared ?? 0,
+    },
+    {
+      id: "rample",
+      name: "램플 재고",
+      cleared: stock.ramplusCleared ?? 0,
+      uncleared: stock.ramplusUncleared ?? 0,
+    },
+  ];
+}
+
+function getSales(
+  cargoData: CalculatedCargoDetailData | null,
+  stockRows: StockRows[],
+) {
+  if (!cargoData) return 0;
+  // 전체 재고 합계 구하기 (cleared + uncleared)
+  const totalStock = stockRows.reduce(
+    (sum, row) => sum + (row.cleared ?? 0) + (row.uncleared ?? 0),
+    0,
+  );
+  // 판매량 계산: 계약톤 - 전체 재고
+  const sales = (cargoData.cargo.contractTon ?? 0) - totalStock;
+  return sales;
+}
+
+function getSalesRow(
+  cargoData: CalculatedCargoDetailData | null,
+  stockRows: StockRows[],
+): StockRows {
+  const sales = getSales(cargoData, stockRows);
+  return {
+    id: "sales",
+    name: "판매량",
+    cleared: sales,
+    uncleared: 0,
+  };
 }

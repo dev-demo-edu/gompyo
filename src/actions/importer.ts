@@ -42,11 +42,13 @@ export async function searchImportersByName(name: string): Promise<Importer[]> {
  */
 export async function createImporter(
   name: string,
+  importerCode: string = "gompyo",
   calculationType: CalculationType = CalculationType.STANDARD,
 ): Promise<Importer | null> {
   try {
     const importer = await importerService.createImporter(
       name,
+      importerCode,
       calculationType,
     );
     if (!importer) return null;
