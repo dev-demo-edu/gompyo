@@ -204,16 +204,14 @@ export default function Dashboard() {
       sx={{
         width: "100%",
         height: "100%",
-        padding: 10,
+        padding: 4,
         "@media (max-width: 600px)": {
           padding: 3,
         },
       }}
       spacing={2}
     >
-      <Typography variant="h4" sx={{ marginBottom: 10 }}>
-        대시보드
-      </Typography>
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">대시 보드</h1>
       <h2 className="font-bold w-[50%]">검색</h2>
       <Stack
         direction={{ xs: "column", md: "row" }}
