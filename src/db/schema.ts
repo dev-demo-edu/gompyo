@@ -378,10 +378,20 @@ export const stocks = sqliteTable("stocks", {
   id: text("id").primaryKey(),
   cargoId: text("cargo_id")
     .notNull()
-    .references(() => cargos.id), // 어떤 화물에 대한 재고인지
-  rowType: text("row_type").notNull(), // dnb, namhae, interliving, gompyo, rample, sales
-  cleared: integer("cleared").notNull(), // 통관재고
-  uncleared: integer("uncleared").notNull(), // 미통관재고
+    .references(() => cargos.id, { onDelete: "cascade" }),
+  // 각 회사별 통관재고
+  dnbCleared: integer("dnb_cleared").notNull().default(0),
+  namhaeCleared: integer("namhae_cleared").notNull().default(0),
+  interlivingCleared: integer("interliving_cleared").notNull().default(0),
+  gompyoCleared: integer("gompyo_cleared").notNull().default(0),
+  ramplusCleared: integer("ramplus_cleared").notNull().default(0),
+  // 각 회사별 미통관재고
+  dnbUncleared: integer("dnb_uncleared").notNull().default(0),
+  namhaeUncleared: integer("namhae_uncleared").notNull().default(0),
+  interlivingUncleared: integer("interliving_uncleared").notNull().default(0),
+  gompyoUncleared: integer("gompyo_uncleared").notNull().default(0),
+  ramplusUncleared: integer("ramplus_uncleared").notNull().default(0),
+  // sales 관련
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
