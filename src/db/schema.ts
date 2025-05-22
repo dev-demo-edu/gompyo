@@ -372,3 +372,24 @@ export const cashflowsRelations = relations(cashflows, ({ one }) => ({
 export const companiesRelations = relations(companies, ({ many }) => ({
   cashflows: many(cashflows),
 }));
+
+// Stock(재고/판매량) 테이블
+export const stocks = sqliteTable("stocks", {
+  id: text("id").primaryKey(),
+  cargoId: text("cargo_id")
+    .notNull()
+    .references(() => cargos.id), // 어떤 화물에 대한 재고인지
+  rowType: text("row_type").notNull(), // dnb, namhae, interliving, gompyo, rample, sales
+  cleared: integer("cleared").notNull(), // 통관재고
+  uncleared: integer("uncleared").notNull(), // 미통관재고
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Stock 테이블 관계
+export const stocksRelations = relations(stocks, ({ one }) => ({
+  cargo: one(cargos, {
+    fields: [stocks.cargoId],
+    references: [cargos.id],
+  }),
+}));

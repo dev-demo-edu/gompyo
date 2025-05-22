@@ -10,6 +10,7 @@ import type {
   GridReadyEvent,
   RowDragEndEvent,
   CellClickedEvent,
+  CellValueChangedEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
@@ -29,6 +30,7 @@ interface DataGridProps<T> {
   pagination?: boolean;
   paginationPageSize?: number;
   onRowDragEnd?: (event: RowDragEndEvent) => void;
+  onCellValueChanged?: (event: CellValueChangedEvent) => void;
 }
 
 // 추후 사용 여부에 따라서 utils로 빼기
@@ -44,6 +46,7 @@ export default function DataGrid<T>({
   pagination = true,
   paginationPageSize = 15,
   onRowDragEnd,
+  onCellValueChanged,
 }: DataGridProps<T>) {
   const gridApiRef = useRef<GridApi | null>(null);
 
@@ -139,6 +142,7 @@ export default function DataGrid<T>({
             onRowDragEnd={onRowDragEnd}
             suppressRowClickSelection={true}
             onCellClicked={onCellClicked}
+            onCellValueChanged={onCellValueChanged}
           />
         </div>
       )}
