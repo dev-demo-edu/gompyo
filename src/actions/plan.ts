@@ -354,6 +354,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       importer: {
         id: importer?.id || "",
         importerName: importer?.importerName || "",
+        importerCode: importer?.importerCode || "",
         calculationType:
           (importer?.calculationType as CalculationType) ||
           CalculationType.STANDARD,

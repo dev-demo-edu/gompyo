@@ -94,22 +94,57 @@ export default function Stock({ cargoId }: StockProps) {
   }, []);
 
   // ag-grid의 onCellValueChanged 핸들러
-  const handleCellValueChanged = (params: CellValueChangedEvent) => {
+  const handleCellValueChanged = async (params: CellValueChangedEvent) => {
     const { id } = params.data;
     const field = params.colDef.field;
     let value = params.newValue;
-    // 숫자 validation (name 필드는 제외)
+
     if (field === "name") return;
     if (value === "" || value === null) value = 0;
     if (isNaN(Number(value))) {
       params.node.setDataValue(field as string, params.oldValue);
       return;
     }
-    setEditedRows((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, [field as string]: Number(value) } : row,
-      ),
-    );
+
+    // 현재 행의 cleared/uncleared 값을 가져옴
+    const prevRow = editedRows.find((row) => row.id === id);
+    if (!prevRow) return;
+
+    // 새 값 적용 (field를 string으로 명시)
+    const newRow = { ...prevRow, [field as string]: Number(value) };
+
+    // optimistic update
+    setEditedRows((prev) => {
+      // 판매량 행 제외한 나머지 행만 추출
+      const rowsWithoutSales = prev
+        .map((row) => (row.id === id ? newRow : row))
+        .filter((row) => row.id !== "sales");
+      // 판매량 행 새로 계산해서 추가
+      return [...rowsWithoutSales, getSalesRow(cargoData, rowsWithoutSales)];
+    });
+
+    try {
+      // 서버에 업데이트
+      await import("@/actions/detail-view/stock").then(({ updateStock }) =>
+        updateStock(
+          cargoId,
+          id, // 회사명
+          newRow.cleared,
+          newRow.uncleared,
+        ),
+      );
+      // 성공 시 추가 동작 필요시 작성
+    } catch {
+      // 실패 시 롤백
+      setEditedRows((prev) => {
+        const rowsWithoutSales = prev
+          .map((row) => (row.id === id ? prevRow : row))
+          .filter((row) => row.id !== "sales");
+        return [...rowsWithoutSales, getSalesRow(cargoData, rowsWithoutSales)];
+      });
+      params.node.setDataValue(field as string, params.oldValue);
+      alert("업데이트에 실패했습니다.");
+    }
   };
 
   return loading ? (

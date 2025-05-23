@@ -243,17 +243,17 @@ export default function DetailPage() {
                   </Button>
                   <Button
                     variant="contained"
-                    color={activeTab === "history" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("history")}
-                  >
-                    히스토리
-                  </Button>
-                  <Button
-                    variant="contained"
                     color={activeTab === "stock" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("stock")}
                   >
                     재고 정보
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color={activeTab === "history" ? "primary" : "inherit"}
+                    onClick={() => setActiveTab("history")}
+                  >
+                    히스토리
                   </Button>
                 </Stack>
                 <Stack direction="row" spacing={2}>

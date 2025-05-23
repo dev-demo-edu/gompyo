@@ -47,14 +47,79 @@ export async function createStock(
 export async function updateStock(
   cargoId: string,
   company: string,
-  cleared: number,
-  uncleared: number,
+  cleared?: number,
+  uncleared?: number,
 ) {
-  const updateData = {
-    [`${company}Cleared`]: cleared,
-    [`${company}Uncleared`]: uncleared,
+  // 기존 값 조회
+  const stock = await db.query.stocks.findFirst({
+    where: eq(stocks.cargoId, cargoId),
+  });
+  if (!stock) throw new Error("재고 정보 없음");
+
+  const updateData: Record<string, number | string> = {
     updatedAt: new Date().toISOString(),
   };
+  if (cleared !== undefined) updateData[`${company}Cleared`] = cleared;
+  if (uncleared !== undefined) updateData[`${company}Uncleared`] = uncleared;
 
   await db.update(stocks).set(updateData).where(eq(stocks.cargoId, cargoId));
+}
+
+export async function addUnclearedStockNumber(
+  cargoId: string,
+  company: string,
+  uncleared: number,
+) {
+  const stock = await db.query.stocks.findFirst({
+    where: eq(stocks.cargoId, cargoId),
+  });
+  if (!stock) throw new Error("재고 정보 없음");
+
+  // keyof typeof stock을 활용해 타입 안전하게 접근
+  const key = `${company}Uncleared` as keyof typeof stock;
+  const current = stock[key] as number;
+
+  const updateData: Record<string, number | string> = {
+    [key]: current + uncleared,
+    updatedAt: new Date().toISOString(),
+  };
+  await db.update(stocks).set(updateData).where(eq(stocks.cargoId, cargoId));
+}
+
+export async function switchImporter(
+  cargoId: string,
+  oldImporter: string,
+  newImporter: string,
+) {
+  const stock = await db.query.stocks.findFirst({
+    where: eq(stocks.cargoId, cargoId),
+  });
+  if (!stock) throw new Error("재고 정보 없음");
+
+  const oldImporterCode = importerNameToCode(oldImporter);
+  const newImporterCode = importerNameToCode(newImporter);
+
+  // key를 명확히 지정하여 타입 안전하게 접근
+  const oldUnclearedKey = `${oldImporterCode}Uncleared` as keyof typeof stock;
+  const newUnclearedKey = `${newImporterCode}Uncleared` as keyof typeof stock;
+  const oldClearedKey = `${oldImporterCode}Cleared` as keyof typeof stock;
+  const newClearedKey = `${newImporterCode}Cleared` as keyof typeof stock;
+
+  const updateData: Record<string, number | string> = {
+    updatedAt: new Date().toISOString(),
+  };
+  updateData[oldUnclearedKey] = stock[newUnclearedKey] as number;
+  updateData[newUnclearedKey] = stock[oldUnclearedKey] as number;
+  updateData[oldClearedKey] = stock[newClearedKey] as number;
+  updateData[newClearedKey] = stock[oldClearedKey] as number;
+
+  await db.update(stocks).set(updateData).where(eq(stocks.cargoId, cargoId));
+}
+
+function importerNameToCode(importerName: string) {
+  if (importerName === "DNB") return "dnb";
+  if (importerName === "남해") return "namhae";
+  if (importerName === "인터리빙") return "interliving";
+  if (importerName === "곰표") return "gompyo";
+  if (importerName === "램플러스") return "ramplus";
 }
