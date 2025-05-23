@@ -20,7 +20,7 @@ export default function QuotationGrid() {
   const [items] = useState([
     { id: "1001", code: "1001", name: "제품A", origin: "카나다" },
     { id: "1002", code: "1002", name: "제품B", origin: "미국" },
-    { id: "1004", code: "1004", name: "브라운렌틸", origin: "카나다" },
+    { id: "1005", code: "1004", name: "브라운렌틸1", origin: "카나다" },
   ]);
 
   const [companies] = useState([
@@ -28,14 +28,12 @@ export default function QuotationGrid() {
     "온씨(도착)",
     "수입(도착)",
     "한라농협물산1",
-    "한라농협물산2",
-    "한라농협물산3",
-    "한라농협물산4",
-    "한라농협물산5",
   ]);
 
   // 새로운 데이터 구조: 회사 중심
-  const [priceData] = useState<Record<string, Record<string, number>>>({
+  const [priceData, setPriceData] = useState<
+    Record<string, Record<string, number>>
+  >({
     "한가(도착)": {
       제품A: 1600,
       제품B: 1700,
@@ -182,6 +180,21 @@ export default function QuotationGrid() {
       flex: 1,
       width: 100,
       cellRenderer: PriceCellRenderer,
+      editable: true,
+      valueSetter: (params: { data: { name: string }; newValue: string }) => {
+        const productName = params.data.name;
+        const newValue = parseInt(params.newValue || "0");
+
+        setPriceData((prev) => ({
+          ...prev,
+          [company]: {
+            ...prev[company],
+            [productName]: newValue,
+          },
+        }));
+
+        return true;
+      },
       cellStyle: (params: CellStyleParams) => {
         const isRowSelected = selectedRows[params.data.code];
         const isColumnSelected = selectedColumns[company];
