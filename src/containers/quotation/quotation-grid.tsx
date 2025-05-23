@@ -123,11 +123,23 @@ export default function QuotationGrid({
   // 컬럼 정의
   const columnDefs = [
     {
+      headerName: "",
+      checkboxSelection: true,
+      minWidth: 50,
+      flex: 1,
+      headerCheckboxSelection: true,
+      filter: false,
+      pinned: "left" as const,
+      lockPinned: true,
+      width: 70,
+      field: "checkbox",
+    },
+    {
       headerName: "제품명",
       field: "name",
       pinned: "left" as const,
       width: 120,
-      checkboxSelection: true,
+
       cellStyle: (params: CellStyleParams) => ({
         backgroundColor: selectedRows[params.data.code] ? "#DBEAFE" : "#f8f9fa",
       }),
