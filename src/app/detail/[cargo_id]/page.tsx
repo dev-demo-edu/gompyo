@@ -11,6 +11,7 @@ import { updateCargoStatusInfo } from "@/actions/detail-view/cargo";
 import { useToast } from "@/hooks/use-toast";
 import Documents from "@/containers/detail-view/documents";
 import History from "@/containers/detail-view/history";
+import Stock from "@/containers/detail-view/stock";
 import {
   CargoStatus,
   statusMapping,
@@ -24,7 +25,7 @@ const statusOrder = Object.values(CargoStatus);
 export default function DetailPage() {
   const params = useParams();
   const [activeTab, setActiveTab] = useState<
-    "entire" | "document" | "cargo" | "history"
+    "entire" | "document" | "cargo" | "history" | "stock"
   >("entire");
   const [mappedData, setMappedData] = useAtom(cargoDetailAtom);
   const { toast, ToastComponent } = useToast();
@@ -61,6 +62,8 @@ export default function DetailPage() {
         return <CargoInfo cargoId={params.cargo_id as string} />;
       case "history":
         return <History />;
+      case "stock":
+        return <Stock cargoId={params.cargo_id as string} />;
       default:
         return null;
     }
@@ -237,6 +240,13 @@ export default function DetailPage() {
                     onClick={() => setActiveTab("cargo")}
                   >
                     화물 정보
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color={activeTab === "stock" ? "primary" : "inherit"}
+                    onClick={() => setActiveTab("stock")}
+                  >
+                    재고 정보
                   </Button>
                   <Button
                     variant="contained"
