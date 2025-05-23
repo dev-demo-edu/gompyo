@@ -9,6 +9,7 @@ import type { Stock } from "@/actions/detail-view/stock";
 import { cargoDetailAtom } from "@/states/detail";
 import { useAtomValue } from "jotai";
 import { CalculatedCargoDetailData } from "@/services/cargo-calculator";
+import { useToast } from "@/hooks/use-toast";
 
 interface StockProps {
   cargoId: string;
@@ -61,20 +62,11 @@ interface StockRows {
   uncleared: number;
 }
 
-// 목업 데이터 (pivot 형태)
-const initialRows: StockRows[] = [
-  { id: "dnb", name: "디앤비 재고", cleared: 120, uncleared: 50 },
-  { id: "namhae", name: "남해 재고", cleared: 80, uncleared: 20 },
-  { id: "interliving", name: "인터리빙 재고", cleared: 45, uncleared: 10 },
-  { id: "gompyo", name: "곰표 재고", cleared: 60, uncleared: 15 },
-  { id: "rample", name: "램플 재고", cleared: 30, uncleared: 5 },
-  { id: "sales", name: "판매량", cleared: 200, uncleared: 40 },
-];
-
 export default function Stock({ cargoId }: StockProps) {
-  const [editedRows, setEditedRows] = useState(initialRows);
+  const [editedRows, setEditedRows] = useState<StockRows[]>([]);
   const [loading, setLoading] = useState(false);
   const cargoData = useAtomValue(cargoDetailAtom);
+  const { toast, ToastComponent } = useToast();
 
   useEffect(() => {
     const fetchStock = async () => {
@@ -134,7 +126,11 @@ export default function Stock({ cargoId }: StockProps) {
         ),
       );
       // 성공 시 추가 동작 필요시 작성
-    } catch {
+      toast({
+        title: "성공",
+        description: "상태가 성공적으로 변경되었습니다.",
+      });
+    } catch (error) {
       // 실패 시 롤백
       setEditedRows((prev) => {
         const rowsWithoutSales = prev
@@ -143,7 +139,12 @@ export default function Stock({ cargoId }: StockProps) {
         return [...rowsWithoutSales, getSalesRow(cargoData, rowsWithoutSales)];
       });
       params.node.setDataValue(field as string, params.oldValue);
-      alert("업데이트에 실패했습니다.");
+      console.error("상태 업데이트 중 오류 발생:", error);
+      toast({
+        title: "오류",
+        description: "상태 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -171,6 +172,7 @@ export default function Stock({ cargoId }: StockProps) {
           onCellValueChanged={handleCellValueChanged}
         />
       </Box>
+      <ToastComponent />
     </Box>
   );
 }
