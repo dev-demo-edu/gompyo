@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 import QuotationGrid from "./quotation-grid";
-import { CompanyAddModal, ItemAddModal } from "./quotation-modal-container";
+import {
+  CompanyAddModal,
+  CompanyDeleteModal,
+  ItemAddModal,
+  ItemDeleteModal,
+} from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
 import { Button, Stack } from "@mui/material";
@@ -10,6 +15,10 @@ export default function QuotationContainer() {
   // 모달 상태 관리
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
   const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [companyDeleteModalOpen, setCompanyDeleteModalOpen] = useState(false);
+  const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   // 선택 상태 관리 (QuotationGrid에서 상위로 이동)
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
@@ -145,6 +154,44 @@ export default function QuotationContainer() {
     setItems((prev) => [...prev, newItem]);
   };
 
+  // 핸들러 추가
+  const handleDeleteCompany = () => {
+    if (!selectedCompany) return;
+
+    setCompanies((prev) =>
+      prev.filter((company) => company !== selectedCompany),
+    );
+    setPriceData((prev) => {
+      const updated = { ...prev };
+      delete updated[selectedCompany];
+      return updated;
+    });
+    setSelectedCompany("");
+    setCompanyDeleteModalOpen(false);
+  };
+
+  const handleDeleteItems = () => {
+    if (selectedItems.length === 0) return;
+
+    setItems((prev) =>
+      prev.filter((item) => !selectedItems.includes(item.code)),
+    );
+    setPriceData((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((company) => {
+        selectedItems.forEach((itemCode) => {
+          const item = items.find((i) => i.code === itemCode);
+          if (item && updated[company][item.name]) {
+            delete updated[company][item.name];
+          }
+        });
+      });
+      return updated;
+    });
+    setSelectedItems([]);
+    setItemDeleteModalOpen(false);
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8">
@@ -179,6 +226,32 @@ export default function QuotationContainer() {
             </Button>
             <Button
               variant="contained"
+              onClick={() => setCompanyDeleteModalOpen(true)}
+              disabled={!selectedCompany}
+              sx={{
+                backgroundColor: "#EF4444",
+                "&:hover": { backgroundColor: "#DC2626" },
+                fontWeight: 600,
+                boxShadow: "none",
+              }}
+            >
+              업체 삭제
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setItemDeleteModalOpen(true)}
+              disabled={selectedItems.length === 0}
+              sx={{
+                backgroundColor: "#EF4444",
+                "&:hover": { backgroundColor: "#DC2626" },
+                fontWeight: 600,
+                boxShadow: "none",
+              }}
+            >
+              품목 삭제
+            </Button>
+            <Button
+              variant="contained"
               disabled={getIntersectionItems().length === 0}
               onClick={handleQuotationCreate}
               sx={{
@@ -206,6 +279,8 @@ export default function QuotationContainer() {
             setSelectedColumns={setSelectedColumns}
             getIntersectionItems={getIntersectionItems}
             formatNumber={formatNumber}
+            onCompanySelect={setSelectedCompany}
+            onItemsSelect={setSelectedItems}
           />
         </div>
 
@@ -239,6 +314,16 @@ export default function QuotationContainer() {
         open={itemModalOpen}
         onClose={() => setItemModalOpen(false)}
         onSubmit={handleAddItem}
+      />
+      <CompanyDeleteModal
+        open={companyDeleteModalOpen}
+        onClose={() => setCompanyDeleteModalOpen(false)}
+        onConfirm={handleDeleteCompany}
+      />
+      <ItemDeleteModal
+        open={itemDeleteModalOpen}
+        onClose={() => setItemDeleteModalOpen(false)}
+        onConfirm={handleDeleteItems}
       />
     </div>
   );

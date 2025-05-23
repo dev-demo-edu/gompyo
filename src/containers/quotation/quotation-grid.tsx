@@ -50,6 +50,8 @@ interface QuotationGridProps {
     origin: string;
   }>;
   formatNumber: (num: number) => string;
+  onCompanySelect: (company: string) => void;
+  onItemsSelect: (itemCodes: string[]) => void;
 }
 
 export default function QuotationGrid({
@@ -62,6 +64,8 @@ export default function QuotationGrid({
   selectedColumns,
   setSelectedColumns,
   formatNumber,
+  onCompanySelect,
+  onItemsSelect,
 }: QuotationGridProps) {
   // 커스텀 헤더 컴포넌트 (세로줄 선택용)
   const CustomHeaderComponent = (props: CustomHeaderProps) => {
@@ -74,9 +78,14 @@ export default function QuotationGrid({
           isSelected ? "bg-blue-200 font-bold" : "hover:bg-gray-100"
         }`}
         onClick={() => {
-          props.setSelectedColumns({
-            [company]: !isSelected,
-          });
+          const newSelection = { [company]: !isSelected };
+          setSelectedColumns(newSelection);
+
+          // 선택된 업체를 부모로 전달
+          const selectedCompany = Object.keys(newSelection).find(
+            (key) => newSelection[key],
+          );
+          onCompanySelect(selectedCompany || "");
         }}
       >
         <span>{company}</span>
@@ -197,6 +206,8 @@ export default function QuotationGrid({
       newSelectedRows[node.data.code] = true;
     });
     setSelectedRows(newSelectedRows);
+    const selectedItemCodes = selectedNodes.map((node) => node.data.code);
+    onItemsSelect(selectedItemCodes);
   };
 
   return (
