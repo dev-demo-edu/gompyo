@@ -15,46 +15,30 @@ interface CellStyleParams {
   };
 }
 
-export default function QuotationGrid() {
-  // 간단한 샘플 데이터
-  const [items] = useState([
-    { id: "1001", code: "1001", name: "제품A", origin: "카나다" },
-    { id: "1002", code: "1002", name: "제품B", origin: "미국" },
-    { id: "1005", code: "1004", name: "브라운렌틸1", origin: "카나다" },
-  ]);
+// Item 타입 정의
+interface Item {
+  id: string;
+  code: string;
+  name: string;
+  origin: string;
+}
 
-  const [companies] = useState([
-    "한가(도착)",
-    "온씨(도착)",
-    "수입(도착)",
-    "한라농협물산1",
-  ]);
+// QuotationGrid props 타입 정의
+interface QuotationGridProps {
+  items: Item[];
+  companies: string[];
+  priceData: Record<string, Record<string, number>>;
+  setPriceData: React.Dispatch<
+    React.SetStateAction<Record<string, Record<string, number>>>
+  >;
+}
 
-  // 새로운 데이터 구조: 회사 중심
-  const [priceData, setPriceData] = useState<
-    Record<string, Record<string, number>>
-  >({
-    "한가(도착)": {
-      제품A: 1600,
-      제품B: 1700,
-      브라운렌틸: 1500,
-    },
-    "온씨(도착)": {
-      제품A: 1550,
-      제품B: 1650,
-      브라운렌틸: 1450,
-    },
-    "수입(도착)": {
-      제품B: 1600,
-      브라운렌틸: 1450,
-    },
-    한라농협물산: {
-      제품A: 1550,
-      제품B: 1650,
-      브라운렌틸: 1450,
-    },
-  });
-
+export default function QuotationGrid({
+  items,
+  companies,
+  priceData,
+  setPriceData,
+}: QuotationGridProps) {
   // 행/열 선택 상태
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [selectedColumns, setSelectedColumns] = useState<
@@ -138,7 +122,7 @@ export default function QuotationGrid() {
               intersectionItems.push({
                 productCode,
                 productName: product?.name || "",
-                origin: product?.origin || "", // ← 이거 추가해야 함
+                origin: product?.origin || "",
                 company,
                 price,
               });
