@@ -74,10 +74,9 @@ export default function QuotationGrid({
           isSelected ? "bg-blue-200 font-bold" : "hover:bg-gray-100"
         }`}
         onClick={() => {
-          props.setSelectedColumns((prev) => ({
-            ...prev,
-            [company]: !prev[company],
-          }));
+          props.setSelectedColumns({
+            [company]: !isSelected,
+          });
         }}
       >
         <span>{company}</span>
