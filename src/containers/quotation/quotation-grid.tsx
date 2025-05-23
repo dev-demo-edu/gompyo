@@ -27,7 +27,11 @@ export default function QuotationGrid() {
     "한가(도착)",
     "온씨(도착)",
     "수입(도착)",
-    "한라농협물산",
+    "한라농협물산1",
+    "한라농협물산2",
+    "한라농협물산3",
+    "한라농협물산4",
+    "한라농협물산5",
   ]);
 
   // 새로운 데이터 구조: 회사 중심
@@ -98,7 +102,7 @@ export default function QuotationGrid() {
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-end px-2 ${
+        className={`w-full h-full flex items-center justify-center px-2 ${
           isIntersection
             ? "bg-green-200 font-bold"
             : isRowSelected
@@ -175,6 +179,7 @@ export default function QuotationGrid() {
       headerName: company,
       field: company,
       headerComponent: CustomHeaderComponent, // 세로줄 선택용 커스텀 헤더
+      flex: 1,
       width: 100,
       cellRenderer: PriceCellRenderer,
       cellStyle: (params: CellStyleParams) => {
