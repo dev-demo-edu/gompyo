@@ -9,6 +9,10 @@ import {
 } from "@/actions/detail-view/common";
 import { mapAndCalculateCargoDetails } from "@/services/cargo-calculator";
 import { createNewShipmentAndUpdateCargo } from "@/actions/detail-view/entire";
+import {
+  addUnclearedStockNumber,
+  switchImporter,
+} from "@/actions/detail-view/stock";
 // 원본 데이터는 private atom으로 관리
 const privateCargoDetailAtom = atom<CargoDetailData | null>(null);
 
@@ -106,9 +110,24 @@ export const updateCargoAtom = atom(
         updateData.shipment = { ...originalData.shipment, ...formData };
       }
 
+      if (
+        updateData.importer.importerName !== originalData.importer.importerName
+      ) {
+        switchImporter(
+          cargoId,
+          originalData.importer.importerName,
+          updateData.importer.importerName,
+        );
+      }
       if (updateData.cargo.contractTon !== originalData.cargo.contractTon) {
         updateData.cargo.containerCount = Math.ceil(
           Number(updateData.cargo.contractTon) / 24,
+        );
+        await addUnclearedStockNumber(
+          cargoId,
+          updateData.importer.importerCode,
+          Number(updateData.cargo.contractTon) -
+            Number(originalData.cargo.contractTon),
         );
       }
 

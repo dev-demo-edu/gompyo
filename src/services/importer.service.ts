@@ -9,13 +9,18 @@ export class ImporterService {
   /**
    * 새로운 수입업체를 생성합니다.
    */
-  async createImporter(importerName: string, calculationType: CalculationType) {
+  async createImporter(
+    importerName: string,
+    importerCode: string,
+    calculationType: CalculationType,
+  ) {
     try {
       const [importer] = await db
         .insert(importers)
         .values({
           id: nanoid(),
           importerName,
+          importerCode,
           calculationType,
         })
         .returning();
@@ -97,6 +102,7 @@ export class ImporterService {
 
       const importer = await this.createImporter(
         data.importerName,
+        data.importerCode || "gompyo",
         mapImporter(data.importerName),
       );
 
