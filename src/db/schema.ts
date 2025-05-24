@@ -404,3 +404,71 @@ export const stocksRelations = relations(stocks, ({ one }) => ({
     references: [cargos.id],
   }),
 }));
+
+// Partners table (견적 컬럼용 회사 테이블)
+export const partners = sqliteTable(
+  "partners",
+  {
+    id: text("id").primaryKey(),
+    companyName: text("company_name").notNull(),
+    companyType: text("company_type").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "company_type_check",
+      sql`${table.companyType} IN ('domestic', 'foreign')`,
+    ),
+  ],
+);
+
+// Quotation Items table (견적 행용 품목 테이블)
+export const quotationItems = sqliteTable("quotation_items", {
+  id: text("id").primaryKey(),
+  itemName: text("item_name").notNull(),
+  itemOrigin: text("item_origin").notNull(),
+  itemNameEn: text("item_name_en"),
+  itemOriginEn: text("item_origin_en"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Partners Items table (회사-품목 관계 테이블)
+export const partnersItems = sqliteTable("partners_items", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id")
+    .notNull()
+    .references(() => partners.id, { onDelete: "cascade" }),
+  itemId: text("item_id")
+    .notNull()
+    .references(() => quotationItems.id, { onDelete: "cascade" }),
+  value: real("value"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Partners relations
+export const partnersRelations = relations(partners, ({ many }) => ({
+  quotationItems: many(quotationItems),
+}));
+
+// Quotation Items relations
+export const quotationItemsRelations = relations(
+  quotationItems,
+  ({ many }) => ({
+    quotationItems: many(quotationItems),
+  }),
+);
+
+// Partners Items relations
+export const partnersItemsRelations = relations(partnersItems, ({ one }) => ({
+  company: one(partners, {
+    fields: [partnersItems.companyId],
+    references: [partners.id],
+  }),
+  item: one(quotationItems, {
+    fields: [partnersItems.itemId],
+    references: [quotationItems.id],
+  }),
+}));
