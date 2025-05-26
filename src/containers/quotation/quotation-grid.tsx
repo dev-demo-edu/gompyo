@@ -74,8 +74,8 @@ export default function QuotationGrid({
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-center cursor-pointer p-2 ${
-          isSelected ? "bg-blue-200 font-bold" : "hover:bg-gray-100"
+        className={`w-full h-full flex items-center justify-start cursor-pointer px-[32px] ${
+          isSelected ? "bg-blue-200 font-bold" : ""
         }`}
         onClick={() => {
           const newSelection = { [company]: !isSelected };
@@ -105,14 +105,12 @@ export default function QuotationGrid({
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-center px-2 ${
+        className={`w-full h-full flex items-center justify-start p-2 ${
           isIntersection
             ? "bg-green-200 font-bold"
             : isRowSelected
               ? "bg-blue-100"
-              : isColumnSelected
-                ? "bg-yellow-100"
-                : ""
+              : ""
         }`}
       >
         <span>{price > 0 ? formatNumber(price) : ""}</span>
@@ -157,6 +155,7 @@ export default function QuotationGrid({
     },
     ...companies.map((company) => ({
       headerName: company,
+      headerClass: "company-header", // ← 클래스 추가
       field: company,
       headerComponent: (props: CustomHeaderProps) =>
         CustomHeaderComponent({
@@ -225,6 +224,11 @@ export default function QuotationGrid({
   return (
     <div className="w-full">
       <div className="w-full h-[600px]">
+        <style jsx>{`
+          div :global(.ag-header-cell.company-header) {
+            padding: 0 !important;
+          }
+        `}</style>
         <DataGrid
           columnDefs={columnDefs}
           data={rowData}
