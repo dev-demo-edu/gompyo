@@ -9,7 +9,7 @@ import {
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Tab, Tabs } from "@mui/material";
 
 export default function QuotationContainer() {
   // 모달 상태 관리
@@ -27,20 +27,20 @@ export default function QuotationContainer() {
   >({});
 
   // 데이터 상태 관리
-  const [items, setItems] = useState([
+  const [domesticItems, setDomesticItems] = useState([
     { id: "1001", code: "1001", name: "제품A", origin: "카나다" },
     { id: "1002", code: "1002", name: "제품B", origin: "미국" },
     { id: "1005", code: "1004", name: "브라운렌틸1", origin: "카나다" },
   ]);
 
-  const [companies, setCompanies] = useState([
+  const [domesticCompanies, setDomesticCompanies] = useState([
     "한가(도착)",
     "온씨(도착)",
     "수입(도착)",
     "한라농협물산1",
   ]);
 
-  const [priceData, setPriceData] = useState<
+  const [domesticPriceData, setDomesticPriceData] = useState<
     Record<string, Record<string, number>>
   >({
     "한가(도착)": {
@@ -63,6 +63,40 @@ export default function QuotationContainer() {
       브라운렌틸: 1450,
     },
   });
+
+  const [overseasItems, setOverseasItems] = useState([
+    { id: "1001", code: "1001", name: "제품C", origin: "중국" },
+    { id: "1002", code: "1002", name: "제품D", origin: "한국" },
+    { id: "1005", code: "1004", name: "해외제품", origin: "미국" },
+  ]);
+
+  const [overseasCompanies, setOverseasCompanies] = useState([
+    "해외업체1",
+    "해외업체2",
+    "해외업체3",
+    "해외업체4",
+  ]);
+
+  const [overseasPriceData, setOverseasPriceData] = useState<
+    Record<string, Record<string, number>>
+  >({
+    해외업체1: {
+      제품C: 1600,
+      제품D: 1700,
+      해외제품: 1500,
+    },
+  });
+
+  const [tab, setTab] = useState<"domestic" | "overseas">("domestic");
+
+  const items = tab === "domestic" ? domesticItems : overseasItems;
+  const companies = tab === "domestic" ? domesticCompanies : overseasCompanies;
+  const priceData = tab === "domestic" ? domesticPriceData : overseasPriceData;
+  const setItems = tab === "domestic" ? setDomesticItems : setOverseasItems;
+  const setCompanies =
+    tab === "domestic" ? setDomesticCompanies : setOverseasCompanies;
+  const setPriceData =
+    tab === "domestic" ? setDomesticPriceData : setOverseasPriceData;
 
   // 숫자 포맷팅 함수
   const formatNumber = (num: number) =>
@@ -265,7 +299,10 @@ export default function QuotationContainer() {
             </Button>
           </Stack>
         </div>
-
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+          <Tab label="국내 업체" value="domestic" />
+          <Tab label="해외 업체" value="overseas" />
+        </Tabs>
         {/* 그리드 */}
         <div className="overflow-hidden">
           <QuotationGrid
