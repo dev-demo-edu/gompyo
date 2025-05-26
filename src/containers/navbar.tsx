@@ -88,6 +88,10 @@ export default function Navbar() {
       icon: <SavingsIcon />,
     },
     {
+      text: "견적 관리",
+      href: "/quotation",
+    },
+    {
       text: "정보",
       href: "/info",
       icon: <InfoIcon />,
