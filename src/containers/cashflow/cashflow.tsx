@@ -77,7 +77,7 @@ export default function CashflowContainer() {
           수금 지출 관리
         </h1>
 
-        <Stack direction="row" spacing={2}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
           <div
             className="flex flex-row justify-between items-end flex-shrink-0"
             style={{ minHeight: 24 }}
@@ -95,7 +95,13 @@ export default function CashflowContainer() {
           <Stack
             direction="row"
             spacing={2}
-            className="w-full justify-end mb-4 sm:mb-6"
+            sx={{
+              justifyContent: { sm: "flex-start", lg: "flex-end" },
+              overflowX: "scroll",
+              width: "100%",
+              minWidth: 0,
+            }}
+            className="w-full justify-start mb-4 sm:mb-6 mt-4"
           >
             {/* TODO: 버튼 스타일 통일하기 */}
             <Button
