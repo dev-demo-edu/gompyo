@@ -22,12 +22,6 @@ export const companyFields: CompanyField[] = [
     type: "text",
     required: true,
   },
-  {
-    name: "description",
-    label: "설명",
-    type: "text",
-    required: false,
-  },
 ];
 
 // 업체 추가 폼 props 타입
