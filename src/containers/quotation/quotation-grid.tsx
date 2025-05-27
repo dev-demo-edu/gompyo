@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import DataGrid from "@/components/data-grid";
-import { Button, Stack } from "@mui/material";
 import { ICellRendererParams, SelectionChangedEvent } from "ag-grid-community";
 
 // CustomHeaderComponent의 props 타입 정의
 interface CustomHeaderProps {
   displayName: string;
+  selectedColumns: Record<string, boolean>;
+  setSelectedColumns: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
 }
 
 // cellStyle의 params 타입 정의
@@ -15,70 +18,74 @@ interface CellStyleParams {
   };
 }
 
-export default function QuotationGrid() {
-  // 간단한 샘플 데이터
-  const [items] = useState([
-    { id: "1001", code: "1001", name: "제품A", origin: "카나다" },
-    { id: "1002", code: "1002", name: "제품B", origin: "미국" },
-    { id: "1005", code: "1004", name: "브라운렌틸1", origin: "카나다" },
-  ]);
+// Item 타입 정의
+interface Item {
+  id: string;
+  code: string;
+  name: string;
+  origin: string;
+}
 
-  const [companies] = useState([
-    "한가(도착)",
-    "온씨(도착)",
-    "수입(도착)",
-    "한라농협물산1",
-  ]);
+// QuotationGrid props 타입 정의
+interface QuotationGridProps {
+  items: Item[];
+  companies: string[];
+  priceData: Record<string, Record<string, number>>;
+  setPriceData: React.Dispatch<
+    React.SetStateAction<Record<string, Record<string, number>>>
+  >;
+  selectedRows: Record<string, boolean>;
+  setSelectedRows: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
+  selectedColumns: Record<string, boolean>;
+  setSelectedColumns: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
+  getIntersectionItems: () => Array<{
+    productCode: string;
+    productName: string;
+    company: string;
+    price: number;
+    origin: string;
+  }>;
+  formatNumber: (num: number) => string;
+  onCompanySelect: (company: string) => void;
+  onItemsSelect: (itemCodes: string[]) => void;
+}
 
-  // 새로운 데이터 구조: 회사 중심
-  const [priceData, setPriceData] = useState<
-    Record<string, Record<string, number>>
-  >({
-    "한가(도착)": {
-      제품A: 1600,
-      제품B: 1700,
-      브라운렌틸: 1500,
-    },
-    "온씨(도착)": {
-      제품A: 1550,
-      제품B: 1650,
-      브라운렌틸: 1450,
-    },
-    "수입(도착)": {
-      제품B: 1600,
-      브라운렌틸: 1450,
-    },
-    한라농협물산: {
-      제품A: 1550,
-      제품B: 1650,
-      브라운렌틸: 1450,
-    },
-  });
-
-  // 행/열 선택 상태
-  const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
-  const [selectedColumns, setSelectedColumns] = useState<
-    Record<string, boolean>
-  >({});
-
-  const formatNumber = (num: number) =>
-    new Intl.NumberFormat("ko-KR").format(num);
-
+export default function QuotationGrid({
+  items,
+  companies,
+  priceData,
+  setPriceData,
+  selectedRows,
+  setSelectedRows,
+  selectedColumns,
+  setSelectedColumns,
+  formatNumber,
+  onCompanySelect,
+  onItemsSelect,
+}: QuotationGridProps) {
   // 커스텀 헤더 컴포넌트 (세로줄 선택용)
   const CustomHeaderComponent = (props: CustomHeaderProps) => {
     const company = props.displayName;
-    const isSelected = selectedColumns[company];
+    const isSelected = props.selectedColumns[company];
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-center cursor-pointer p-2 ${
-          isSelected ? "bg-blue-200 font-bold" : "hover:bg-gray-100"
+        className={`w-full h-full flex items-center justify-start cursor-pointer px-[24px] ${
+          isSelected ? "bg-blue-200 font-bold" : ""
         }`}
         onClick={() => {
-          setSelectedColumns((prev) => ({
-            ...prev,
-            [company]: !prev[company],
-          }));
+          const newSelection = { [company]: !isSelected };
+          setSelectedColumns(newSelection);
+
+          // 선택된 업체를 부모로 전달
+          const selectedCompany = Object.keys(newSelection).find(
+            (key) => newSelection[key],
+          );
+          onCompanySelect(selectedCompany || "");
         }}
       >
         <span>{company}</span>
@@ -88,26 +95,22 @@ export default function QuotationGrid() {
 
   // 가격 셀 렌더러
   const PriceCellRenderer = ({ data, colDef }: ICellRendererParams) => {
-    const productName = data.name; // "제품A", "제품B", "브라운렌틸"
-    const company = colDef?.field; // "한가(도착)"
-
-    // 회사 중심 데이터에서 가격 조회: priceData[회사][제품명]
+    if (!data) return null; // data가 없으면 렌더링하지 않음
+    const productName = data.name;
+    const company = colDef?.field;
     const price = company ? priceData[company]?.[productName] || 0 : 0;
-
     const isRowSelected = selectedRows[data.code];
     const isColumnSelected = company ? selectedColumns[company] : false;
     const isIntersection = isRowSelected && isColumnSelected;
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-center px-2 ${
+        className={`w-full h-full flex items-center justify-start ${
           isIntersection
             ? "bg-green-200 font-bold"
             : isRowSelected
               ? "bg-blue-100"
-              : isColumnSelected
-                ? "bg-yellow-100"
-                : ""
+              : ""
         }`}
       >
         <span>{price > 0 ? formatNumber(price) : ""}</span>
@@ -115,49 +118,26 @@ export default function QuotationGrid() {
     );
   };
 
-  // 교차점 데이터 계산
-  const getIntersectionItems = () => {
-    const intersectionItems: Array<{
-      productCode: string;
-      productName: string;
-      company: string;
-      price: number;
-      origin: string;
-    }> = [];
-
-    Object.entries(selectedRows).forEach(([productCode, isRowSelected]) => {
-      if (isRowSelected) {
-        Object.entries(selectedColumns).forEach(([company, isColSelected]) => {
-          if (isColSelected) {
-            const product = items.find((item) => item.code === productCode);
-            // 회사 중심 데이터에서 가격 조회
-            const price = priceData[company]?.[product?.name || ""] || 0;
-
-            if (price > 0) {
-              // 가격이 있는 경우만 추가
-              intersectionItems.push({
-                productCode,
-                productName: product?.name || "",
-                origin: product?.origin || "", // ← 이거 추가해야 함
-                company,
-                price,
-              });
-            }
-          }
-        });
-      }
-    });
-    return intersectionItems;
-  };
-
   // 컬럼 정의
   const columnDefs = [
+    {
+      headerName: "",
+      checkboxSelection: true,
+      minWidth: 50,
+      flex: 1,
+      headerCheckboxSelection: true,
+      filter: false,
+      pinned: "left" as const,
+      lockPinned: true,
+      width: 70,
+      field: "checkbox",
+    },
     {
       headerName: "제품명",
       field: "name",
       pinned: "left" as const,
       width: 120,
-      checkboxSelection: true, // 가로줄 선택
+
       cellStyle: (params: CellStyleParams) => ({
         backgroundColor: selectedRows[params.data.code] ? "#DBEAFE" : "#f8f9fa",
       }),
@@ -175,8 +155,14 @@ export default function QuotationGrid() {
     },
     ...companies.map((company) => ({
       headerName: company,
+      headerClass: "company-header", // ← 클래스 추가
       field: company,
-      headerComponent: CustomHeaderComponent, // 세로줄 선택용 커스텀 헤더
+      headerComponent: (props: CustomHeaderProps) =>
+        CustomHeaderComponent({
+          ...props,
+          selectedColumns,
+          setSelectedColumns,
+        }),
       flex: 1,
       width: 100,
       cellRenderer: PriceCellRenderer,
@@ -231,42 +217,18 @@ export default function QuotationGrid() {
       newSelectedRows[node.data.code] = true;
     });
     setSelectedRows(newSelectedRows);
+    const selectedItemCodes = selectedNodes.map((node) => node.data.code);
+    onItemsSelect(selectedItemCodes);
   };
 
   return (
     <div className="w-full">
-      <Stack direction="row" spacing={2} className="w-full justify-end mb-4">
-        <Button
-          variant="contained"
-          disabled={getIntersectionItems().length === 0}
-          onClick={() => {
-            const intersectionItems = getIntersectionItems();
-            console.log("=== 견적서 작성 데이터 ===");
-            console.log("선택된 행(제품):", selectedRows);
-            console.log("선택된 열(회사):", selectedColumns);
-            console.log("교차점 데이터:", intersectionItems);
-            console.log("총 견적 항목 수:", intersectionItems.length);
-
-            intersectionItems.forEach((item, index) => {
-              console.log(
-                `${index + 1}. ${item.company}에서 ${item.productName}: ${item.price.toLocaleString()}원`,
-              );
-            });
-
-            alert(
-              `${intersectionItems.length}개 항목으로 견적서 작성\n콘솔을 확인해주세요!`,
-            );
-          }}
-          sx={{
-            backgroundColor: "#6366F1",
-            "&:hover": { backgroundColor: "#4F46E5" },
-          }}
-        >
-          견적서 작성 ({getIntersectionItems().length})
-        </Button>
-      </Stack>
-
       <div className="w-full h-[600px]">
+        <style jsx>{`
+          div :global(.ag-header-cell.company-header) {
+            padding: 0 !important;
+          }
+        `}</style>
         <DataGrid
           columnDefs={columnDefs}
           data={rowData}
@@ -275,24 +237,6 @@ export default function QuotationGrid() {
           onSelectionChanged={handleSelectionChanged}
         />
       </div>
-
-      {/* 선택된 교차점 표시 */}
-      {getIntersectionItems().length > 0 && (
-        <div className="mt-4 p-3 bg-green-50 rounded-lg">
-          <p className="text-sm text-green-800 font-semibold">
-            선택된 견적 항목: {getIntersectionItems().length}개
-          </p>
-          <div className="text-xs text-green-700 mt-1">
-            {getIntersectionItems().map((item, idx) => (
-              <span key={idx}>
-                {item.company}에서 {item.productName} (
-                {formatNumber(item.price)}원)
-                {idx < getIntersectionItems().length - 1 ? ", " : ""}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
