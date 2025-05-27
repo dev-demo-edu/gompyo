@@ -74,7 +74,7 @@ export default function QuotationGrid({
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-start cursor-pointer px-[32px] ${
+        className={`w-full h-full flex items-center justify-start cursor-pointer px-[24px] ${
           isSelected ? "bg-blue-200 font-bold" : ""
         }`}
         onClick={() => {
@@ -105,7 +105,7 @@ export default function QuotationGrid({
 
     return (
       <div
-        className={`w-full h-full flex items-center justify-start p-2 ${
+        className={`w-full h-full flex items-center justify-start ${
           isIntersection
             ? "bg-green-200 font-bold"
             : isRowSelected

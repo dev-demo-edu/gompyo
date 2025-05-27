@@ -229,11 +229,11 @@ export default function QuotationContainer() {
   return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">견적서 작성</h1>
 
           {/* 모든 버튼들을 한 줄에 배치 */}
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} sx={{ whiteSpace: "nowrap" }}>
             <Button
               variant="contained"
               onClick={() => setCompanyModalOpen(true)}
