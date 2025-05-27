@@ -26,7 +26,12 @@ export default function Shipment() {
             variant="contained"
             onClick={() => setOpenDeleteModal(true)}
             disabled={selectedRows.length === 0}
-            className="px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
+            sx={{
+              backgroundColor: "#EF4444",
+              "&:hover": { backgroundColor: "#DC2626" },
+              fontWeight: 600,
+              boxShadow: "none",
+            }}
           >
             삭제하기
           </Button>

@@ -42,9 +42,9 @@ export default function AccountNumber() {
             sx={{
               minWidth: 120,
               fontWeight: 600,
-              backgroundColor: "#22C55E",
+              backgroundColor: "#EF4444",
               "&:hover": {
-                backgroundColor: "#16A34A",
+                backgroundColor: "#DC2626",
               },
               boxShadow: "none",
             }}

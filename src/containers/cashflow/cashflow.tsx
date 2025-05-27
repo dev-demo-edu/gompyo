@@ -136,8 +136,8 @@ export default function CashflowContainer() {
                 fontSize: 16,
                 lineHeight: 1.5,
                 py: 0,
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
+                backgroundColor: "#EF4444",
+                "&:hover": { backgroundColor: "#DC2626" },
                 boxShadow: "none",
                 alignSelf: "flex-end",
               }}
