@@ -21,39 +21,6 @@ import { useRouter } from "next/navigation";
 // 상태 순서 정의
 const statusOrder = Object.values(CargoStatus);
 
-// 디바운스 훅
-function useDebounce(callback: (...args: unknown[]) => void, delay: number) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const debouncedCallback = useCallback(
-    (...args: unknown[]) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    },
-    [callback, delay],
-  );
-
-  const cancelDebounce = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  return { debouncedCallback, cancelDebounce };
-}
-
 export default function DetailPage() {
   const params = useParams();
   const [activeTab, setActiveTab] = useState<
@@ -88,6 +55,13 @@ export default function DetailPage() {
     fetchCargoData();
   }, [params.cargo_id]);
 
+  // 편집 모드 진입 시 dragPosition을 현재 상태로 초기화
+  useEffect(() => {
+    if (isEditMode) {
+      setDragPosition(getCurrentStatusIndex());
+    }
+  }, [isEditMode]);
+
   const renderContent = () => {
     switch (activeTab) {
       case "entire":
@@ -111,21 +85,19 @@ export default function DetailPage() {
     return statusOrder.indexOf(koreanStatus);
   };
 
+  // dragPosition이 null이 아니면 dragPosition, 아니면 getCurrentStatusIndex 사용
+  const getActiveStatusIndex = () =>
+    dragPosition !== null ? dragPosition : getCurrentStatusIndex();
+
   const getProgressBarWidth = () => {
-    const currentIndex =
-      isDragging && dragPosition !== null
-        ? dragPosition
-        : getCurrentStatusIndex();
+    const currentIndex = getActiveStatusIndex();
     const totalSteps = statusOrder.length;
     const progressWidth = (currentIndex / (totalSteps - 1)) * 100;
     return `${progressWidth}%`;
   };
 
   const getStatusPosition = () => {
-    const currentIndex =
-      isDragging && dragPosition !== null
-        ? dragPosition
-        : getCurrentStatusIndex();
+    const currentIndex = getActiveStatusIndex();
     const totalSteps = statusOrder.length;
     const position = (currentIndex / (totalSteps - 1)) * 100;
     return position;
@@ -169,12 +141,6 @@ export default function DetailPage() {
     }
   };
 
-  // 디바운스된 상태 업데이트 (1.5초 후 실행)
-  const { debouncedCallback: debouncedStatusUpdate, cancelDebounce } =
-    useDebounce((idx: unknown) => {
-      if (typeof idx === "number") void handleStatusUpdate(idx);
-    }, 1500);
-
   // 마우스 위치를 기반으로 가장 가까운 단계 계산
   const calculateNearestStep = (clientX: number) => {
     if (!progressBarRef.current) return 0;
@@ -190,13 +156,11 @@ export default function DetailPage() {
     return Math.max(0, Math.min(totalSteps - 1, nearestStep));
   };
 
-  // 드래그 이벤트 핸들러
+  // handleDragStart, handleDragMove, handleDragEnd 모두 dragPosition만 set
   const handleDragStart = (e: React.MouseEvent) => {
     if (!isEditMode) return;
     setIsDragging(true);
-    cancelDebounce(); // 기존 디바운스 취소
     e.preventDefault();
-
     const nearestStep = calculateNearestStep(e.clientX);
     setDragPosition(nearestStep);
   };
@@ -204,27 +168,31 @@ export default function DetailPage() {
   const handleDragMove = useCallback(
     (e: MouseEvent) => {
       if (!isDragging || !isEditMode) return;
-
       const nearestStep = calculateNearestStep(e.clientX);
       setDragPosition(nearestStep);
-
-      // 디바운스된 상태 업데이트 호출
-      debouncedStatusUpdate(nearestStep);
     },
-    [isDragging, isEditMode, debouncedStatusUpdate],
+    [isDragging, isEditMode, calculateNearestStep],
   );
 
   const handleDragEnd = useCallback(() => {
     if (!isDragging) return;
-
     setIsDragging(false);
-    // 드래그가 끝나면 최종 위치를 즉시 적용
+    setDragPosition((prev) => prev); // dragPosition만 유지, 서버 반영 X
+  }, [isDragging]);
+
+  // 편집 완료 버튼 클릭 시에만 서버에 반영
+  const handleEditComplete = () => {
     if (dragPosition !== null && dragPosition !== getCurrentStatusIndex()) {
-      cancelDebounce(); // 디바운스 취소하고 즉시 실행
       handleStatusUpdate(dragPosition);
     }
-    setDragPosition(null);
-  }, [isDragging, dragPosition, cancelDebounce]);
+    setIsEditMode(false);
+  };
+
+  // 취소 버튼 클릭 시 dragPosition을 원래 상태로 복구
+  const handleEditCancel = () => {
+    setDragPosition(getCurrentStatusIndex());
+    setIsEditMode(false);
+  };
 
   // 전역 마우스 이벤트 리스너
   useEffect(() => {
@@ -287,7 +255,7 @@ export default function DetailPage() {
                       <Box
                         key={status}
                         className={`absolute w-3 h-3 rounded-full transition-all duration-200 cursor-pointer ${
-                          index <= (dragPosition ?? getCurrentStatusIndex())
+                          index <= getActiveStatusIndex()
                             ? "bg-green-600 shadow-md"
                             : "bg-gray-400"
                         } hover:scale-125`}
@@ -301,7 +269,6 @@ export default function DetailPage() {
                           e.stopPropagation();
                           if (isEditMode) {
                             setDragPosition(index);
-                            debouncedStatusUpdate(index);
                           }
                         }}
                       />
@@ -343,11 +310,9 @@ export default function DetailPage() {
                     transform: "translateX(-50%)",
                   }}
                 >
-                  {dragPosition !== null
-                    ? statusOrder[dragPosition]
-                    : mappedData?.cargo?.progressStatus
-                      ? statusMapping[mappedData.cargo.progressStatus]
-                      : ""}
+                  {statusOrder[getActiveStatusIndex()]
+                    ? statusOrder[getActiveStatusIndex()]
+                    : ""}
                 </Typography>
 
                 {/* 편집 모드 안내 텍스트 */}
@@ -412,15 +377,28 @@ export default function DetailPage() {
                 <Button
                   variant={isEditMode ? "contained" : "outlined"}
                   color={isEditMode ? "secondary" : "primary"}
-                  onClick={() => {
-                    setIsEditMode(!isEditMode);
-                    setIsDragging(false);
-                    setDragPosition(null);
-                    cancelDebounce();
-                  }}
+                  onClick={
+                    isEditMode
+                      ? handleEditComplete
+                      : () => {
+                          setIsEditMode(true);
+                          setIsDragging(false);
+                          setDragPosition(getCurrentStatusIndex());
+                        }
+                  }
                 >
                   {isEditMode ? "편집 완료" : "편집 모드"}
                 </Button>
+
+                {isEditMode && (
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={handleEditCancel}
+                  >
+                    취소
+                  </Button>
+                )}
               </Stack>
             </Box>
             {renderContent()}
