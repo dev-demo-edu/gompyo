@@ -373,32 +373,33 @@ export default function DetailPage() {
                     히스토리
                   </Button>
                 </Stack>
-
-                <Button
-                  variant={isEditMode ? "contained" : "outlined"}
-                  color={isEditMode ? "secondary" : "primary"}
-                  onClick={
-                    isEditMode
-                      ? handleEditComplete
-                      : () => {
-                          setIsEditMode(true);
-                          setIsDragging(false);
-                          setDragPosition(getCurrentStatusIndex());
-                        }
-                  }
-                >
-                  {isEditMode ? "편집 완료" : "편집 모드"}
-                </Button>
-
-                {isEditMode && (
+                <Stack direction="row" spacing={2}>
                   <Button
-                    variant="outlined"
-                    color="inherit"
-                    onClick={handleEditCancel}
+                    variant="contained"
+                    color="primary"
+                    onClick={
+                      isEditMode
+                        ? handleEditComplete
+                        : () => {
+                            setIsEditMode(true);
+                            setIsDragging(false);
+                            setDragPosition(getCurrentStatusIndex());
+                          }
+                    }
                   >
-                    취소
+                    {isEditMode ? "편집 완료" : "편집 모드"}
                   </Button>
-                )}
+
+                  {isEditMode && (
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      onClick={handleEditCancel}
+                    >
+                      취소
+                    </Button>
+                  )}
+                </Stack>
               </Stack>
             </Box>
             {renderContent()}
