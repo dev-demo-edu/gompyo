@@ -131,18 +131,6 @@ export default function DetailPage() {
     return position;
   };
 
-  const getNextStatus = (): string | null => {
-    const currentIndex = getCurrentStatusIndex();
-    if (currentIndex === statusOrder.length - 1) return null;
-    return reverseStatusMapping[statusOrder[currentIndex + 1]] || null;
-  };
-
-  const getPreviousStatus = (): string | null => {
-    const currentIndex = getCurrentStatusIndex();
-    if (currentIndex === 0) return null;
-    return reverseStatusMapping[statusOrder[currentIndex - 1]] || null;
-  };
-
   const handleStatusUpdate = async (newStatusIndex: number) => {
     if (
       !mappedData?.cargo ||
@@ -251,37 +239,6 @@ export default function DetailPage() {
     };
   }, [isDragging, handleDragMove, handleDragEnd]);
 
-  // 기존 버튼 방식 상태 업데이트
-  const handleButtonStatusUpdate = async (nextStatus: string | null) => {
-    if (!mappedData?.cargo || !nextStatus) return;
-
-    try {
-      await updateCargoStatusInfo(params.cargo_id as string, {
-        status: nextStatus,
-        customsClearanceDate: mappedData.cargo.customsClearanceDate || "",
-        warehouseEntryDate: mappedData.cargo.warehouseEntryDate || "",
-        quarantineDate: mappedData.cargo.quarantineDate || "",
-        shippingCompany: mappedData.shipment?.shippingCompany || "",
-        palletOrderDate: mappedData.shipment?.palletOrderDate || "",
-        palletType: mappedData.shipment?.palletType || "",
-      });
-
-      await setMappedData(params.cargo_id as string);
-
-      toast({
-        title: "성공",
-        description: "상태가 성공적으로 변경되었습니다.",
-      });
-    } catch (error) {
-      console.error("상태 업데이트 중 오류 발생:", error);
-      toast({
-        title: "오류",
-        description: "상태 변경 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <>
       {loading || !mappedData ? (
@@ -300,18 +257,6 @@ export default function DetailPage() {
             </Typography>
 
             {/* 편집 모드 토글 버튼 */}
-            <Button
-              variant={isEditMode ? "contained" : "outlined"}
-              color={isEditMode ? "secondary" : "primary"}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-                setIsDragging(false);
-                setDragPosition(null);
-                cancelDebounce();
-              }}
-            >
-              {isEditMode ? "편집 완료" : "편집 모드"}
-            </Button>
           </Box>
 
           {/* 진행 상태 */}
@@ -464,29 +409,18 @@ export default function DetailPage() {
                   </Button>
                 </Stack>
 
-                {/* 편집 모드가 아닐 때만 기존 버튼들 표시 */}
-                {!isEditMode && (
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() =>
-                        handleButtonStatusUpdate(getPreviousStatus())
-                      }
-                      disabled={!getPreviousStatus()}
-                    >
-                      이전 상태로 변경
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleButtonStatusUpdate(getNextStatus())}
-                      disabled={!getNextStatus()}
-                    >
-                      다음 상태로 변경
-                    </Button>
-                  </Stack>
-                )}
+                <Button
+                  variant={isEditMode ? "contained" : "outlined"}
+                  color={isEditMode ? "secondary" : "primary"}
+                  onClick={() => {
+                    setIsEditMode(!isEditMode);
+                    setIsDragging(false);
+                    setDragPosition(null);
+                    cancelDebounce();
+                  }}
+                >
+                  {isEditMode ? "편집 완료" : "편집 모드"}
+                </Button>
               </Stack>
             </Box>
             {renderContent()}
