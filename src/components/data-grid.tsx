@@ -15,6 +15,7 @@ import { AgGridReact } from "ag-grid-react";
 import { AG_GRID_LOCALE_KR } from "@ag-grid-community/locale";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { agGridTheme } from "@/styles/theme";
+import { CheckboxFilterReact } from "./custom-checkbox-filter";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface DataGridProps<T> {
@@ -58,6 +59,45 @@ export default function DataGrid<T>({
     }),
     [],
   );
+
+  // 커스텀 필터 컴포넌트 등록
+  const components = useMemo(() => {
+    console.log("Registering custom filter component:", CheckboxFilterReact);
+    return {
+      checkboxFilter: CheckboxFilterReact,
+    };
+  }, []);
+
+  // 커스텀 필터가 적용된 컬럼 정의
+  const processedColumnDefs = useMemo(() => {
+    const result = columnDefs.map((colDef) => {
+      // 체크박스 컬럼은 필터 제외
+      if (colDef.field === "checkbox") {
+        return { ...colDef, filter: false };
+      }
+
+      // 명시적으로 다른 필터를 지정한 경우
+      if (
+        colDef.filter === false ||
+        colDef.filter === "agTextColumnFilter" ||
+        colDef.filter === "agNumberColumnFilter"
+      ) {
+        return colDef;
+      }
+
+      // 커스텀 체크박스 필터 적용
+      return {
+        ...colDef,
+        filter: "checkboxFilter",
+        floatingFilter: false,
+        filterParams: {
+          ...colDef.filterParams,
+        },
+      };
+    });
+    console.log("Processed column definitions:", result);
+    return result;
+  }, [columnDefs]);
 
   // 컬럼 상태 생성
   const columnState = useMemo(
@@ -123,8 +163,9 @@ export default function DataGrid<T>({
           <AgGridReact
             theme={agGridTheme}
             rowData={data}
-            columnDefs={columnDefs}
+            columnDefs={processedColumnDefs}
             defaultColDef={defaultColDef}
+            components={components}
             pagination={pagination}
             paginationPageSize={paginationPageSize}
             rowSelection="multiple"
