@@ -227,26 +227,6 @@ export default function Partner() {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleDeleteYear}
-              disabled={loading || financialData.length === 0}
-              sx={{
-                minWidth: 120,
-                fontWeight: 600,
-                backgroundColor: "#EF4444",
-                "&:hover": {
-                  backgroundColor: "#DC2626",
-                },
-                "&:disabled": {
-                  backgroundColor: "#9CA3AF",
-                },
-                boxShadow: "none",
-              }}
-            >
-              해당 연도 삭제
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
               onClick={handleAddCompany}
               disabled={loading}
               sx={{
@@ -272,9 +252,9 @@ export default function Partner() {
               sx={{
                 minWidth: 120,
                 fontWeight: 600,
-                backgroundColor: "#F59E0B",
+                backgroundColor: "#EF4444",
                 "&:hover": {
-                  backgroundColor: "#D97706",
+                  backgroundColor: "#DC2626",
                 },
                 "&:disabled": {
                   backgroundColor: "#9CA3AF",
@@ -283,6 +263,26 @@ export default function Partner() {
               }}
             >
               회사 삭제
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteYear}
+              disabled={loading || financialData.length === 0}
+              sx={{
+                minWidth: 120,
+                fontWeight: 600,
+                backgroundColor: "#EF4444",
+                "&:hover": {
+                  backgroundColor: "#DC2626",
+                },
+                "&:disabled": {
+                  backgroundColor: "#9CA3AF",
+                },
+                boxShadow: "none",
+              }}
+            >
+              해당 연도 삭제
             </Button>
           </Stack>
         </Stack>
