@@ -15,21 +15,31 @@ import {
   CircularProgress,
 } from "@mui/material";
 
+interface Company {
+  id: string;
+  name: string;
+  type: "payment" | "collection";
+}
+
 interface FinancialData {
   id: string;
+  year: number;
   month: string;
   lamplePurchase: number | null;
   lamplePayment: number | null;
   lampleBalance: number | null;
-  gomyoPurchase: number | null;
-  gomyoPayment: number | null;
-  gomyoBalance: number | null;
+  gompyoPurchase: number | null;
+  gompyoPayment: number | null;
+  gompyoBalance: number | null;
   totalPurchase: number | null;
   totalPayment: number | null;
   totalBalance: number | null;
 }
 
 interface PartnerGridProps {
+  companies: Company[];
+  selectedCompany: string;
+  onCompanyChange: (companyId: string) => void;
   selectedYear: number;
   onYearChange: (year: number) => void;
   data: FinancialData[];
@@ -52,6 +62,9 @@ const parseNumber = (value: string): number | null => {
 };
 
 export default function PartnerGrid({
+  companies,
+  selectedCompany,
+  onCompanyChange,
   selectedYear,
   onYearChange,
   data,
@@ -90,7 +103,7 @@ export default function PartnerGrid({
               params.data.lamplePurchase = newValue;
               // 전체 구매 금액 재계산
               params.data.totalPurchase =
-                (newValue || 0) + (params.data.gomyoPurchase || 0);
+                (newValue || 0) + (params.data.gompyoPurchase || 0);
               return true;
             },
           },
@@ -107,7 +120,7 @@ export default function PartnerGrid({
               params.data.lamplePayment = newValue;
               // 전체 지급 금액 재계산
               params.data.totalPayment =
-                (newValue || 0) + (params.data.gomyoPayment || 0);
+                (newValue || 0) + (params.data.gompyoPayment || 0);
               return true;
             },
           },
@@ -124,7 +137,7 @@ export default function PartnerGrid({
               params.data.lampleBalance = newValue;
               // 전체 잔액 재계산
               params.data.totalBalance =
-                (newValue || 0) + (params.data.gomyoBalance || 0);
+                (newValue || 0) + (params.data.gompyoBalance || 0);
               return true;
             },
             cellStyle: (params: CellClassParams) => {
@@ -142,7 +155,7 @@ export default function PartnerGrid({
         children: [
           {
             headerName: "구매",
-            field: "gomyoPurchase",
+            field: "gompyoPurchase",
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -150,7 +163,7 @@ export default function PartnerGrid({
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
-              params.data.gomyoPurchase = newValue;
+              params.data.gompyoPurchase = newValue;
               // 전체 구매 금액 재계산
               params.data.totalPurchase =
                 (params.data.lamplePurchase || 0) + (newValue || 0);
@@ -159,7 +172,7 @@ export default function PartnerGrid({
           },
           {
             headerName: "지급",
-            field: "gomyoPayment",
+            field: "gompyoPayment",
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -167,7 +180,7 @@ export default function PartnerGrid({
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
-              params.data.gomyoPayment = newValue;
+              params.data.gompyoPayment = newValue;
               // 전체 지급 금액 재계산
               params.data.totalPayment =
                 (params.data.lamplePayment || 0) + (newValue || 0);
@@ -176,7 +189,7 @@ export default function PartnerGrid({
           },
           {
             headerName: "잔액",
-            field: "gomyoBalance",
+            field: "gompyoBalance",
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -184,7 +197,7 @@ export default function PartnerGrid({
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
-              params.data.gomyoBalance = newValue;
+              params.data.gompyoBalance = newValue;
               // 전체 잔액 재계산
               params.data.totalBalance =
                 (params.data.lampleBalance || 0) + (newValue || 0);
@@ -258,14 +271,32 @@ export default function PartnerGrid({
   return (
     <div className="space-y-4">
       {/* 년도 선택 */}
-      <div className="flex justify-start">
+      <div className="flex gap-4">
+        {/* 회사 선택 */}
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>회사</InputLabel>
+          <Select
+            value={selectedCompany}
+            label="회사"
+            onChange={(e) => onCompanyChange(e.target.value as string)}
+            disabled={loading}
+          >
+            {companies.map((company) => (
+              <MenuItem key={company.id} value={company.id}>
+                {company.name} ({company.type === "payment" ? "지급" : "수금"})
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* 년도 선택 */}
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>년도</InputLabel>
           <Select
             value={selectedYear}
             label="년도"
             onChange={(e) => onYearChange(e.target.value as number)}
-            disabled={loading}
+            disabled={loading || !selectedCompany}
           >
             {availableYears.map((year) => (
               <MenuItem key={year} value={year}>
