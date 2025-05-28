@@ -7,13 +7,7 @@ import {
   ValueFormatterParams,
 } from "ag-grid-community";
 import DataGrid from "@/components/data-grid";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  CircularProgress,
-} from "@mui/material";
+import { CircularProgress } from "@mui/material";
 
 interface Company {
   id: string;
@@ -39,9 +33,7 @@ interface FinancialData {
 interface PartnerGridProps {
   companies: Company[];
   selectedCompany: string;
-  onCompanyChange: (companyId: string) => void;
   selectedYear: number;
-  onYearChange: (year: number) => void;
   data: FinancialData[];
   loading?: boolean;
   onDataChange: (data: FinancialData[]) => void;
@@ -64,15 +56,11 @@ const parseNumber = (value: string): number | null => {
 export default function PartnerGrid({
   companies,
   selectedCompany,
-  onCompanyChange,
   selectedYear,
-  onYearChange,
   data,
   loading = false,
   onDataChange,
 }: PartnerGridProps) {
-  const availableYears = [2023, 2024, 2025, 2026];
-
   const selectedCompanyInfo = companies.find(
     (company) => company.id === selectedCompany,
   );
@@ -295,66 +283,26 @@ export default function PartnerGrid({
   };
 
   return (
-    <div className="space-y-4">
-      {/* 년도 선택 */}
-      <div className="flex gap-4">
-        {/* 회사 선택 */}
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>회사</InputLabel>
-          <Select
-            value={selectedCompany}
-            label="회사"
-            onChange={(e) => onCompanyChange(e.target.value as string)}
-            disabled={loading}
-          >
-            {companies.map((company) => (
-              <MenuItem key={company.id} value={company.id}>
-                {company.name} ({company.type === "payment" ? "지급" : "수금"})
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* 년도 선택 */}
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>년도</InputLabel>
-          <Select
-            value={selectedYear}
-            label="년도"
-            onChange={(e) => onYearChange(e.target.value as number)}
-            disabled={loading || !selectedCompany}
-          >
-            {availableYears.map((year) => (
-              <MenuItem key={year} value={year}>
-                {year}년
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-
-      {/* 그리드 */}
-      <div className="w-full h-[600px]">
-        {loading ? (
-          <div className="w-full h-full bg-gray-50 border border-gray-300 rounded-lg flex items-center justify-center">
-            <div className="flex flex-col items-center space-y-4">
-              <CircularProgress size={40} />
-              <p className="text-gray-500">데이터를 불러오는 중...</p>
-            </div>
+    <div className="w-full h-[600px]">
+      {loading ? (
+        <div className="w-full h-full bg-gray-50 border border-gray-300 rounded-lg flex items-center justify-center">
+          <div className="flex flex-col items-center space-y-4">
+            <CircularProgress size={40} />
+            <p className="text-gray-500">데이터를 불러오는 중...</p>
           </div>
-        ) : data.length > 0 ? (
-          <DataGrid
-            columnDefs={columnDefs}
-            data={data}
-            pagination={false}
-            onCellValueChanged={handleCellValueChanged}
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-50 border border-gray-300 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">{selectedYear}년 데이터가 없습니다.</p>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : data.length > 0 ? (
+        <DataGrid
+          columnDefs={columnDefs}
+          data={data}
+          pagination={false}
+          onCellValueChanged={handleCellValueChanged}
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-50 border border-gray-300 rounded-lg flex items-center justify-center">
+          <p className="text-gray-500">{selectedYear}년 데이터가 없습니다.</p>
+        </div>
+      )}
     </div>
   );
 }

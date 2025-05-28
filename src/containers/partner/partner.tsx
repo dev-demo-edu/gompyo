@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Stack, Button } from "@mui/material";
+import { Stack, Button, FormControl, InputLabel } from "@mui/material";
+import { Select } from "@mui/material";
+import { MenuItem } from "@mui/material";
 import PartnerGrid from "./partner-grid";
 
 interface Company {
@@ -103,6 +105,7 @@ export default function Partner() {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [loading, setLoading] = useState(false);
+  const availableYears = [2023, 2024, 2025, 2026];
 
   // 회사 목록 로드
   useEffect(() => {
@@ -175,71 +178,113 @@ export default function Partner() {
         <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
           거래처 관리
         </h1>
+
         <Stack
           direction="row"
           spacing={2}
-          className="w-full justify-end mb-4 sm:mb-6"
+          className="w-full justify-between items-center mb-4 sm:mb-6"
         >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleDeleteYear}
-            disabled={loading || financialData.length === 0}
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#EF4444",
-              "&:hover": {
-                backgroundColor: "#DC2626",
-              },
-              "&:disabled": {
-                backgroundColor: "#9CA3AF",
-              },
-              boxShadow: "none",
-            }}
-          >
-            해당 연도 삭제
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddCompany}
-            disabled={loading}
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#22C55E",
-              "&:hover": {
-                backgroundColor: "#16A34A",
-              },
-              "&:disabled": {
-                backgroundColor: "#9CA3AF",
-              },
-              boxShadow: "none",
-            }}
-          >
-            회사 추가
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleDeleteCompany}
-            disabled={loading}
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#F59E0B",
-              "&:hover": {
-                backgroundColor: "#D97706",
-              },
-              "&:disabled": {
-                backgroundColor: "#9CA3AF",
-              },
-              boxShadow: "none",
-            }}
-          >
-            회사 삭제
-          </Button>
+          {/* 왼쪽: 회사 및 년도 선택 */}
+          <Stack direction="row" spacing={2}>
+            {/* 회사 선택 */}
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel shrink>회사</InputLabel>
+              <Select
+                value={selectedCompany}
+                label="회사"
+                onChange={(e) => setSelectedCompany(e.target.value as string)}
+                disabled={loading}
+              >
+                {companies.map((company) => (
+                  <MenuItem key={company.id} value={company.id}>
+                    {company.name} (
+                    {company.type === "payment" ? "지급" : "수금"})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* 년도 선택 */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>년도</InputLabel>
+              <Select
+                value={selectedYear}
+                label="년도"
+                onChange={(e) => setSelectedYear(e.target.value as number)}
+                disabled={loading || !selectedCompany}
+              >
+                {availableYears.map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}년
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+
+          {/* 오른쪽: 버튼들 */}
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteYear}
+              disabled={loading || financialData.length === 0}
+              sx={{
+                minWidth: 120,
+                fontWeight: 600,
+                backgroundColor: "#EF4444",
+                "&:hover": {
+                  backgroundColor: "#DC2626",
+                },
+                "&:disabled": {
+                  backgroundColor: "#9CA3AF",
+                },
+                boxShadow: "none",
+              }}
+            >
+              해당 연도 삭제
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddCompany}
+              disabled={loading}
+              sx={{
+                minWidth: 120,
+                fontWeight: 600,
+                backgroundColor: "#22C55E",
+                "&:hover": {
+                  backgroundColor: "#16A34A",
+                },
+                "&:disabled": {
+                  backgroundColor: "#9CA3AF",
+                },
+                boxShadow: "none",
+              }}
+            >
+              회사 추가
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteCompany}
+              disabled={loading}
+              sx={{
+                minWidth: 120,
+                fontWeight: 600,
+                backgroundColor: "#F59E0B",
+                "&:hover": {
+                  backgroundColor: "#D97706",
+                },
+                "&:disabled": {
+                  backgroundColor: "#9CA3AF",
+                },
+                boxShadow: "none",
+              }}
+            >
+              회사 삭제
+            </Button>
+          </Stack>
         </Stack>
 
         {/* 그리드 */}
@@ -247,9 +292,7 @@ export default function Partner() {
           <PartnerGrid
             companies={companies}
             selectedCompany={selectedCompany}
-            onCompanyChange={setSelectedCompany}
             selectedYear={selectedYear}
-            onYearChange={setSelectedYear}
             data={financialData}
             loading={loading}
             onDataChange={setFinancialData}
