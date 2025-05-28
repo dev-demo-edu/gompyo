@@ -1,11 +1,122 @@
 "use client";
 
-import { Stack } from "@mui/material";
-
-import { Button } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Stack, Button } from "@mui/material";
 import PartnerGrid from "./partner-grid";
 
+interface FinancialData {
+  id: string;
+  month: string;
+  lamplePurchase: number | null;
+  lamplePayment: number | null;
+  lampleBalance: number | null;
+  gomyoPurchase: number | null;
+  gomyoPayment: number | null;
+  gomyoBalance: number | null;
+  totalPurchase: number | null;
+  totalPayment: number | null;
+  totalBalance: number | null;
+}
+
+// 임시 데이터 생성 함수 (나중에 API 호출로 대체)
+const generateMockData = (year: number): FinancialData[] => {
+  const months = [
+    "1월",
+    "2월",
+    "3월",
+    "4월",
+    "5월",
+    "6월",
+    "7월",
+    "8월",
+    "9월",
+    "10월",
+    "11월",
+    "12월",
+  ];
+
+  return months
+    .map((month, index) => ({
+      id: `${year}-${index + 1}`,
+      month,
+      lamplePurchase: Math.floor(Math.random() * 5000) + 1000,
+      lamplePayment: Math.floor(Math.random() * 4000) + 800,
+      lampleBalance: Math.floor(Math.random() * 1000) + 200,
+      gomyoPurchase: Math.floor(Math.random() * 6000) + 1200,
+      gomyoPayment: Math.floor(Math.random() * 5000) + 1000,
+      gomyoBalance: Math.floor(Math.random() * 1200) + 200,
+      totalPurchase: null, // 계산되어 설정됨
+      totalPayment: null, // 계산되어 설정됨
+      totalBalance: null, // 계산되어 설정됨
+    }))
+    .map((item) => ({
+      ...item,
+      totalPurchase: (item.lamplePurchase || 0) + (item.gomyoPurchase || 0),
+      totalPayment: (item.lamplePayment || 0) + (item.gomyoPayment || 0),
+      totalBalance: (item.lampleBalance || 0) + (item.gomyoBalance || 0),
+    }));
+};
+
+// API 호출 함수 (현재는 목업, 나중에 실제 API로 대체)
+const fetchFinancialData = async (year: number): Promise<FinancialData[]> => {
+  // 실제 API 호출 시뮬레이션
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(generateMockData(year));
+    }, 500); // 로딩 시뮬레이션
+  });
+};
+
 export default function Partner() {
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // 데이터 로드 함수
+  const loadData = async (year: number) => {
+    setLoading(true);
+    try {
+      const data = await fetchFinancialData(year);
+      setFinancialData(data);
+    } catch (error) {
+      console.error("데이터 로드 실패:", error);
+      setFinancialData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 년도 변경시 데이터 로드
+  useEffect(() => {
+    loadData(selectedYear);
+  }, [selectedYear]);
+
+  // 해당 연도 삭제
+  const handleDeleteYear = async () => {
+    if (confirm(`${selectedYear}년 데이터를 삭제하시겠습니까?`)) {
+      try {
+        // 실제로는 API 호출
+        // await deleteYearData(selectedYear);
+        console.log(`${selectedYear}년 데이터 삭제`);
+        setFinancialData([]);
+      } catch (error) {
+        console.error("데이터 삭제 실패:", error);
+      }
+    }
+  };
+
+  // 회사 추가
+  const handleAddCompany = () => {
+    // 실제로는 모달이나 다른 UI로 회사 정보 입력받음
+    console.log("회사 추가 기능");
+  };
+
+  // 회사 삭제
+  const handleDeleteCompany = () => {
+    // 실제로는 선택된 회사 삭제
+    console.log("회사 삭제 기능");
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8">
@@ -20,12 +131,17 @@ export default function Partner() {
           <Button
             variant="contained"
             color="primary"
+            onClick={handleDeleteYear}
+            disabled={loading || financialData.length === 0}
             sx={{
               minWidth: 120,
               fontWeight: 600,
-              backgroundColor: "#22C55E",
+              backgroundColor: "#EF4444",
               "&:hover": {
-                backgroundColor: "#16A34A",
+                backgroundColor: "#DC2626",
+              },
+              "&:disabled": {
+                backgroundColor: "#9CA3AF",
               },
               boxShadow: "none",
             }}
@@ -35,12 +151,17 @@ export default function Partner() {
           <Button
             variant="contained"
             color="primary"
+            onClick={handleAddCompany}
+            disabled={loading}
             sx={{
               minWidth: 120,
               fontWeight: 600,
               backgroundColor: "#22C55E",
               "&:hover": {
                 backgroundColor: "#16A34A",
+              },
+              "&:disabled": {
+                backgroundColor: "#9CA3AF",
               },
               boxShadow: "none",
             }}
@@ -50,12 +171,17 @@ export default function Partner() {
           <Button
             variant="contained"
             color="primary"
+            onClick={handleDeleteCompany}
+            disabled={loading}
             sx={{
               minWidth: 120,
               fontWeight: 600,
-              backgroundColor: "#22C55E",
+              backgroundColor: "#F59E0B",
               "&:hover": {
-                backgroundColor: "#16A34A",
+                backgroundColor: "#D97706",
+              },
+              "&:disabled": {
+                backgroundColor: "#9CA3AF",
               },
               boxShadow: "none",
             }}
@@ -63,9 +189,16 @@ export default function Partner() {
             회사 삭제
           </Button>
         </Stack>
+
         {/* 그리드 */}
         <div className="overflow-hidden">
-          <PartnerGrid />
+          <PartnerGrid
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+            data={financialData}
+            loading={loading}
+            onDataChange={setFinancialData}
+          />
         </div>
       </div>
     </div>
