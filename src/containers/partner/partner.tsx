@@ -30,7 +30,7 @@ export default function Partner() {
               boxShadow: "none",
             }}
           >
-            선택 삭제
+            해당 연도 삭제
           </Button>
           <Button
             variant="contained"
@@ -45,7 +45,7 @@ export default function Partner() {
               boxShadow: "none",
             }}
           >
-            계좌 추가
+            회사 추가
           </Button>
           <Button
             variant="contained"
@@ -60,7 +60,7 @@ export default function Partner() {
               boxShadow: "none",
             }}
           >
-            계좌 수정
+            회사 삭제
           </Button>
         </Stack>
         {/* 그리드 */}

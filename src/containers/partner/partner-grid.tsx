@@ -44,19 +44,24 @@ export default function PartnerGrid() {
     () => [
       {
         headerName: "월",
+        headerClass: "text-center",
         field: "month",
         pinned: "left",
+        filter: false,
+        sortable: false,
         width: 120,
         editable: false,
         cellStyle: { fontWeight: "bold" },
       },
       {
         headerName: "램플",
+        headerClass: "text-center",
         children: [
           {
             headerName: "구매",
             field: "lamplePurchase",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
@@ -69,7 +74,8 @@ export default function PartnerGrid() {
           {
             headerName: "지급",
             field: "lamplePayment",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
@@ -82,7 +88,8 @@ export default function PartnerGrid() {
           {
             headerName: "잔액",
             field: "lampleBalance",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
@@ -102,14 +109,17 @@ export default function PartnerGrid() {
       },
       {
         headerName: "곰표",
+        headerClass: "text-center",
         children: [
           {
             headerName: "구매",
             field: "gomyoPurchase",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
-            valueFormatter: (params) => formatNumber(params.value),
-            valueSetter: (params) => {
+            valueFormatter: (params: ValueFormatterParams) =>
+              formatNumber(params.value),
+            valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gomyoPurchase = newValue;
               return true;
@@ -118,10 +128,12 @@ export default function PartnerGrid() {
           {
             headerName: "지급",
             field: "gomyoPayment",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
-            valueFormatter: (params) => formatNumber(params.value),
-            valueSetter: (params) => {
+            valueFormatter: (params: ValueFormatterParams) =>
+              formatNumber(params.value),
+            valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gomyoPayment = newValue;
               return true;
@@ -130,15 +142,17 @@ export default function PartnerGrid() {
           {
             headerName: "잔액",
             field: "gomyoBalance",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
-            valueFormatter: (params) => formatNumber(params.value),
-            valueSetter: (params) => {
+            valueFormatter: (params: ValueFormatterParams) =>
+              formatNumber(params.value),
+            valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gomyoBalance = newValue;
               return true;
             },
-            cellStyle: (params) => {
+            cellStyle: (params: CellClassParams) => {
               if (params.value < 0) {
                 return { color: "red" };
               }
@@ -149,14 +163,17 @@ export default function PartnerGrid() {
       },
       {
         headerName: "전체",
+        headerClass: "text-center",
         children: [
           {
             headerName: "구매",
             field: "totalPurchase",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
-            valueFormatter: (params) => formatNumber(params.value),
-            valueSetter: (params) => {
+            valueFormatter: (params: ValueFormatterParams) =>
+              formatNumber(params.value),
+            valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.totalPurchase = newValue;
               return true;
@@ -165,10 +182,12 @@ export default function PartnerGrid() {
           {
             headerName: "지급",
             field: "totalPayment",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
-            valueFormatter: (params) => formatNumber(params.value),
-            valueSetter: (params) => {
+            valueFormatter: (params: ValueFormatterParams) =>
+              formatNumber(params.value),
+            valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.totalPayment = newValue;
               return true;
@@ -177,15 +196,17 @@ export default function PartnerGrid() {
           {
             headerName: "잔액",
             field: "totalBalance",
-            width: 120,
+            minWidth: 120,
+            flex: 1,
             editable: true,
-            valueFormatter: (params) => formatNumber(params.value),
-            valueSetter: (params) => {
+            valueFormatter: (params: ValueFormatterParams) =>
+              formatNumber(params.value),
+            valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.totalBalance = newValue;
               return true;
             },
-            cellStyle: (params) => {
+            cellStyle: (params: CellClassParams) => {
               if (params.value < 0) {
                 return { color: "red" };
               }
@@ -240,7 +261,7 @@ export default function PartnerGrid() {
       </div>
 
       {/* 그리드 */}
-      <div className="w-full h-[600px]">
+      <div className="w- h-[600px]">
         {/* DataGrid 컴포넌트 사용 */}
         <DataGrid
           columnDefs={columnDefs}
