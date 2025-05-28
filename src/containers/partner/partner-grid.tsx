@@ -73,6 +73,14 @@ export default function PartnerGrid({
 }: PartnerGridProps) {
   const availableYears = [2023, 2024, 2025, 2026];
 
+  const selectedCompanyInfo = companies.find(
+    (company) => company.id === selectedCompany,
+  );
+
+  const isPayment = selectedCompanyInfo?.type === "payment";
+  const purchaseOrSaleText = isPayment ? "구매" : "판매";
+  const paymentOrCollectionText = isPayment ? "지급" : "수금";
+
   const columnDefs: ColDef[] = useMemo(
     () => [
       {
@@ -91,8 +99,10 @@ export default function PartnerGrid({
         headerClass: "text-center",
         children: [
           {
-            headerName: "구매",
+            headerName: purchaseOrSaleText,
             field: "lamplePurchase",
+            filter: false,
+            sortable: false,
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -108,8 +118,10 @@ export default function PartnerGrid({
             },
           },
           {
-            headerName: "지급",
+            headerName: paymentOrCollectionText,
             field: "lamplePayment",
+            filter: false,
+            sortable: false,
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -127,6 +139,8 @@ export default function PartnerGrid({
           {
             headerName: "잔액",
             field: "lampleBalance",
+            filter: false,
+            sortable: false,
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -155,7 +169,9 @@ export default function PartnerGrid({
         children: [
           {
             headerName: "구매",
+            filter: false,
             field: "gompyoPurchase",
+            sortable: false,
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -172,7 +188,9 @@ export default function PartnerGrid({
           },
           {
             headerName: "지급",
+            filter: false,
             field: "gompyoPayment",
+            sortable: false,
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -189,7 +207,9 @@ export default function PartnerGrid({
           },
           {
             headerName: "잔액",
+            filter: false,
             field: "gompyoBalance",
+            sortable: false,
             minWidth: 120,
             flex: 1,
             editable: true,
@@ -218,6 +238,8 @@ export default function PartnerGrid({
         children: [
           {
             headerName: "구매",
+            filter: false,
+            sortable: false,
             field: "totalPurchase",
             minWidth: 120,
             flex: 1,
@@ -228,6 +250,8 @@ export default function PartnerGrid({
           },
           {
             headerName: "지급",
+            filter: false,
+            sortable: false,
             field: "totalPayment",
             minWidth: 120,
             flex: 1,
@@ -238,6 +262,8 @@ export default function PartnerGrid({
           },
           {
             headerName: "잔액",
+            filter: false,
+            sortable: false,
             field: "totalBalance",
             minWidth: 120,
             flex: 1,
@@ -255,7 +281,7 @@ export default function PartnerGrid({
         ],
       },
     ],
-    [],
+    [purchaseOrSaleText, paymentOrCollectionText],
   );
 
   const handleCellValueChanged = (event: CellValueChangedEvent) => {
