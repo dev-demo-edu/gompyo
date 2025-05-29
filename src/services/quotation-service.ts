@@ -1,127 +1,81 @@
 /**
- * @file grid-service.ts
- * @description 엑셀형 그리드 데이터 서비스
+ * @file quotation-service.ts
+ * @description 견적 그리드 데이터 서비스
  *
  * 이 서비스는 정규화된 관계형 데이터를 엑셀 형태의 그리드로 변환하고,
  * 그리드에서의 데이터 수정을 다시 관계형 데이터베이스에 반영하는 기능을 제공합니다.
  *
  * 주요 기능:
- * 1. 피벗 형태의 그리드 데이터 조회
+ * 1. 피벗 형태의 그리드 데이터 조회 (companyType 필터링 지원)
  * 2. 그리드 셀 값 업데이트
  * 3. 회사/품목 추가/삭제
  *
  * 데이터 구조:
- * - 행: 품목 (gridItems)
- * - 열: 회사 (gridCompanies)
- * - 값: 회사별 품목 값 (gridCompanyItems.value)
+ * - 행: 품목 (quotationItems)
+ * - 열: 회사 (partners)
+ * - 값: 회사별 품목 값 (partnersItems.value)
  */
 
 import { db } from "@/db";
-import { partners, quotationItems, partnersItems } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import {
+  quotationCompanies,
+  quotationItems,
+  quotationCompaniesItems,
+} from "@/db/schema";
+import { eq, and, inArray, InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
-// 그리드 데이터 타입 정의
-export interface GridData {
-  items: GridItem[];
-  companies: GridCompany[];
-}
+export type QuotationItem = InferSelectModel<typeof quotationItems>;
+export type QuotationCompany = InferSelectModel<typeof quotationCompanies>;
+export type QuotationRelation = InferSelectModel<
+  typeof quotationCompaniesItems
+>;
 
-export interface GridItem {
+// 그리드 데이터 타입 정의
+export interface QuotationGridItem {
   id: string;
   itemName: string;
-  values: Record<string, number | null>; // companyId -> value
+  itemOrigin: string;
+  itemNameEn?: string | null;
+  itemOriginEn?: string | null;
+  values: Record<string, number | null>; // companyId를 키로 하는 값들
 }
 
-export interface GridCompany {
-  id: string;
-  companyName: string;
+export interface QuotationGridData {
+  items: QuotationItem[];
+  companies: QuotationCompany[];
+  priceData: Record<string, Record<string, number>>;
 }
 
-export interface GridCellUpdate {
+export interface QuotationCellUpdate {
   itemId: string;
   companyId: string;
   value: number | null;
 }
 
 /**
- * 피벗 형태의 그리드 데이터 조회
+ * 피벗 형태의 그리드 데이터 조회 (companyType 필터링 지원)
  * 관계형 데이터를 엑셀 형태로 변환하여 반환
  */
-export async function getGridData(): Promise<GridData> {
-  try {
-    // 1. 모든 회사 조회
-    const companies = await db
-      .select({
-        id: partners.id,
-        companyName: partners.companyName,
-      })
-      .from(partners)
-      .orderBy(partners.companyName);
-
-    // 2. 모든 품목 조회
-    const items = await db
-      .select({
-        id: quotationItems.id,
-        itemName: quotationItems.itemName,
-      })
-      .from(quotationItems)
-      .orderBy(quotationItems.itemName);
-
-    // 3. 모든 관계 데이터 조회
-    const relationships = await db
-      .select({
-        itemId: partnersItems.itemId,
-        companyId: partnersItems.companyId,
-        value: partnersItems.value,
-      })
-      .from(partnersItems);
-
-    // 4. 피벗 형태로 데이터 변환
-    const gridItemsData: GridItem[] = items.map((item) => {
-      const values: Record<string, number | null> = {};
-
-      // 각 회사별로 해당 품목의 값 찾기
-      companies.forEach((company) => {
-        const relationship = relationships.find(
-          (rel) => rel.itemId === item.id && rel.companyId === company.id,
-        );
-        values[company.id] = relationship?.value ?? null;
-      });
-
-      return {
-        id: item.id,
-        itemName: item.itemName,
-        values,
-      };
-    });
-
-    return {
-      items: gridItemsData,
-      companies,
-    };
-  } catch (error) {
-    console.error("그리드 데이터 조회 실패:", error);
-    throw new Error("그리드 데이터를 불러올 수 없습니다.");
-  }
-}
 
 /**
  * 그리드 셀 값 업데이트
  * 특정 회사-품목 조합의 값을 업데이트
  */
-export async function updateGridCell(update: GridCellUpdate): Promise<void> {
+export async function updateQuotationCell(
+  update: QuotationCellUpdate,
+): Promise<void> {
   try {
     const { itemId, companyId, value } = update;
 
     // 기존 관계 데이터 확인
     const existingRelation = await db
       .select()
-      .from(partnersItems)
+      .from(quotationCompaniesItems)
       .where(
         and(
-          eq(partnersItems.itemId, itemId),
-          eq(partnersItems.companyId, companyId),
+          eq(quotationCompaniesItems.itemId, itemId),
+          eq(quotationCompaniesItems.companyId, companyId),
         ),
       )
       .limit(1);
@@ -129,20 +83,20 @@ export async function updateGridCell(update: GridCellUpdate): Promise<void> {
     if (existingRelation.length > 0) {
       // 기존 데이터 업데이트
       await db
-        .update(partnersItems)
+        .update(quotationCompaniesItems)
         .set({
           value,
           updatedAt: new Date().toISOString(),
         })
         .where(
           and(
-            eq(partnersItems.itemId, itemId),
-            eq(partnersItems.companyId, companyId),
+            eq(quotationCompaniesItems.itemId, itemId),
+            eq(quotationCompaniesItems.companyId, companyId),
           ),
         );
     } else {
       // 새 관계 데이터 생성
-      await db.insert(partnersItems).values({
+      await db.insert(quotationCompaniesItems).values({
         id: nanoid(),
         itemId,
         companyId,
@@ -161,24 +115,12 @@ export async function updateGridCell(update: GridCellUpdate): Promise<void> {
  * 새 회사 추가
  */
 export async function addCompany(
-  companyName: string,
-  companyType: string,
-): Promise<GridCompany> {
+  company: QuotationCompany,
+): Promise<QuotationCompany> {
   try {
-    const newCompany = {
-      id: nanoid(),
-      companyName,
-      companyType,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    await db.insert(quotationCompanies).values(company);
 
-    await db.insert(partners).values(newCompany);
-
-    return {
-      id: newCompany.id,
-      companyName: newCompany.companyName,
-    };
+    return company;
   } catch (error) {
     console.error("회사 추가 실패:", error);
     throw new Error("회사 추가에 실패했습니다.");
@@ -188,30 +130,11 @@ export async function addCompany(
 /**
  * 새 품목 추가
  */
-export async function addItem(
-  itemName: string,
-  itemOrigin: string,
-  itemNameEn: string,
-  itemOriginEn: string,
-): Promise<GridItem> {
+export async function addItem(item: QuotationItem): Promise<QuotationItem> {
   try {
-    const newItem = {
-      id: nanoid(),
-      itemName,
-      itemOrigin,
-      itemNameEn,
-      itemOriginEn,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    await db.insert(quotationItems).values(item);
 
-    await db.insert(quotationItems).values(newItem);
-
-    return {
-      id: newItem.id,
-      itemName: newItem.itemName,
-      values: {}, // 빈 값으로 시작
-    };
+    return item;
   } catch (error) {
     console.error("품목 추가 실패:", error);
     throw new Error("품목 추가에 실패했습니다.");
@@ -224,7 +147,9 @@ export async function addItem(
 export async function deleteCompany(companyId: string): Promise<void> {
   try {
     // CASCADE 설정으로 관련 데이터도 자동 삭제됨
-    await db.delete(partners).where(eq(partners.id, companyId));
+    await db
+      .delete(quotationCompanies)
+      .where(eq(quotationCompanies.id, companyId));
   } catch (error) {
     console.error("회사 삭제 실패:", error);
     throw new Error("회사 삭제에 실패했습니다.");
@@ -241,5 +166,149 @@ export async function deleteItem(itemId: string): Promise<void> {
   } catch (error) {
     console.error("품목 삭제 실패:", error);
     throw new Error("품목 삭제에 실패했습니다.");
+  }
+}
+
+/**
+ * companyType에 따라 필터링된 회사 목록 조회
+ */
+export async function getCompanies(
+  companyType?: string,
+): Promise<QuotationCompany[]> {
+  const query = db
+    .select()
+    .from(quotationCompanies)
+    .orderBy(quotationCompanies.companyName);
+
+  return companyType
+    ? await query.where(eq(quotationCompanies.companyType, companyType))
+    : await query;
+}
+
+/**
+ * companyType에 따라 필터링된 품목 목록 조회
+ * 해당 companyType의 회사들과 관계 데이터가 있는 품목들만 반환
+ */
+export async function getItems(companyType?: string): Promise<QuotationItem[]> {
+  if (!companyType) {
+    // companyType이 없으면 모든 품목 반환
+    return await db
+      .select()
+      .from(quotationItems)
+      .orderBy(quotationItems.itemName);
+  }
+
+  // 1. companyType에 해당하는 회사들의 ID 조회
+  const companies = await getCompanies(companyType);
+  const companyIds = companies.map((company) => company.id);
+
+  if (companyIds.length === 0) {
+    return [];
+  }
+
+  // 2. 해당 회사들과 관계가 있는 품목 ID들 조회
+  const relationshipsQuery = db
+    .selectDistinct({ itemId: quotationCompaniesItems.itemId })
+    .from(quotationCompaniesItems)
+    .where(
+      companyIds.length === 1
+        ? eq(quotationCompaniesItems.companyId, companyIds[0])
+        : inArray(quotationCompaniesItems.companyId, companyIds),
+    );
+
+  const relationships = await relationshipsQuery;
+  const itemIds = relationships.map((rel) => rel.itemId);
+
+  if (itemIds.length === 0) {
+    return [];
+  }
+
+  // 3. 해당 품목들의 상세 정보 조회
+  return await db
+    .select()
+    .from(quotationItems)
+    .where(
+      itemIds.length === 1
+        ? eq(quotationItems.id, itemIds[0])
+        : inArray(quotationItems.id, itemIds),
+    )
+    .orderBy(quotationItems.itemName);
+}
+
+/**
+ * companyType에 따라 필터링된 견적 관계 데이터 조회
+ * priceData를 기반으로 items와 companies 데이터를 함께 조회
+ */
+export async function getQuotationRelations(
+  companyType?: string,
+): Promise<QuotationGridData> {
+  try {
+    if (!companyType) {
+      return {
+        items: [],
+        companies: [],
+        priceData: {},
+      };
+    }
+
+    // 1. companyType에 해당하는 회사들 조회
+    const companies = await getCompanies(companyType);
+    const companyIds = companies.map((company) => company.id);
+
+    if (companyIds.length === 0) {
+      return {
+        items: [],
+        companies: [],
+        priceData: {},
+      };
+    }
+
+    // 2. 해당 회사들과 관계가 있는 품목들 조회
+    const items = await getItems(companyType);
+    const itemIds = items.map((item) => item.id);
+
+    if (itemIds.length === 0) {
+      return {
+        items: [],
+        companies: [],
+        priceData: {},
+      };
+    }
+
+    // 3. 해당 회사들과 품목들의 관계 데이터(priceData) 조회
+    const relationshipsData = await db
+      .select()
+      .from(quotationCompaniesItems)
+      .where(
+        companyIds.length === 1
+          ? eq(quotationCompaniesItems.companyId, companyIds[0])
+          : inArray(quotationCompaniesItems.companyId, companyIds),
+      );
+
+    // 4. priceData 구조로 변환 (companyId -> itemName -> value)
+    const priceData: Record<string, Record<string, number>> = {};
+
+    companies.forEach((company) => {
+      priceData[company.id] = {};
+    });
+
+    relationshipsData.forEach((relation) => {
+      const item = items.find((item) => item.id === relation.itemId);
+      if (item && relation.value !== null) {
+        if (!priceData[relation.companyId]) {
+          priceData[relation.companyId] = {};
+        }
+        priceData[relation.companyId][item.itemName] = relation.value;
+      }
+    });
+
+    return {
+      items,
+      companies,
+      priceData,
+    };
+  } catch (error) {
+    console.error("getQuotationRelations error", error);
+    throw new Error("견적 관계 데이터 조회에 실패했습니다.");
   }
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QuotationGrid from "./quotation-grid";
 import {
   CompanyAddModal,
@@ -10,6 +10,25 @@ import {
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
 import { Button, Stack, Tab, Tabs } from "@mui/material";
+import {
+  // getQuotationDataAction,
+  updateQuotationCellAction,
+  addQuotationCompanyAction,
+  addQuotationItemAction,
+  deleteQuotationCompanyAction,
+  deleteQuotationItemAction,
+  // getCompaniesAction,
+  // getItemsAction,
+  getDomesticAction,
+  getForeignerAction,
+} from "@/actions/quotation";
+import {
+  QuotationCompany,
+  // QuotationGridItem,
+  QuotationItem,
+} from "@/services/quotation-service";
+import { nanoid } from "nanoid";
+import { CellValueChangedEvent } from "ag-grid-community";
 
 export default function QuotationContainer() {
   // 모달 상태 관리
@@ -27,65 +46,25 @@ export default function QuotationContainer() {
   >({});
 
   // 데이터 상태 관리
-  const [domesticItems, setDomesticItems] = useState([
-    { id: "1001", code: "1001", name: "제품A", origin: "카나다" },
-    { id: "1002", code: "1002", name: "제품B", origin: "미국" },
-    { id: "1005", code: "1004", name: "브라운렌틸1", origin: "카나다" },
-  ]);
+  const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
 
-  const [domesticCompanies, setDomesticCompanies] = useState([
-    "한가(도착)",
-    "온씨(도착)",
-    "수입(도착)",
-    "한라농협물산1",
-  ]);
+  const [domesticCompanies, setDomesticCompanies] = useState<
+    QuotationCompany[]
+  >([]);
 
   const [domesticPriceData, setDomesticPriceData] = useState<
     Record<string, Record<string, number>>
-  >({
-    "한가(도착)": {
-      제품A: 1600,
-      제품B: 1700,
-      브라운렌틸: 1500,
-    },
-    "온씨(도착)": {
-      제품A: 1550,
-      제품B: 1650,
-      브라운렌틸: 1450,
-    },
-    "수입(도착)": {
-      제품B: 1600,
-      브라운렌틸: 1450,
-    },
-    한라농협물산: {
-      제품A: 1550,
-      제품B: 1650,
-      브라운렌틸: 1450,
-    },
-  });
+  >({});
 
-  const [overseasItems, setOverseasItems] = useState([
-    { id: "1001", code: "1001", name: "제품C", origin: "중국" },
-    { id: "1002", code: "1002", name: "제품D", origin: "한국" },
-    { id: "1005", code: "1004", name: "해외제품", origin: "미국" },
-  ]);
+  const [overseasItems, setOverseasItems] = useState<QuotationItem[]>([]);
 
-  const [overseasCompanies, setOverseasCompanies] = useState([
-    "해외업체1",
-    "해외업체2",
-    "해외업체3",
-    "해외업체4",
-  ]);
+  const [overseasCompanies, setOverseasCompanies] = useState<
+    QuotationCompany[]
+  >([]);
 
   const [overseasPriceData, setOverseasPriceData] = useState<
     Record<string, Record<string, number>>
-  >({
-    해외업체1: {
-      제품C: 1600,
-      제품D: 1700,
-      해외제품: 1500,
-    },
-  });
+  >({});
 
   const [tab, setTab] = useState<"domestic" | "overseas">("domestic");
 
@@ -97,6 +76,22 @@ export default function QuotationContainer() {
     tab === "domestic" ? setDomesticCompanies : setOverseasCompanies;
   const setPriceData =
     tab === "domestic" ? setDomesticPriceData : setOverseasPriceData;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const domesticData = await getDomesticAction();
+      setDomesticItems(domesticData.items);
+      setDomesticCompanies(domesticData.companies);
+      setDomesticPriceData(domesticData.priceData);
+      const overseasData = await getForeignerAction();
+      setOverseasItems(overseasData.items);
+      setOverseasCompanies(overseasData.companies);
+      setOverseasPriceData(overseasData.priceData);
+      console.log("domesticData", domesticData);
+      console.log("overseasData", overseasData);
+    };
+    fetchData();
+  }, []);
 
   // 숫자 포맷팅 함수
   const formatNumber = (num: number) =>
@@ -112,24 +107,28 @@ export default function QuotationContainer() {
       origin: string;
     }> = [];
 
-    Object.entries(selectedRows).forEach(([productCode, isRowSelected]) => {
+    Object.entries(selectedRows).forEach(([itemId, isRowSelected]) => {
       if (isRowSelected) {
-        Object.entries(selectedColumns).forEach(([company, isColSelected]) => {
-          if (isColSelected) {
-            const product = items.find((item) => item.code === productCode);
-            const price = priceData[company]?.[product?.name || ""] || 0;
+        Object.entries(selectedColumns).forEach(
+          ([companyId, isColSelected]) => {
+            if (isColSelected) {
+              const product = items.find((item) => item.id === itemId);
+              const company = companies.find((c) => c.id === companyId);
+              const price =
+                priceData[companyId]?.[product?.itemName || ""] || 0;
 
-            if (price > 0) {
-              intersectionItems.push({
-                productCode,
-                productName: product?.name || "",
-                origin: product?.origin || "",
-                company,
-                price,
-              });
+              if (price > 0) {
+                intersectionItems.push({
+                  productCode: itemId,
+                  productName: product?.itemName || "",
+                  origin: product?.itemOrigin || "",
+                  company: company?.companyName || companyId,
+                  price,
+                });
+              }
             }
-          }
-        });
+          },
+        );
       }
     });
     return intersectionItems;
@@ -160,41 +159,66 @@ export default function QuotationContainer() {
     const newCompany = values.name;
 
     // 중복 체크
-    if (companies.includes(newCompany)) {
+    if (companies.some((company) => company.companyName === newCompany)) {
       throw new Error("이미 존재하는 업체명입니다.");
     }
 
-    setCompanies((prev) => [...prev, newCompany]);
+    const newCompanyObj = {
+      id: nanoid(),
+      companyName: newCompany,
+      companyType: tab,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setCompanies((prev) => [...prev, newCompanyObj]);
     setPriceData((prev) => ({
       ...prev,
-      [newCompany]: {}, // 새 업체는 빈 가격 데이터로 시작
+      [newCompanyObj.id]: {}, // 회사 ID를 키로 사용
     }));
+
+    addQuotationCompanyAction(newCompanyObj);
+    updateQuotationCellAction({
+      companyId: newCompanyObj.id,
+      itemId: tab === "domestic" ? domesticItems[0].id : overseasItems[0].id,
+      value: 0,
+    });
   };
 
   // 품목 추가 핸들러
   const handleAddItem = (values: ItemFormValues) => {
     // 중복 체크 (코드 기준)
-    if (items.some((item) => item.code === values.code)) {
+    if (items.some((item) => item.itemOrigin === values.itemOrigin)) {
       throw new Error("이미 존재하는 품목 코드입니다.");
     }
 
     const newItem = {
-      id: values.code,
-      code: values.code,
-      name: values.name,
-      origin: values.origin,
+      id: nanoid(),
+      itemName: values.itemName,
+      itemOrigin: values.itemOrigin,
+      itemNameEn: values.itemNameEn,
+      itemOriginEn: values.itemOriginEn,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     setItems((prev) => [...prev, newItem]);
+    addQuotationItemAction(newItem);
+    updateQuotationCellAction({
+      companyId:
+        tab === "domestic" ? domesticCompanies[0].id : overseasCompanies[0].id,
+      itemId: newItem.id,
+      value: 0,
+    });
   };
 
-  // 핸들러 추가
   const handleDeleteCompany = () => {
     if (!selectedCompany) return;
 
     setCompanies((prev) =>
-      prev.filter((company) => company !== selectedCompany),
+      prev.filter((company) => company.id !== selectedCompany),
     );
+    deleteQuotationCompanyAction(selectedCompany);
     setPriceData((prev) => {
       const updated = { ...prev };
       delete updated[selectedCompany];
@@ -207,16 +231,17 @@ export default function QuotationContainer() {
   const handleDeleteItems = () => {
     if (selectedItems.length === 0) return;
 
-    setItems((prev) =>
-      prev.filter((item) => !selectedItems.includes(item.code)),
-    );
+    setItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
+    selectedItems.forEach((itemId) => {
+      deleteQuotationItemAction(itemId);
+    });
     setPriceData((prev) => {
       const updated = { ...prev };
       Object.keys(updated).forEach((company) => {
-        selectedItems.forEach((itemCode) => {
-          const item = items.find((i) => i.code === itemCode);
-          if (item && updated[company][item.name]) {
-            delete updated[company][item.name];
+        selectedItems.forEach((itemId) => {
+          const item = items.find((i) => i.id === itemId);
+          if (item && updated[company][item.itemName]) {
+            delete updated[company][item.itemName];
           }
         });
       });
@@ -224,6 +249,73 @@ export default function QuotationContainer() {
     });
     setSelectedItems([]);
     setItemDeleteModalOpen(false);
+  };
+
+  //업데이트 함수
+  const handleCellValueChanged = async (params: CellValueChangedEvent) => {
+    try {
+      // ag-grid에서 제공하는 정보 추출
+      const itemId = params.data.id; // 제품 ID
+      const companyId = params.column.getColId(); // 회사 ID (컬럼 필드명)
+
+      // 여러 방법으로 새로운 값 확인
+      const newValue = params.newValue; // 새로운 값
+      const oldValue = params.oldValue; // 이전 값
+      const currentValue = params.data[companyId]; // 현재 데이터에서 값
+
+      console.log("=== 셀 값 변경 디버깅 ===");
+      console.log("itemId:", itemId);
+      console.log("companyId:", companyId);
+      console.log("newValue:", newValue);
+      console.log("oldValue:", oldValue);
+      console.log("currentValue:", currentValue);
+      console.log("params:", params);
+
+      // companyId가 없으면 처리하지 않음 (체크박스 컬럼 등)
+      if (!companyId || typeof companyId !== "string") {
+        console.log("companyId가 유효하지 않음, 처리 중단");
+        return;
+      }
+
+      // 새로운 값 결정 (newValue가 없으면 currentValue 사용)
+      const finalValue = newValue !== undefined ? newValue : currentValue;
+
+      // 숫자로 변환 (빈 값이면 null)
+      const numericValue =
+        finalValue === "" || finalValue === null || finalValue === undefined
+          ? null
+          : Number(finalValue);
+
+      console.log("finalValue:", finalValue);
+      console.log("numericValue:", numericValue);
+
+      // 로컬 상태 업데이트 (제품명으로 저장)
+      const product = items.find((item) => item.id === itemId);
+      if (product) {
+        setPriceData((prev) => ({
+          ...prev,
+          [companyId]: {
+            ...prev[companyId],
+            [product.itemName]: numericValue || 0,
+          },
+        }));
+      }
+
+      // 서버에 업데이트 요청
+      await updateQuotationCellAction({
+        itemId,
+        companyId,
+        value: numericValue,
+      });
+
+      console.log(
+        `셀 값 업데이트 완료: 제품 ${itemId}, 회사 ${companyId}, 값 ${numericValue}`,
+      );
+    } catch (error) {
+      console.error("셀 값 업데이트 실패:", error);
+      // 에러 발생 시 사용자에게 알림
+      alert("가격 업데이트에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -306,7 +398,12 @@ export default function QuotationContainer() {
         {/* 그리드 */}
         <div className="overflow-hidden">
           <QuotationGrid
-            items={items}
+            items={items.map((item) => ({
+              id: item.id,
+              code: item.itemOrigin,
+              name: item.itemName,
+              origin: item.itemOrigin,
+            }))}
             companies={companies}
             priceData={priceData}
             setPriceData={setPriceData}
@@ -318,6 +415,7 @@ export default function QuotationContainer() {
             formatNumber={formatNumber}
             onCompanySelect={setSelectedCompany}
             onItemsSelect={setSelectedItems}
+            onCellValueChanged={handleCellValueChanged}
           />
         </div>
 

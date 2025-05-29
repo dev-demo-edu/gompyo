@@ -1,6 +1,11 @@
 import React from "react";
 import DataGrid from "@/components/data-grid";
-import { ICellRendererParams, SelectionChangedEvent } from "ag-grid-community";
+import {
+  ICellRendererParams,
+  SelectionChangedEvent,
+  CellValueChangedEvent,
+} from "ag-grid-community";
+import { QuotationCompany } from "@/services/quotation-service";
 
 // CustomHeaderComponent의 props 타입 정의
 interface CustomHeaderProps {
@@ -14,14 +19,13 @@ interface CustomHeaderProps {
 // cellStyle의 params 타입 정의
 interface CellStyleParams {
   data: {
-    code: string;
+    id: string;
   };
 }
 
 // Item 타입 정의
 interface Item {
   id: string;
-  code: string;
   name: string;
   origin: string;
 }
@@ -29,11 +33,8 @@ interface Item {
 // QuotationGrid props 타입 정의
 interface QuotationGridProps {
   items: Item[];
-  companies: string[];
+  companies: QuotationCompany[];
   priceData: Record<string, Record<string, number>>;
-  setPriceData: React.Dispatch<
-    React.SetStateAction<Record<string, Record<string, number>>>
-  >;
   selectedRows: Record<string, boolean>;
   setSelectedRows: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
@@ -51,14 +52,14 @@ interface QuotationGridProps {
   }>;
   formatNumber: (num: number) => string;
   onCompanySelect: (company: string) => void;
-  onItemsSelect: (itemCodes: string[]) => void;
+  onItemsSelect: (itemIds: string[]) => void;
+  onCellValueChanged?: (event: CellValueChangedEvent) => void;
 }
 
 export default function QuotationGrid({
   items,
   companies,
   priceData,
-  setPriceData,
   selectedRows,
   setSelectedRows,
   selectedColumns,
@@ -66,11 +67,15 @@ export default function QuotationGrid({
   formatNumber,
   onCompanySelect,
   onItemsSelect,
+  onCellValueChanged,
 }: QuotationGridProps) {
   // 커스텀 헤더 컴포넌트 (세로줄 선택용)
   const CustomHeaderComponent = (props: CustomHeaderProps) => {
-    const company = props.displayName;
-    const isSelected = props.selectedColumns[company];
+    const companyName = props.displayName;
+    // company.id를 가져오기 위해 companies 배열에서 찾기
+    const company = companies.find((c) => c.companyName === companyName);
+    const companyId = company?.id || companyName;
+    const isSelected = props.selectedColumns[companyId];
 
     return (
       <div
@@ -78,7 +83,7 @@ export default function QuotationGrid({
           isSelected ? "bg-blue-200 font-bold" : ""
         }`}
         onClick={() => {
-          const newSelection = { [company]: !isSelected };
+          const newSelection = { [companyId]: !isSelected };
           setSelectedColumns(newSelection);
 
           // 선택된 업체를 부모로 전달
@@ -88,7 +93,7 @@ export default function QuotationGrid({
           onCompanySelect(selectedCompany || "");
         }}
       >
-        <span>{company}</span>
+        <span>{companyName}</span>
       </div>
     );
   };
@@ -97,10 +102,10 @@ export default function QuotationGrid({
   const PriceCellRenderer = ({ data, colDef }: ICellRendererParams) => {
     if (!data) return null; // data가 없으면 렌더링하지 않음
     const productName = data.name;
-    const company = colDef?.field;
-    const price = company ? priceData[company]?.[productName] || 0 : 0;
-    const isRowSelected = selectedRows[data.code];
-    const isColumnSelected = company ? selectedColumns[company] : false;
+    const companyId = colDef?.field;
+    const price = companyId ? priceData[companyId]?.[productName] || 0 : 0;
+    const isRowSelected = selectedRows[data.id];
+    const isColumnSelected = companyId ? selectedColumns[companyId] : false;
     const isIntersection = isRowSelected && isColumnSelected;
 
     return (
@@ -139,7 +144,7 @@ export default function QuotationGrid({
       width: 120,
 
       cellStyle: (params: CellStyleParams) => ({
-        backgroundColor: selectedRows[params.data.code] ? "#DBEAFE" : "#f8f9fa",
+        backgroundColor: selectedRows[params.data.id] ? "#DBEAFE" : "#f8f9fa",
       }),
       sortable: false,
     },
@@ -149,17 +154,18 @@ export default function QuotationGrid({
       pinned: "left" as const,
       width: 80,
       cellStyle: (params: CellStyleParams) => ({
-        backgroundColor: selectedRows[params.data.code] ? "#DBEAFE" : "#f8f9fa",
+        backgroundColor: selectedRows[params.data.id] ? "#DBEAFE" : "#f8f9fa",
       }),
       sortable: false,
     },
     ...companies.map((company) => ({
-      headerName: company,
+      headerName: company.companyName,
       headerClass: "company-header", // ← 클래스 추가
-      field: company,
+      field: company.id,
       headerComponent: (props: CustomHeaderProps) =>
         CustomHeaderComponent({
           ...props,
+          displayName: company.companyName,
           selectedColumns,
           setSelectedColumns,
         }),
@@ -167,23 +173,9 @@ export default function QuotationGrid({
       width: 100,
       cellRenderer: PriceCellRenderer,
       editable: true,
-      valueSetter: (params: { data: { name: string }; newValue: string }) => {
-        const productName = params.data.name;
-        const newValue = parseInt(params.newValue || "0");
-
-        setPriceData((prev) => ({
-          ...prev,
-          [company]: {
-            ...prev[company],
-            [productName]: newValue,
-          },
-        }));
-
-        return true;
-      },
       cellStyle: (params: CellStyleParams) => {
-        const isRowSelected = selectedRows[params.data.code];
-        const isColumnSelected = selectedColumns[company];
+        const isRowSelected = selectedRows[params.data.id];
+        const isColumnSelected = selectedColumns[company.id];
         const isIntersection = isRowSelected && isColumnSelected;
 
         return {
@@ -204,7 +196,7 @@ export default function QuotationGrid({
   const rowData = items.map((item) => {
     const row: Record<string, string | number> = { ...item };
     companies.forEach((company) => {
-      row[company] = priceData[company]?.[item.name] || 0;
+      row[company.id] = priceData[company.id]?.[item.name] || 0;
     });
     return row;
   });
@@ -214,11 +206,11 @@ export default function QuotationGrid({
     const selectedNodes = event.api.getSelectedNodes();
     const newSelectedRows: Record<string, boolean> = {};
     selectedNodes.forEach((node) => {
-      newSelectedRows[node.data.code] = true;
+      newSelectedRows[node.data.id] = true;
     });
     setSelectedRows(newSelectedRows);
-    const selectedItemCodes = selectedNodes.map((node) => node.data.code);
-    onItemsSelect(selectedItemCodes);
+    const selectedItemIds = selectedNodes.map((node) => node.data.id);
+    onItemsSelect(selectedItemIds);
   };
 
   return (
@@ -235,6 +227,7 @@ export default function QuotationGrid({
           pagination={false}
           loading={false}
           onSelectionChanged={handleSelectionChanged}
+          onCellValueChanged={onCellValueChanged}
         />
       </div>
     </div>

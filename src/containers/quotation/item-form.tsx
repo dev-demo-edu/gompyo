@@ -4,9 +4,10 @@ import { useState } from "react";
 
 // zod 스키마 정의
 export const itemSchema = z.object({
-  code: z.string().min(1, "품목 코드를 입력해주세요."),
-  name: z.string().min(1, "제품명을 입력해주세요."),
-  origin: z.string().min(1, "원산지를 입력해주세요."),
+  itemName: z.string().min(1, "제품명을 입력해주세요."),
+  itemOrigin: z.string().min(1, "원산지를 입력해주세요."),
+  itemNameEn: z.string().min(1, "제품명(영문)을 입력해주세요."),
+  itemOriginEn: z.string().min(1, "원산지(영문)을 입력해주세요."),
 });
 
 // 품목 추가 폼 값 타입 (zod에서 추론)
@@ -18,20 +19,26 @@ export type ItemField = DynamicFormField<ItemFormValues>;
 // 품목 추가 폼 필드 정의
 export const itemFields: ItemField[] = [
   {
-    name: "code",
-    label: "품목 코드",
-    type: "text",
-    required: true,
-  },
-  {
-    name: "name",
+    name: "itemName",
     label: "제품명",
     type: "text",
     required: true,
   },
   {
-    name: "origin",
+    name: "itemOrigin",
     label: "원산지",
+    type: "text",
+    required: true,
+  },
+  {
+    name: "itemNameEn",
+    label: "제품명(영문)",
+    type: "text",
+    required: true,
+  },
+  {
+    name: "itemOriginEn",
+    label: "원산지(영문)",
     type: "text",
     required: true,
   },

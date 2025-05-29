@@ -13,27 +13,26 @@
 "use server";
 
 import {
-  getGridData,
-  updateGridCell,
+  updateQuotationCell,
   addCompany,
   addItem,
   deleteCompany,
   deleteItem,
-  type GridData,
-  type GridCellUpdate,
-  type GridCompany,
-  type GridItem,
+  QuotationItem,
+  QuotationCompany,
+  QuotationGridData,
+  QuotationCellUpdate,
+  getCompanies,
+  getItems,
+  getQuotationRelations,
 } from "@/services/quotation-service";
 import { revalidatePath } from "next/cache";
 
-/**
- * 그리드 데이터 조회 액션
- */
-export async function getGridDataAction(): Promise<GridData> {
+export async function getQuotationDataAction(): Promise<QuotationGridData> {
   try {
-    return await getGridData();
+    return await getQuotationRelations();
   } catch (error) {
-    console.error("그리드 데이터 조회 액션 실패:", error);
+    console.error("getQuotationDataAction error", error);
     throw error;
   }
 }
@@ -41,14 +40,14 @@ export async function getGridDataAction(): Promise<GridData> {
 /**
  * 그리드 셀 값 업데이트 액션
  */
-export async function updateGridCellAction(
-  update: GridCellUpdate,
+export async function updateQuotationCellAction(
+  update: QuotationCellUpdate,
 ): Promise<void> {
   try {
-    await updateGridCell(update);
+    await updateQuotationCell(update);
     revalidatePath("/grid"); // 그리드 페이지 캐시 무효화
   } catch (error) {
-    console.error("그리드 셀 업데이트 액션 실패:", error);
+    console.error("updateQuotationCellAction error", error);
     throw error;
   }
 }
@@ -56,16 +55,15 @@ export async function updateGridCellAction(
 /**
  * 회사 추가 액션
  */
-export async function addCompanyAction(
-  companyName: string,
-  companyType: string,
-): Promise<GridCompany> {
+export async function addQuotationCompanyAction(
+  company: QuotationCompany,
+): Promise<QuotationCompany> {
   try {
-    const result = await addCompany(companyName, companyType);
+    const result = await addCompany(company);
     revalidatePath("/grid");
     return result;
   } catch (error) {
-    console.error("회사 추가 액션 실패:", error);
+    console.error("addQuotationCompanyAction error", error);
     throw error;
   }
 }
@@ -73,23 +71,15 @@ export async function addCompanyAction(
 /**
  * 품목 추가 액션
  */
-export async function addItemAction(
-  itemName: string,
-  itemOrigin: string,
-  itemNameEn: string,
-  itemOriginEn: string,
-): Promise<GridItem> {
+export async function addQuotationItemAction(
+  item: QuotationItem,
+): Promise<QuotationItem> {
   try {
-    const result = await addItem(
-      itemName,
-      itemOrigin,
-      itemNameEn,
-      itemOriginEn,
-    );
+    const result = await addItem(item);
     revalidatePath("/grid");
     return result;
   } catch (error) {
-    console.error("품목 추가 액션 실패:", error);
+    console.error("addQuotationItemAction error", error);
     throw error;
   }
 }
@@ -97,12 +87,14 @@ export async function addItemAction(
 /**
  * 회사 삭제 액션
  */
-export async function deleteCompanyAction(companyId: string): Promise<void> {
+export async function deleteQuotationCompanyAction(
+  companyId: string,
+): Promise<void> {
   try {
     await deleteCompany(companyId);
     revalidatePath("/grid");
   } catch (error) {
-    console.error("회사 삭제 액션 실패:", error);
+    console.error("deleteQuotationCompanyAction error", error);
     throw error;
   }
 }
@@ -110,12 +102,54 @@ export async function deleteCompanyAction(companyId: string): Promise<void> {
 /**
  * 품목 삭제 액션
  */
-export async function deleteItemAction(itemId: string): Promise<void> {
+export async function deleteQuotationItemAction(itemId: string): Promise<void> {
   try {
     await deleteItem(itemId);
     revalidatePath("/grid");
   } catch (error) {
-    console.error("품목 삭제 액션 실패:", error);
+    console.error("deleteQuotationItemAction error", error);
+    throw error;
+  }
+}
+
+export async function getCompaniesAction(): Promise<QuotationCompany[]> {
+  try {
+    return await getCompanies();
+  } catch (error) {
+    console.error("getCompaniesAction error", error);
+    throw error;
+  }
+}
+
+export async function getItemsAction(): Promise<QuotationItem[]> {
+  try {
+    return await getItems();
+  } catch (error) {
+    console.error("getItemsAction error", error);
+    throw error;
+  }
+}
+
+/**
+ * 국내 업체 데이터 조회 액션
+ */
+export async function getDomesticAction(): Promise<QuotationGridData> {
+  try {
+    return await getQuotationRelations("domestic");
+  } catch (error) {
+    console.error("getDomesticAction error", error);
+    throw error;
+  }
+}
+
+/**
+ * 해외 업체 데이터 조회 액션
+ */
+export async function getForeignerAction(): Promise<QuotationGridData> {
+  try {
+    return await getQuotationRelations("foreign");
+  } catch (error) {
+    console.error("getForeignerAction error", error);
     throw error;
   }
 }

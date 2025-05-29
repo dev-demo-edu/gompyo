@@ -406,8 +406,8 @@ export const stocksRelations = relations(stocks, ({ one }) => ({
 }));
 
 // Partners table (견적 컬럼용 회사 테이블)
-export const partners = sqliteTable(
-  "partners",
+export const quotationCompanies = sqliteTable(
+  "quotation_companies",
   {
     id: text("id").primaryKey(),
     companyName: text("company_name").notNull(),
@@ -435,40 +435,48 @@ export const quotationItems = sqliteTable("quotation_items", {
 });
 
 // Partners Items table (회사-품목 관계 테이블)
-export const partnersItems = sqliteTable("partners_items", {
-  id: text("id").primaryKey(),
-  companyId: text("company_id")
-    .notNull()
-    .references(() => partners.id, { onDelete: "cascade" }),
-  itemId: text("item_id")
-    .notNull()
-    .references(() => quotationItems.id, { onDelete: "cascade" }),
-  value: real("value"),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
+export const quotationCompaniesItems = sqliteTable(
+  "quotation_companies_items",
+  {
+    id: text("id").primaryKey(),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => quotationCompanies.id, { onDelete: "cascade" }),
+    itemId: text("item_id")
+      .notNull()
+      .references(() => quotationItems.id, { onDelete: "cascade" }),
+    value: real("value"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+);
 
 // Partners relations
-export const partnersRelations = relations(partners, ({ many }) => ({
-  quotationItems: many(quotationItems),
-}));
+export const quotationCompaniesRelations = relations(
+  quotationCompanies,
+  ({ many }) => ({
+    quotationCompaniesItems: many(quotationCompaniesItems),
+  }),
+);
 
 // Quotation Items relations
 export const quotationItemsRelations = relations(
   quotationItems,
   ({ many }) => ({
-    quotationItems: many(quotationItems),
+    quotationCompaniesItems: many(quotationCompaniesItems),
   }),
 );
 
-// Partners Items relations
-export const partnersItemsRelations = relations(partnersItems, ({ one }) => ({
-  company: one(partners, {
-    fields: [partnersItems.companyId],
-    references: [partners.id],
+export const quotationCompaniesItemsRelations = relations(
+  quotationCompaniesItems,
+  ({ one }) => ({
+    company: one(quotationCompanies, {
+      fields: [quotationCompaniesItems.companyId],
+      references: [quotationCompanies.id],
+    }),
+    item: one(quotationItems, {
+      fields: [quotationCompaniesItems.itemId],
+      references: [quotationItems.id],
+    }),
   }),
-  item: one(quotationItems, {
-    fields: [partnersItems.itemId],
-    references: [quotationItems.id],
-  }),
-}));
+);
