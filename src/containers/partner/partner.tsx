@@ -5,6 +5,7 @@ import { Stack, Button, FormControl, InputLabel } from "@mui/material";
 import { Select } from "@mui/material";
 import { MenuItem } from "@mui/material";
 import PartnerGrid from "./partner-grid";
+import YearAddModal from "./partner-modal-container";
 
 interface Company {
   id: string;
@@ -105,7 +106,10 @@ export default function Partner() {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [loading, setLoading] = useState(false);
-  const availableYears = [2023, 2024, 2025, 2026];
+  const [isYearModalOpen, setIsYearModalOpen] = useState(false);
+  const [availableYears, setAvailableYears] = useState<number[]>([
+    2023, 2024, 2025, 2026,
+  ]);
 
   // 회사 목록 로드
   useEffect(() => {
@@ -158,6 +162,14 @@ export default function Partner() {
         console.error("데이터 삭제 실패:", error);
       }
     }
+  };
+
+  // 새 연도 추가 핸들러
+  const handleYearAdd = (year: number) => {
+    // 연도 추가 및 정렬
+    const updatedYears = [...availableYears, year].sort((a, b) => a - b);
+    setAvailableYears(updatedYears);
+    setSelectedYear(year);
   };
 
   // 회사 추가
@@ -218,6 +230,12 @@ export default function Partner() {
                     {year}년
                   </MenuItem>
                 ))}
+                <MenuItem
+                  value="add_year"
+                  onClick={() => setIsYearModalOpen(true)}
+                >
+                  + 연도 추가하기
+                </MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -299,6 +317,13 @@ export default function Partner() {
           />
         </div>
       </div>
+      {/* 연도 추가 모달 */}
+      <YearAddModal
+        open={isYearModalOpen}
+        onClose={() => setIsYearModalOpen(false)}
+        existingYears={availableYears}
+        onSubmit={handleYearAdd}
+      />
     </div>
   );
 }
