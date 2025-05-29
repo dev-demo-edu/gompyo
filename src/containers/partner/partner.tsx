@@ -10,6 +10,7 @@ import {
   CompanyDeleteModal,
   YearAddModal,
   YearDeleteModal,
+  YearDeleteWarningModal,
 } from "./partner-modal-container";
 
 interface Company {
@@ -113,11 +114,13 @@ export default function Partner() {
   const [loading, setLoading] = useState(false);
   const [isYearModalOpen, setIsYearModalOpen] = useState(false);
   const [isYearDeleteModalOpen, setIsYearDeleteModalOpen] = useState(false);
+  const [isYearDeleteWarningModalOpen, setIsYearDeleteWarningModalOpen] =
+    useState(false);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isCompanyDeleteModalOpen, setIsCompanyDeleteModalOpen] =
     useState(false);
   const [availableYears, setAvailableYears] = useState<number[]>([
-    2023, 2024, 2025, 2026,
+    2025, 2024, 2023, 2022,
   ]);
 
   // 회사 목록 로드
@@ -170,13 +173,53 @@ export default function Partner() {
 
   const handleConfirmDeleteYear = async () => {
     try {
-      // 실제로는 API 호출
-      // await deleteYearData(selectedYear);
-      console.log(`${selectedYear}년 데이터 삭제`);
+      console.log("availableYears.length:", availableYears.length); // 디버그용
+
+      // 현재 회사가 가진 연도가 하나뿐인지 체크
+      if (availableYears.length === 1) {
+        console.log("경고 모달 열기 시도"); // 디버그용
+        // 일반 연도 삭제 모달 닫고, 경고 모달 열기
+        setIsYearDeleteModalOpen(false);
+        setIsYearDeleteWarningModalOpen(true);
+        return;
+      }
+
+      // 일반 연도 삭제 (여러 연도 중 하나)
+      const updatedYears = availableYears.filter((y) => y !== selectedYear);
+      setAvailableYears(updatedYears);
+      setSelectedYear(updatedYears[updatedYears.length - 1]); // 마지막 연도로 선택
       setFinancialData([]);
       setIsYearDeleteModalOpen(false);
+
+      console.log(`${selectedYear}년 데이터 삭제`);
     } catch (error) {
       console.error("데이터 삭제 실패:", error);
+    }
+  };
+
+  // 회사까지 삭제하는 핸들러 (마지막 연도 삭제시)
+  const handleConfirmDeleteCompanyWithYear = async () => {
+    try {
+      // 실제로는 API 호출
+      // await deleteCompanyWithYear(selectedCompany, selectedYear);
+
+      const updatedCompanies = companies.filter(
+        (c) => c.id !== selectedCompany,
+      );
+      setCompanies(updatedCompanies);
+
+      // 첫 번째 회사로 선택 변경 (남은 회사가 있다면)
+      if (updatedCompanies.length > 0) {
+        setSelectedCompany(updatedCompanies[0].id);
+      } else {
+        setSelectedCompany("");
+        setFinancialData([]);
+      }
+
+      setIsYearDeleteWarningModalOpen(false);
+      console.log(`${selectedYear}년 삭제로 인한 회사 삭제 완료`);
+    } catch (error) {
+      console.error("회사 삭제 실패:", error);
     }
   };
 
@@ -375,6 +418,17 @@ export default function Partner() {
         open={isYearDeleteModalOpen}
         onClose={() => setIsYearDeleteModalOpen(false)}
         onConfirm={handleConfirmDeleteYear}
+        year={selectedYear}
+      />
+
+      {/* 연도 삭제 경고 모달 (마지막 연도일 때) */}
+      <YearDeleteWarningModal
+        open={isYearDeleteWarningModalOpen}
+        onClose={() => setIsYearDeleteWarningModalOpen(false)}
+        onConfirm={handleConfirmDeleteCompanyWithYear}
+        companyName={
+          companies.find((c) => c.id === selectedCompany)?.name || ""
+        }
         year={selectedYear}
       />
 

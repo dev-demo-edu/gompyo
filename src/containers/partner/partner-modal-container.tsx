@@ -5,9 +5,10 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { Select, MenuItem } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
-import { InputLabel } from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 interface YearAddModalProps {
   open: boolean;
@@ -30,6 +31,14 @@ interface DeleteModalProps {
   message: string;
 }
 
+interface YearDeleteWarningModalProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  companyName: string;
+  year: number;
+}
+
 function DeleteConfirmModal({
   open,
   onClose,
@@ -40,9 +49,7 @@ function DeleteConfirmModal({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent sx={{ py: 3, whiteSpace: "pre-line" }}>
-        {message}
-      </DialogContent>
+      <DialogContent sx={{ py: 3 }}>{message}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
         <Button variant="outlined" color="primary" onClick={onClose}>
           취소
@@ -72,6 +79,53 @@ export function YearDeleteModal({
   );
 }
 
+export function YearDeleteWarningModal({
+  open,
+  onClose,
+  onConfirm,
+  companyName,
+  year,
+}: YearDeleteWarningModalProps) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ color: "#EF4444", fontWeight: 600 }}>
+        ⚠️ 회사 삭제 경고
+      </DialogTitle>
+      <DialogContent sx={{ py: 3 }}>
+        <div style={{ lineHeight: 1.6 }}>
+          <p style={{ marginBottom: "12px", fontSize: "16px" }}>
+            <strong>{year}년</strong>이 <strong>`{companyName}`</strong> 회사의
+            마지막 연도입니다.
+          </p>
+          <p
+            style={{ marginBottom: "12px", color: "#EF4444", fontWeight: 500 }}
+          >
+            연도를 삭제하면 해당 회사까지 함께 삭제됩니다.
+          </p>
+          <p style={{ color: "#6B7280" }}>정말로 계속하시겠습니까?</p>
+        </div>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
+        <Button variant="outlined" color="primary" onClick={onClose}>
+          취소
+        </Button>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#EF4444",
+            "&:hover": {
+              backgroundColor: "#DC2626",
+            },
+          }}
+          onClick={onConfirm}
+        >
+          회사까지 삭제
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 export function CompanyDeleteModal({
   open,
   onClose,
@@ -84,7 +138,7 @@ export function CompanyDeleteModal({
       onClose={onClose}
       onConfirm={onConfirm}
       title="회사 삭제 확인"
-      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까?\n해당 회사의 연도별 데이터가 모두 삭제됩니다.`}
+      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까?`}
     />
   );
 }
@@ -164,11 +218,6 @@ export function YearAddModal({
 }: YearAddModalProps) {
   const [newYear, setNewYear] = useState("");
 
-  const handleClose = () => {
-    setNewYear("");
-    onClose();
-  };
-
   const handleSubmit = () => {
     const yearNumber = parseInt(newYear);
 
@@ -189,6 +238,11 @@ export function YearAddModal({
 
     onSubmit(yearNumber);
     handleClose();
+  };
+
+  const handleClose = () => {
+    setNewYear("");
+    onClose();
   };
 
   return (
