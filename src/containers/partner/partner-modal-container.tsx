@@ -40,7 +40,9 @@ function DeleteConfirmModal({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent sx={{ py: 3 }}>{message}</DialogContent>
+      <DialogContent sx={{ py: 3, whiteSpace: "pre-line" }}>
+        {message}
+      </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
         <Button variant="outlined" color="primary" onClick={onClose}>
           취소
@@ -82,7 +84,7 @@ export function CompanyDeleteModal({
       onClose={onClose}
       onConfirm={onConfirm}
       title="회사 삭제 확인"
-      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까?`}
+      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까?\n해당 회사의 연도별 데이터가 모두 삭제됩니다.`}
     />
   );
 }
@@ -154,7 +156,7 @@ export function CompanyAddModal({
   );
 }
 
-export default function YearAddModal({
+export function YearAddModal({
   open,
   onClose,
   onSubmit,
