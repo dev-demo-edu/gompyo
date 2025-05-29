@@ -5,12 +5,21 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { Select, MenuItem } from "@mui/material";
+import FormControl from "@mui/material/FormControl";
+import { InputLabel } from "@mui/material";
 
 interface YearAddModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (year: number) => void;
   existingYears: number[];
+}
+
+interface CompanyAddModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (company: { name: string; type: "payment" | "collection" }) => void;
 }
 
 interface DeleteModalProps {
@@ -58,6 +67,90 @@ export function YearDeleteModal({
       title="연도 삭제 확인"
       message={`정말로 ${year}년 데이터를 삭제하시겠습니까?`}
     />
+  );
+}
+
+export function CompanyDeleteModal({
+  open,
+  onClose,
+  onConfirm,
+  companyName,
+}: Omit<DeleteModalProps, "title" | "message"> & { companyName: string }) {
+  return (
+    <DeleteConfirmModal
+      open={open}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      title="회사 삭제 확인"
+      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까?`}
+    />
+  );
+}
+
+export function CompanyAddModal({
+  open,
+  onClose,
+  onSubmit,
+}: CompanyAddModalProps) {
+  const [companyName, setCompanyName] = useState("");
+  const [companyType, setCompanyType] = useState<"payment" | "collection">(
+    "payment",
+  );
+
+  const handleClose = () => {
+    setCompanyName("");
+    setCompanyType("payment");
+    onClose();
+  };
+
+  const handleSubmit = () => {
+    if (!companyName.trim()) {
+      alert("회사명을 입력해주세요.");
+      return;
+    }
+
+    onSubmit({ name: companyName.trim(), type: companyType });
+    handleClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle>회사 추가</DialogTitle>
+      <DialogContent sx={{ py: 3 }}>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="회사명"
+          fullWidth
+          variant="outlined"
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          placeholder="예: 새로운회사"
+          sx={{ mb: 2 }}
+        />
+        <FormControl fullWidth variant="outlined">
+          <InputLabel>회사 타입</InputLabel>
+          <Select
+            value={companyType}
+            label="회사 타입"
+            onChange={(e) =>
+              setCompanyType(e.target.value as "payment" | "collection")
+            }
+          >
+            <MenuItem value="payment">지급회사</MenuItem>
+            <MenuItem value="collection">수금회사</MenuItem>
+          </Select>
+        </FormControl>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
+        <Button variant="outlined" color="primary" onClick={handleClose}>
+          취소
+        </Button>
+        <Button variant="contained" color="primary" onClick={handleSubmit}>
+          추가
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
