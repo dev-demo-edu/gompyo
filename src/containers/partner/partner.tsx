@@ -10,29 +10,18 @@ import {
   CompanyDeleteModal,
   YearAddModal,
   YearDeleteModal,
-  YearDeleteWarningModal,
 } from "./partner-modal-container";
-
-interface Company {
-  id: string;
-  name: string;
-  type: "payment" | "collection"; // payment: 지급회사, collection: 수금회사
-}
-
-interface FinancialData {
-  id: string;
-  year: number;
-  month: string;
-  lamplePurchase: number | null;
-  lamplePayment: number | null;
-  lampleBalance: number | null;
-  gompyoPurchase: number | null;
-  gompyoPayment: number | null;
-  gompyoBalance: number | null;
-  totalPurchase: number | null;
-  totalPayment: number | null;
-  totalBalance: number | null;
-}
+import {
+  availableYearsAtom,
+  companiesAtom,
+  Company,
+  FinancialData,
+  financialDataAtom,
+  partnerRefreshAtom,
+  selectedCompanyAtom,
+  selectedYearAtom,
+} from "@/states/partner";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
 const generateMockCompanies = (): Company[] => {
   return [
@@ -107,32 +96,38 @@ const fetchFinancialData = async (
 };
 
 export default function Partner() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [selectedCompany, setSelectedCompany] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
+  // 전역 상태
+  const companies = useAtomValue(companiesAtom);
+  const [selectedCompany, setSelectedCompany] = useAtom(selectedCompanyAtom);
+  const [selectedYear, setSelectedYear] = useAtom(selectedYearAtom);
+  const financialData = useAtomValue(financialDataAtom);
+  const availableYears = useAtomValue(availableYearsAtom);
+  const refresh = useAtomValue(partnerRefreshAtom);
+
+  const setCompanies = useSetAtom(companiesAtom);
+  const setAvailableYears = useSetAtom(availableYearsAtom);
+  const setFinancialData = useSetAtom(financialDataAtom);
+
+  // 로컬 UI 상태들
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isYearModalOpen, setIsYearModalOpen] = useState(false);
   const [isYearDeleteModalOpen, setIsYearDeleteModalOpen] = useState(false);
-  const [isYearDeleteWarningModalOpen, setIsYearDeleteWarningModalOpen] =
-    useState(false);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isCompanyDeleteModalOpen, setIsCompanyDeleteModalOpen] =
     useState(false);
-  const [availableYears, setAvailableYears] = useState<number[]>([
-    2025, 2024, 2023, 2022,
-  ]);
 
-  // 회사 목록 로드
+  // 초기 데이터 로드
   useEffect(() => {
     const loadCompanies = async () => {
       try {
         const companiesData = await fetchCompanies();
         setCompanies(companiesData);
-        // 첫 번째 회사를 기본 선택
+
         if (companiesData.length > 0) {
           setSelectedCompany(companiesData[0].id);
+          // 첫 번째 회사의 년도 목록도 설정
+          setAvailableYears([2025, 2024, 2023, 2022]);
         }
       } catch (error) {
         console.error("회사 목록 로드 실패:", error);
@@ -140,27 +135,26 @@ export default function Partner() {
     };
 
     loadCompanies();
-  }, []);
+  }, [refresh]); // refresh 감지
 
-  // 데이터 로드 함수
-  const loadData = async (year: number, companyId: string) => {
-    setLoading(true);
-    try {
-      const data = await fetchFinancialData(companyId, year);
-      setFinancialData(data);
-    } catch (error) {
-      console.error("데이터 로드 실패:", error);
-      setFinancialData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 회사나 년도 변경시 데이터 로드
+  // 재무 데이터 로드
   useEffect(() => {
-    if (selectedCompany && selectedYear) {
-      loadData(selectedYear, selectedCompany);
-    }
+    const loadData = async () => {
+      if (!selectedCompany || !selectedYear) return;
+
+      setLoading(true);
+      try {
+        const data = await fetchFinancialData(selectedCompany, selectedYear);
+        setFinancialData(data);
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+        setFinancialData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [selectedCompany, selectedYear]);
 
   // 년도 변경 핸들러
@@ -169,107 +163,6 @@ export default function Partner() {
       setIsYearModalOpen(true);
     } else {
       setSelectedYear(value as number);
-    }
-  };
-
-  const handleConfirmDeleteYear = async () => {
-    try {
-      console.log("availableYears.length:", availableYears.length); // 디버그용
-
-      // 현재 회사가 가진 연도가 하나뿐인지 체크
-      if (availableYears.length === 1) {
-        console.log("경고 모달 열기 시도"); // 디버그용
-        // 일반 연도 삭제 모달 닫고, 경고 모달 열기
-        setIsYearDeleteModalOpen(false);
-        setIsYearDeleteWarningModalOpen(true);
-        return;
-      }
-
-      // 일반 연도 삭제 (여러 연도 중 하나)
-      const updatedYears = availableYears.filter((y) => y !== selectedYear);
-      setAvailableYears(updatedYears);
-      setSelectedYear(updatedYears[updatedYears.length - 1]); // 마지막 연도로 선택
-      setFinancialData([]);
-      setIsYearDeleteModalOpen(false);
-
-      console.log(`${selectedYear}년 데이터 삭제`);
-    } catch (error) {
-      console.error("데이터 삭제 실패:", error);
-    }
-  };
-
-  // 회사까지 삭제하는 핸들러 (마지막 연도 삭제시)
-  const handleConfirmDeleteCompanyWithYear = async () => {
-    try {
-      // 실제로는 API 호출
-      // await deleteCompanyWithYear(selectedCompany, selectedYear);
-
-      const updatedCompanies = companies.filter(
-        (c) => c.id !== selectedCompany,
-      );
-      setCompanies(updatedCompanies);
-
-      // 첫 번째 회사로 선택 변경 (남은 회사가 있다면)
-      if (updatedCompanies.length > 0) {
-        setSelectedCompany(updatedCompanies[0].id);
-      } else {
-        setSelectedCompany("");
-        setFinancialData([]);
-      }
-
-      setIsYearDeleteWarningModalOpen(false);
-      console.log(`${selectedYear}년 삭제로 인한 회사 삭제 완료`);
-    } catch (error) {
-      console.error("회사 삭제 실패:", error);
-    }
-  };
-
-  // 새 연도 추가 핸들러
-  const handleYearAdd = (year: number) => {
-    // 연도 추가 및 정렬
-    const updatedYears = [...availableYears, year].sort((a, b) => a - b);
-    setAvailableYears(updatedYears);
-    setSelectedYear(year);
-  };
-
-  const handleCompanyAdd = (newCompany: {
-    name: string;
-    type: "payment" | "collection";
-  }) => {
-    // 새 ID 생성 (실제로는 서버에서 받아옴)
-    const newId = (companies.length + 1).toString();
-    const company = { id: newId, ...newCompany };
-
-    const updatedCompanies = [...companies, company];
-    setCompanies(updatedCompanies);
-    setSelectedCompany(newId); // 새로 추가된 회사를 선택
-
-    console.log("회사 추가:", company);
-  };
-
-  //회사 삭제 핸들러
-  const handleConfirmDeleteCompany = async () => {
-    try {
-      // 실제로는 API 호출
-      // await deleteCompany(selectedCompany);
-
-      const updatedCompanies = companies.filter(
-        (c) => c.id !== selectedCompany,
-      );
-      setCompanies(updatedCompanies);
-
-      // 첫 번째 회사로 선택 변경 (남은 회사가 있다면)
-      if (updatedCompanies.length > 0) {
-        setSelectedCompany(updatedCompanies[0].id);
-      } else {
-        setSelectedCompany("");
-        setFinancialData([]);
-      }
-
-      setIsCompanyDeleteModalOpen(false);
-      console.log("회사 삭제 완료");
-    } catch (error) {
-      console.error("회사 삭제 실패:", error);
     }
   };
 
@@ -433,41 +326,24 @@ export default function Partner() {
       <YearAddModal
         open={isYearModalOpen}
         onClose={() => setIsYearModalOpen(false)}
-        existingYears={availableYears}
-        onSubmit={handleYearAdd}
       />
 
       {/* 연도 삭제 확인 모달 */}
       <YearDeleteModal
         open={isYearDeleteModalOpen}
         onClose={() => setIsYearDeleteModalOpen(false)}
-        onConfirm={handleConfirmDeleteYear}
-        year={selectedYear}
-      />
-
-      {/* 연도 삭제 경고 모달 (마지막 연도일 때) */}
-      <YearDeleteWarningModal
-        open={isYearDeleteWarningModalOpen}
-        onClose={() => setIsYearDeleteWarningModalOpen(false)}
-        onConfirm={handleConfirmDeleteCompanyWithYear}
-        companyName={
-          companies.find((c) => c.id === selectedCompany)?.name || ""
-        }
-        year={selectedYear}
       />
 
       {/* 회사 추가 모달 */}
       <CompanyAddModal
         open={isCompanyModalOpen}
         onClose={() => setIsCompanyModalOpen(false)}
-        onSubmit={handleCompanyAdd}
       />
 
       {/* 회사 삭제 확인 모달 */}
       <CompanyDeleteModal
         open={isCompanyDeleteModalOpen}
         onClose={() => setIsCompanyDeleteModalOpen(false)}
-        onConfirm={handleConfirmDeleteCompany}
         companyName={
           companies.find((c) => c.id === selectedCompany)?.name || ""
         }
