@@ -112,6 +112,7 @@ export default function Partner() {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [isYearModalOpen, setIsYearModalOpen] = useState(false);
   const [isYearDeleteModalOpen, setIsYearDeleteModalOpen] = useState(false);
   const [isYearDeleteWarningModalOpen, setIsYearDeleteWarningModalOpen] =
@@ -332,6 +333,28 @@ export default function Partner() {
           <Stack direction="row" spacing={2}>
             <Button
               variant="contained"
+              color="secondary"
+              onClick={() => setEditMode(!editMode)}
+              disabled={loading || financialData.length === 0}
+              sx={{
+                minWidth: 120,
+                fontWeight: 600,
+                backgroundColor: editMode ? "#f3f4f6" : "#64748b",
+                color: editMode ? "#374151" : "#fff",
+                "&:hover": {
+                  backgroundColor: editMode ? "#e5e7eb" : "#475569",
+                },
+                "&:disabled": {
+                  backgroundColor: "#9CA3AF",
+                },
+                boxShadow: "none",
+                border: editMode ? "1px solid #cbd5e1" : "none",
+              }}
+            >
+              {editMode ? "편집 종료" : "편집 모드"}
+            </Button>
+            <Button
+              variant="contained"
               color="primary"
               onClick={() => setIsCompanyModalOpen(true)}
               disabled={loading}
@@ -396,6 +419,7 @@ export default function Partner() {
         {/* 그리드 */}
         <div className="overflow-hidden">
           <PartnerGrid
+            editMode={editMode}
             companies={companies}
             selectedCompany={selectedCompany}
             selectedYear={selectedYear}

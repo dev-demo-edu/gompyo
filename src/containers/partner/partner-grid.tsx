@@ -36,6 +36,7 @@ interface PartnerGridProps {
   selectedYear: number;
   data: FinancialData[];
   loading?: boolean;
+  editMode: boolean;
   onDataChange: (data: FinancialData[]) => void;
 }
 
@@ -59,6 +60,7 @@ export default function PartnerGrid({
   selectedYear,
   data,
   loading = false,
+  editMode = false,
   onDataChange,
 }: PartnerGridProps) {
   const selectedCompanyInfo = companies.find(
@@ -93,7 +95,7 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: true,
+            editable: editMode,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -108,11 +110,12 @@ export default function PartnerGrid({
           {
             headerName: paymentOrCollectionText,
             field: "lamplePayment",
+
             filter: false,
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: true,
+            editable: editMode,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -131,7 +134,7 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: true,
+            editable: editMode,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams): boolean => {
@@ -162,7 +165,7 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: true,
+            editable: editMode,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -181,7 +184,7 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: true,
+            editable: editMode,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -200,7 +203,7 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: true,
+            editable: editMode,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -269,7 +272,7 @@ export default function PartnerGrid({
         ],
       },
     ],
-    [purchaseOrSaleText, paymentOrCollectionText],
+    [purchaseOrSaleText, paymentOrCollectionText, editMode],
   );
 
   const handleCellValueChanged = (event: CellValueChangedEvent) => {
