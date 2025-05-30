@@ -47,10 +47,22 @@ const formatNumber = (value: number | null | undefined): string => {
 };
 
 // 숫자 파싱 함수 (편집시 사용)
-const parseNumber = (value: string): number | null => {
-  if (!value || value.trim() === "") return null;
-  const numericValue = value.replace(/,/g, "");
+const parseNumber = (
+  value: string | number | null | undefined,
+): number | null => {
+  // null 또는 undefined 체크
+  if (value === null || value === undefined) return null;
+
+  // 문자열로 변환
+  const stringValue = String(value);
+
+  // 빈 문자열이거나 공백만 있는 경우
+  if (!stringValue || stringValue.trim() === "") return null;
+
+  // 쉼표 제거 후 숫자 파싱
+  const numericValue = stringValue.replace(/,/g, "");
   const parsed = parseFloat(numericValue);
+
   return isNaN(parsed) ? null : parsed;
 };
 
@@ -276,7 +288,12 @@ export default function PartnerGrid({
   );
 
   const handleCellValueChanged = (event: CellValueChangedEvent) => {
-    console.log("Cell value changed:", event);
+    console.log("Grid: 셀 값 변경", {
+      필드: event.colDef.field,
+      이전값: event.oldValue,
+      새값: event.newValue,
+      행: event.data.month,
+    });
 
     // 수정된 데이터를 상위 컴포넌트로 전달
     const updatedData = data.map((item) =>
