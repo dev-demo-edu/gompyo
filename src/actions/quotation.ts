@@ -27,6 +27,9 @@ import {
   getQuotationRelations,
 } from "@/services/quotation-service";
 import { revalidatePath } from "next/cache";
+import { renderToBuffer } from "@react-pdf/renderer";
+import QuotationDocument from "@/containers/quotation/quotation-document";
+import { QuotationData } from "@/containers/quotation/quotation-document";
 
 export async function getQuotationDataAction(): Promise<QuotationGridData> {
   try {
@@ -151,5 +154,30 @@ export async function getForeignerAction(): Promise<QuotationGridData> {
   } catch (error) {
     console.error("getForeignerAction error", error);
     throw error;
+  }
+}
+
+export async function generateQuotationPDF(quotationData: QuotationData) {
+  try {
+    // QuotationDocument 컴포넌트 인스턴스 생성
+    const documentElement = QuotationDocument({ invoiceData: quotationData });
+
+    // PDF 버퍼 생성
+    const pdfBuffer = await renderToBuffer(documentElement);
+
+    // Buffer를 base64로 변환하여 클라이언트로 전송
+    const base64PDF = pdfBuffer.toString("base64");
+
+    return {
+      success: true,
+      pdf: base64PDF,
+      filename: `${quotationData.receiver}_견적서_${new Date().toISOString().split("T")[0]}.pdf`,
+    };
+  } catch (error) {
+    console.error("PDF 생성 오류:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }

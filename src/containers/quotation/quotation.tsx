@@ -6,6 +6,7 @@ import {
   CompanyDeleteModal,
   ItemAddModal,
   ItemDeleteModal,
+  QuotationDocumentModal,
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
@@ -21,6 +22,7 @@ import {
   // getItemsAction,
   getDomesticAction,
   getForeignerAction,
+  generateQuotationPDF,
 } from "@/actions/quotation";
 import {
   QuotationCompany,
@@ -38,6 +40,8 @@ export default function QuotationContainer() {
   const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string>("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
+    useState(false);
 
   // 선택 상태 관리 (QuotationGrid에서 상위로 이동)
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
@@ -105,6 +109,8 @@ export default function QuotationContainer() {
       company: string;
       price: number;
       origin: string;
+      originEn: string;
+      productNameEn: string;
     }> = [];
 
     Object.entries(selectedRows).forEach(([itemId, isRowSelected]) => {
@@ -124,6 +130,8 @@ export default function QuotationContainer() {
                   origin: product?.itemOrigin || "",
                   company: company?.companyName || companyId,
                   price,
+                  originEn: product?.itemOriginEn || "",
+                  productNameEn: product?.itemNameEn || "",
                 });
               }
             }
@@ -132,26 +140,6 @@ export default function QuotationContainer() {
       }
     });
     return intersectionItems;
-  };
-
-  // 견적서 작성 핸들러
-  const handleQuotationCreate = () => {
-    const intersectionItems = getIntersectionItems();
-    console.log("=== 견적서 작성 데이터 ===");
-    console.log("선택된 행(제품):", selectedRows);
-    console.log("선택된 열(회사):", selectedColumns);
-    console.log("교차점 데이터:", intersectionItems);
-    console.log("총 견적 항목 수:", intersectionItems.length);
-
-    intersectionItems.forEach((item, index) => {
-      console.log(
-        `${index + 1}. ${item.company}에서 ${item.productName}: ${item.price.toLocaleString()}원`,
-      );
-    });
-
-    alert(
-      `${intersectionItems.length}개 항목으로 견적서 작성\n콘솔을 확인해주세요!`,
-    );
   };
 
   // 업체 추가 핸들러
@@ -318,6 +306,120 @@ export default function QuotationContainer() {
     }
   };
 
+  // PDF 생성 공통 로직
+  const generatePDFData = async () => {
+    const quotationData = getIntersectionItems();
+    const pdfResponse = await generateQuotationPDF({
+      sender: "㈜ 곰표",
+      receiver: quotationData[0].company,
+      date: new Date().toISOString().split("T")[0],
+      items: quotationData.map((item, index) => ({
+        no: index + 1,
+        name: item.productName,
+        originEn: item.originEn,
+        nameEn: item.productNameEn,
+        price: item.price,
+      })),
+      documentNumber: "GP202401-01",
+      reference: "",
+    });
+
+    if (!pdfResponse.success || !pdfResponse.pdf) {
+      throw new Error(pdfResponse.error || "PDF 생성에 실패했습니다.");
+    }
+
+    // base64 문자열을 Uint8Array로 변환
+    const binaryString = atob(pdfResponse.pdf);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    return {
+      bytes,
+      filename: pdfResponse.filename || "견적서.pdf",
+    };
+  };
+
+  // PDF 다운로드 함수
+  const handleQuotationPDFDownload = async () => {
+    try {
+      const { bytes, filename } = await generatePDFData();
+
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      // 다운로드 링크 생성
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+
+      // 정리
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log("PDF 다운로드 완료:", filename);
+    } catch (error) {
+      console.error("PDF 다운로드 중 오류 발생:", error);
+      alert(
+        "PDF 다운로드 중 오류가 발생했습니다: " +
+          (error instanceof Error ? error.message : "알 수 없는 오류"),
+      );
+    }
+  };
+
+  // PDF 새창에서 열기 함수
+  const handleQuotationPDFView = async () => {
+    try {
+      const { bytes, filename } = await generatePDFData();
+
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url, "_blank");
+
+      if (newWindow) {
+        // 새 창이 로드된 후 제목 설정
+        newWindow.addEventListener("load", () => {
+          try {
+            newWindow.document.title = filename;
+          } catch (titleError) {
+            console.warn("새 창 제목 설정 실패:", titleError);
+          }
+        });
+
+        // 1초 후 URL 정리 (새 창에서 로드 완료 후)
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 1000);
+
+        console.log("PDF 새 창에서 열기 완료:", filename);
+      } else {
+        // 팝업이 차단된 경우 다운로드로 대체
+        alert("팝업이 차단되었습니다. 다운로드로 진행합니다.");
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        console.log("팝업 차단으로 다운로드 대체 완료:", filename);
+      }
+    } catch (error) {
+      console.error("PDF 새창 열기 중 오류 발생:", error);
+      alert(
+        "PDF 새창 열기 중 오류가 발생했습니다: " +
+          (error instanceof Error ? error.message : "알 수 없는 오류"),
+      );
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8">
@@ -379,7 +481,7 @@ export default function QuotationContainer() {
             <Button
               variant="contained"
               disabled={getIntersectionItems().length === 0}
-              onClick={handleQuotationCreate}
+              onClick={() => setQuotationDocumentModalOpen(true)}
               sx={{
                 backgroundColor: "#6366F1",
                 "&:hover": { backgroundColor: "#4F46E5" },
@@ -406,7 +508,6 @@ export default function QuotationContainer() {
             }))}
             companies={companies}
             priceData={priceData}
-            setPriceData={setPriceData}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
             selectedColumns={selectedColumns}
@@ -459,6 +560,12 @@ export default function QuotationContainer() {
         open={itemDeleteModalOpen}
         onClose={() => setItemDeleteModalOpen(false)}
         onConfirm={handleDeleteItems}
+      />
+      <QuotationDocumentModal
+        open={quotationDocumentModalOpen}
+        onClose={() => setQuotationDocumentModalOpen(false)}
+        onDownload={handleQuotationPDFDownload}
+        onOpenInNewWindow={handleQuotationPDFView}
       />
     </div>
   );

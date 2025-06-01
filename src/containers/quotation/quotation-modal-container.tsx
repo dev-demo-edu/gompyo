@@ -106,3 +106,37 @@ export function ItemAddModal({ open, onClose, onSubmit }: ItemAddModalProps) {
     </Dialog>
   );
 }
+
+interface QuotationDocumentModalProps {
+  open: boolean;
+  onClose: () => void;
+  onDownload: () => void;
+  onOpenInNewWindow: () => void;
+}
+
+export function QuotationDocumentModal({
+  open,
+  onClose,
+  onDownload,
+  onOpenInNewWindow,
+}: QuotationDocumentModalProps) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>견적서 출력</DialogTitle>
+      <DialogContent sx={{ py: 3 }}>
+        아래 버튼을 클릭하여 견적서를 출력할 수 있습니다.
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
+        <Button variant="outlined" color="primary" onClick={onClose}>
+          창 닫기
+        </Button>
+        <Button variant="contained" color="primary" onClick={onDownload}>
+          다운로드
+        </Button>
+        <Button variant="contained" color="primary" onClick={onOpenInNewWindow}>
+          새창에서 열기
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
