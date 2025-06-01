@@ -574,7 +574,25 @@ export default function QuotationContainer() {
             className="flex flex-row justify-between items-end flex-shrink-0"
             style={{ minHeight: 24 }}
           >
-            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              sx={{
+                mb: 2,
+                "& .MuiTabs-indicator": {
+                  backgroundColor: "#22C55E", // 선택된 탭 하단 인디케이터 색상
+                },
+                "& .MuiTab-root": {
+                  color: "#6B7280", // 기본 탭 텍스트 색상
+                  "&.Mui-selected": {
+                    color: "#22C55E", // 선택된 탭 텍스트 색상
+                  },
+                  "&:hover": {
+                    color: "#16A34A", // 호버 시 색상
+                  },
+                },
+              }}
+            >
               <Tab label="국내 업체" value="domestic" />
               <Tab label="해외 업체" value="overseas" />
             </Tabs>
