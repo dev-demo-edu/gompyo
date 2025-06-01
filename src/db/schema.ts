@@ -404,3 +404,81 @@ export const stocksRelations = relations(stocks, ({ one }) => ({
     references: [cargos.id],
   }),
 }));
+
+// Partners table (견적 컬럼용 회사 테이블)
+export const quotationCompanies = sqliteTable(
+  "quotation_companies",
+  {
+    id: text("id").primaryKey(),
+    companyName: text("company_name").notNull(),
+    companyType: text("company_type").notNull(),
+    priceType: text("price_type").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "company_type_check",
+      sql`${table.companyType} IN ('domestic', 'foreign')`,
+    ),
+    check(
+      "price_type_check",
+      sql`${table.priceType} IN ('arrival', 'loading')`,
+    ),
+  ],
+);
+
+// Quotation Items table (견적 행용 품목 테이블)
+export const quotationItems = sqliteTable("quotation_items", {
+  id: text("id").primaryKey(),
+  itemName: text("item_name").notNull(),
+  itemOrigin: text("item_origin").notNull(),
+  itemNameEn: text("item_name_en"),
+  itemOriginEn: text("item_origin_en"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const quotationCompaniesItems = sqliteTable(
+  "quotation_companies_items",
+  {
+    id: text("id").primaryKey(),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => quotationCompanies.id, { onDelete: "cascade" }),
+    itemId: text("item_id")
+      .notNull()
+      .references(() => quotationItems.id, { onDelete: "cascade" }),
+    value: real("value"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+);
+
+export const quotationCompaniesRelations = relations(
+  quotationCompanies,
+  ({ many }) => ({
+    quotationCompaniesItems: many(quotationCompaniesItems),
+  }),
+);
+
+export const quotationItemsRelations = relations(
+  quotationItems,
+  ({ many }) => ({
+    quotationCompaniesItems: many(quotationCompaniesItems),
+  }),
+);
+
+export const quotationCompaniesItemsRelations = relations(
+  quotationCompaniesItems,
+  ({ one }) => ({
+    company: one(quotationCompanies, {
+      fields: [quotationCompaniesItems.companyId],
+      references: [quotationCompanies.id],
+    }),
+    item: one(quotationItems, {
+      fields: [quotationCompaniesItems.itemId],
+      references: [quotationItems.id],
+    }),
+  }),
+);
