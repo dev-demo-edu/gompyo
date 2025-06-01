@@ -33,6 +33,19 @@ import {
 import { nanoid } from "nanoid";
 import { CellValueChangedEvent } from "ag-grid-community";
 
+// 문서 번호 생성 함수 추가
+const generateDocumentNumber = (): string => {
+  const now = new Date();
+  const year = now.getFullYear().toString();
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const day = now.getDate().toString().padStart(2, "0");
+  const randomNum = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
+
+  return `GP${year}${month}${day}${randomNum}`;
+};
+
 export interface ColumnCompany extends QuotationCompany {
   companyColumnName: string;
 }
@@ -449,7 +462,7 @@ export default function QuotationContainer() {
         nameEn: item.productNameEn,
         price: item.price,
       })),
-      documentNumber: "GP202401-01",
+      documentNumber: generateDocumentNumber(),
       priceType: quotationData[0].priceType,
       reference: "",
     });
