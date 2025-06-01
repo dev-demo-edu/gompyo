@@ -58,29 +58,32 @@ export default function NavigationItem({
           component={Link}
           href={href}
           onClick={handleClick}
-          className={`my-1 mx-3 rounded-lg transition-all duration-200 ease-in-out ${
-            isActive
-              ? "bg-primary-100 text-primary-900 font-medium"
-              : "hover:bg-gray-100"
-          }`}
           sx={{
             minHeight: "48px",
             px: 2,
             width: "auto",
             position: "relative",
             justifyContent: isSidebarCollapsed ? "center" : "flex-start",
+            backgroundColor: isActive ? "#dcfce7" : "transparent",
+            color: isActive ? "#14532d" : "inherit",
+            fontWeight: isActive ? 600 : 500,
+            borderRadius: "8px",
+            margin: "4px 12px",
+            transition: "all 0.2s ease-in-out",
             "&:hover": {
+              backgroundColor: isActive ? "#dcfce7" : "#f3f4f6",
               "& .MuiListItemIcon-root": {
-                color: isActive ? "inherit" : "text-primary-900",
+                color: isActive ? "#14532d" : "#22c55e",
               },
             },
           }}
         >
           <ListItemIcon
-            className={`min-w-8 ${isActive ? "text-primary-900" : "text-gray-700"}`}
             sx={{
               mr: isSidebarCollapsed ? 0 : 2,
               justifyContent: "center",
+              color: isActive ? "#14532d" : "#374151",
+              minWidth: "32px",
             }}
           >
             {icon}
@@ -110,7 +113,7 @@ export default function NavigationItem({
               sx={{
                 width: 4,
                 height: 32,
-                bgcolor: "primary.main",
+                bgcolor: "#22c55e",
                 position: "absolute",
                 right: 0,
                 borderRadius: "4px 0 0 4px",
@@ -150,17 +153,19 @@ export default function NavigationItem({
                     marginY: "4px",
                     marginX: "12px",
                     marginLeft: "24px",
+                    backgroundColor: isSubItemActive
+                      ? "#dcfce7"
+                      : "transparent",
+                    color: isSubItemActive ? "#14532d" : "inherit",
+                    fontWeight: isSubItemActive ? 600 : 500,
+                    transition: "all 0.2s ease-in-out",
                     "&:hover": {
+                      backgroundColor: isSubItemActive ? "#dcfce7" : "#f3f4f6",
                       "& .MuiListItemIcon-root": {
-                        color: isSubItemActive ? "inherit" : "text-primary-900",
+                        color: isSubItemActive ? "#14532d" : "#22c55e",
                       },
                     },
                   }}
-                  className={`my-1 mx-3 rounded-lg transition-all duration-200 ease-in-out ${
-                    isSubItemActive
-                      ? "bg-primary-100 text-primary-900 font-medium"
-                      : "hover:bg-gray-100"
-                  }`}
                 >
                   <ListItemIcon
                     sx={{
@@ -190,7 +195,7 @@ export default function NavigationItem({
                       sx={{
                         width: 4,
                         height: 32,
-                        bgcolor: "primary.main",
+                        bgcolor: "#22c55e",
                         position: "absolute",
                         right: 0,
                         borderRadius: "4px 0 0 4px",

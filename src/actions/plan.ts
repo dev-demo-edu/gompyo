@@ -20,6 +20,7 @@ import type { CargoDetailData } from "@/types/cargo-detail";
 import { CalculationType } from "@/types/importer";
 import { statusMapping } from "@/constants/cargo-status";
 import { inArray } from "drizzle-orm";
+import { createStock } from "./detail-view/stock";
 type ContractData = z.infer<typeof contractSchema>;
 type CargoItem = z.infer<typeof cargoSchema>;
 
@@ -192,6 +193,9 @@ export async function createPlan(
             transferFee: 0,
           })
           .returning();
+
+        //Importer 수정 필요
+        createStock(cargoId, contractData.importer, cargo.contractTon);
       } catch (error) {
         console.error("화물 정보 저장 중 오류:", error);
         throw new Error(
@@ -350,6 +354,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       importer: {
         id: importer?.id || "",
         importerName: importer?.importerName || "",
+        importerCode: importer?.importerCode || "",
         calculationType:
           (importer?.calculationType as CalculationType) ||
           CalculationType.STANDARD,

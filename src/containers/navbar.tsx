@@ -25,6 +25,8 @@ import BusinessIcon from "@mui/icons-material/Business";
 import LinkIcon from "@mui/icons-material/Link";
 import InfoIcon from "@mui/icons-material/Info";
 import SavingsIcon from "@mui/icons-material/Savings";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import PeopleIcon from "@mui/icons-material/People";
 
 const DRAWER_WIDTH = 240;
 const COLLAPSED_WIDTH = 64;
@@ -86,6 +88,16 @@ export default function Navbar() {
       text: "수금 지출 관리",
       href: "/cashflow",
       icon: <SavingsIcon />,
+    },
+    {
+      text: "견적 관리",
+      href: "/quotation",
+      icon: <AssignmentIcon />,
+    },
+    {
+      text: "거래처 관리",
+      href: "/partner",
+      icon: <PeopleIcon />,
     },
     {
       text: "정보",

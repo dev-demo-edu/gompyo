@@ -146,7 +146,6 @@ export async function updateCargoDetail(
         updateData.importer.id,
         updateData.importer,
       );
-      console.log("importer", importer);
       await contractService.update(updateData?.contract?.id || "", {
         importerId: importer.id,
       });

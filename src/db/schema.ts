@@ -16,6 +16,7 @@ import {
 export const importers = sqliteTable("importers", {
   id: text("id").primaryKey(),
   importerName: text("importer_name").notNull(),
+  importerCode: text("importer_code"),
   calculationType: text("calculation_type").notNull(),
 });
 
@@ -372,3 +373,112 @@ export const cashflowsRelations = relations(cashflows, ({ one }) => ({
 export const companiesRelations = relations(companies, ({ many }) => ({
   cashflows: many(cashflows),
 }));
+
+// Stock(재고/판매량) 테이블
+export const stocks = sqliteTable("stocks", {
+  id: text("id").primaryKey(),
+  cargoId: text("cargo_id")
+    .notNull()
+    .references(() => cargos.id, { onDelete: "cascade" }),
+  // 각 회사별 통관재고
+  dnbCleared: integer("dnb_cleared").notNull().default(0),
+  namhaeCleared: integer("namhae_cleared").notNull().default(0),
+  interlivingCleared: integer("interliving_cleared").notNull().default(0),
+  gompyoCleared: integer("gompyo_cleared").notNull().default(0),
+  ramplusCleared: integer("ramplus_cleared").notNull().default(0),
+  // 각 회사별 미통관재고
+  dnbUncleared: integer("dnb_uncleared").notNull().default(0),
+  namhaeUncleared: integer("namhae_uncleared").notNull().default(0),
+  interlivingUncleared: integer("interliving_uncleared").notNull().default(0),
+  gompyoUncleared: integer("gompyo_uncleared").notNull().default(0),
+  ramplusUncleared: integer("ramplus_uncleared").notNull().default(0),
+  // sales 관련
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Stock 테이블 관계
+export const stocksRelations = relations(stocks, ({ one }) => ({
+  cargo: one(cargos, {
+    fields: [stocks.cargoId],
+    references: [cargos.id],
+  }),
+}));
+
+// Partners table (견적 컬럼용 회사 테이블)
+export const quotationCompanies = sqliteTable(
+  "quotation_companies",
+  {
+    id: text("id").primaryKey(),
+    companyName: text("company_name").notNull(),
+    companyType: text("company_type").notNull(),
+    priceType: text("price_type").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "company_type_check",
+      sql`${table.companyType} IN ('domestic', 'foreign')`,
+    ),
+    check(
+      "price_type_check",
+      sql`${table.priceType} IN ('arrival', 'loading')`,
+    ),
+  ],
+);
+
+// Quotation Items table (견적 행용 품목 테이블)
+export const quotationItems = sqliteTable("quotation_items", {
+  id: text("id").primaryKey(),
+  itemName: text("item_name").notNull(),
+  itemOrigin: text("item_origin").notNull(),
+  itemNameEn: text("item_name_en"),
+  itemOriginEn: text("item_origin_en"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const quotationCompaniesItems = sqliteTable(
+  "quotation_companies_items",
+  {
+    id: text("id").primaryKey(),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => quotationCompanies.id, { onDelete: "cascade" }),
+    itemId: text("item_id")
+      .notNull()
+      .references(() => quotationItems.id, { onDelete: "cascade" }),
+    value: real("value"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+);
+
+export const quotationCompaniesRelations = relations(
+  quotationCompanies,
+  ({ many }) => ({
+    quotationCompaniesItems: many(quotationCompaniesItems),
+  }),
+);
+
+export const quotationItemsRelations = relations(
+  quotationItems,
+  ({ many }) => ({
+    quotationCompaniesItems: many(quotationCompaniesItems),
+  }),
+);
+
+export const quotationCompaniesItemsRelations = relations(
+  quotationCompaniesItems,
+  ({ one }) => ({
+    company: one(quotationCompanies, {
+      fields: [quotationCompaniesItems.companyId],
+      references: [quotationCompanies.id],
+    }),
+    item: one(quotationItems, {
+      fields: [quotationCompaniesItems.itemId],
+      references: [quotationItems.id],
+    }),
+  }),
+);
