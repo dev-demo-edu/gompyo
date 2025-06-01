@@ -568,9 +568,23 @@ export default function QuotationContainer() {
       <div className="p-4 sm:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">견적서 작성</h1>
-
+        </div>
+        <Stack direction="row" spacing={2}>
+          <div
+            className="flex flex-row justify-between items-end flex-shrink-0"
+            style={{ minHeight: 24 }}
+          >
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+              <Tab label="국내 업체" value="domestic" />
+              <Tab label="해외 업체" value="overseas" />
+            </Tabs>
+          </div>
           {/* 모든 버튼들을 한 줄에 배치 */}
-          <Stack direction="row" spacing={2} sx={{ whiteSpace: "nowrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            className="w-full justify-end pb-4"
+          >
             <Button
               variant="contained"
               onClick={() => setCompanyModalOpen(true)}
@@ -661,11 +675,8 @@ export default function QuotationContainer() {
               견적서 작성 ({getIntersectionItems().length})
             </Button>
           </Stack>
-        </div>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-          <Tab label="국내 업체" value="domestic" />
-          <Tab label="해외 업체" value="overseas" />
-        </Tabs>
+        </Stack>
+
         {/* 그리드 */}
         <div className="overflow-hidden">
           <QuotationGrid
