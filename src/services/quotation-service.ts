@@ -312,3 +312,71 @@ export async function getQuotationRelations(
     throw new Error("견적 관계 데이터 조회에 실패했습니다.");
   }
 }
+
+/**
+ * 회사 정보 업데이트
+ */
+export async function updateCompany(
+  companyId: string,
+  updates: Partial<Omit<QuotationCompany, "id" | "createdAt">>,
+): Promise<QuotationCompany> {
+  try {
+    await db
+      .update(quotationCompanies)
+      .set({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(quotationCompanies.id, companyId));
+
+    // 업데이트된 회사 정보 반환
+    const updatedCompany = await db
+      .select()
+      .from(quotationCompanies)
+      .where(eq(quotationCompanies.id, companyId))
+      .limit(1);
+
+    if (updatedCompany.length === 0) {
+      throw new Error("업데이트된 회사를 찾을 수 없습니다.");
+    }
+
+    return updatedCompany[0];
+  } catch (error) {
+    console.error("회사 업데이트 실패:", error);
+    throw new Error("회사 정보 업데이트에 실패했습니다.");
+  }
+}
+
+/**
+ * 품목 정보 업데이트
+ */
+export async function updateItem(
+  itemId: string,
+  updates: Partial<Omit<QuotationItem, "id" | "createdAt">>,
+): Promise<QuotationItem> {
+  try {
+    await db
+      .update(quotationItems)
+      .set({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(quotationItems.id, itemId));
+
+    // 업데이트된 품목 정보 반환
+    const updatedItem = await db
+      .select()
+      .from(quotationItems)
+      .where(eq(quotationItems.id, itemId))
+      .limit(1);
+
+    if (updatedItem.length === 0) {
+      throw new Error("업데이트된 품목을 찾을 수 없습니다.");
+    }
+
+    return updatedItem[0];
+  } catch (error) {
+    console.error("품목 업데이트 실패:", error);
+    throw new Error("품목 정보 업데이트에 실패했습니다.");
+  }
+}

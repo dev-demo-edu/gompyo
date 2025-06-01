@@ -412,6 +412,7 @@ export const quotationCompanies = sqliteTable(
     id: text("id").primaryKey(),
     companyName: text("company_name").notNull(),
     companyType: text("company_type").notNull(),
+    priceType: text("price_type").notNull(),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },
@@ -419,6 +420,10 @@ export const quotationCompanies = sqliteTable(
     check(
       "company_type_check",
       sql`${table.companyType} IN ('domestic', 'foreign')`,
+    ),
+    check(
+      "price_type_check",
+      sql`${table.priceType} IN ('arrival', 'loading')`,
     ),
   ],
 );
@@ -434,7 +439,6 @@ export const quotationItems = sqliteTable("quotation_items", {
   updatedAt: text("updated_at").notNull(),
 });
 
-// Partners Items table (회사-품목 관계 테이블)
 export const quotationCompaniesItems = sqliteTable(
   "quotation_companies_items",
   {
@@ -451,7 +455,6 @@ export const quotationCompaniesItems = sqliteTable(
   },
 );
 
-// Partners relations
 export const quotationCompaniesRelations = relations(
   quotationCompanies,
   ({ many }) => ({
@@ -459,7 +462,6 @@ export const quotationCompaniesRelations = relations(
   }),
 );
 
-// Quotation Items relations
 export const quotationItemsRelations = relations(
   quotationItems,
   ({ many }) => ({

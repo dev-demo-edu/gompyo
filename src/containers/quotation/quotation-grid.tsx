@@ -5,6 +5,7 @@ import {
   SelectionChangedEvent,
   CellValueChangedEvent,
 } from "ag-grid-community";
+import { ColumnCompany } from "./quotation";
 import { QuotationCompany } from "@/services/quotation-service";
 
 // CustomHeaderComponent의 props 타입 정의
@@ -33,7 +34,7 @@ interface Item {
 // QuotationGrid props 타입 정의
 interface QuotationGridProps {
   items: Item[];
-  companies: QuotationCompany[];
+  companies: ColumnCompany[];
   priceData: Record<string, Record<string, number>>;
   selectedRows: Record<string, boolean>;
   setSelectedRows: React.Dispatch<
@@ -51,7 +52,7 @@ interface QuotationGridProps {
     origin: string;
   }>;
   formatNumber: (num: number) => string;
-  onCompanySelect: (company: string) => void;
+  onCompanySelect: (company: QuotationCompany | null) => void;
   onItemsSelect: (itemIds: string[]) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
 }
@@ -69,11 +70,40 @@ export default function QuotationGrid({
   onItemsSelect,
   onCellValueChanged,
 }: QuotationGridProps) {
+  // 텍스트 길이에 따른 컬럼 너비 계산 함수
+  const calculateColumnWidth = (
+    text: string,
+    minWidth = 100,
+    maxWidth = 250,
+  ) => {
+    // 한글은 영문보다 넓으므로 가중치 적용
+    const koreanCharCount = (text.match(/[가-힣]/g) || []).length;
+    const otherCharCount = text.length - koreanCharCount;
+
+    // 한글 1글자 ≈ 16px, 영문/숫자 1글자 ≈ 8px, 패딩 40px
+    const estimatedWidth = koreanCharCount * 16 + otherCharCount * 8 + 40;
+
+    // 최소/최대 너비 제한
+    return Math.max(minWidth, Math.min(maxWidth, estimatedWidth));
+  };
+
+  // 컬럼별 최적 너비 계산
+  const getOptimalColumnWidth = (
+    texts: string[],
+    minWidth = 100,
+    maxWidth = 250,
+  ) => {
+    const maxWidth_calculated = Math.max(
+      ...texts.map((text) => calculateColumnWidth(text, 0, Infinity)),
+    );
+    return Math.max(minWidth, Math.min(maxWidth, maxWidth_calculated));
+  };
+
   // 커스텀 헤더 컴포넌트 (세로줄 선택용)
   const CustomHeaderComponent = (props: CustomHeaderProps) => {
     const companyName = props.displayName;
     // company.id를 가져오기 위해 companies 배열에서 찾기
-    const company = companies.find((c) => c.companyName === companyName);
+    const company = companies.find((c) => c.companyColumnName === companyName);
     const companyId = company?.id || companyName;
     const isSelected = props.selectedColumns[companyId];
 
@@ -87,10 +117,13 @@ export default function QuotationGrid({
           setSelectedColumns(newSelection);
 
           // 선택된 업체를 부모로 전달
-          const selectedCompany = Object.keys(newSelection).find(
+          const selectedCompanyId = Object.keys(newSelection).find(
             (key) => newSelection[key],
           );
-          onCompanySelect(selectedCompany || "");
+          const selectedCompanyObj = selectedCompanyId
+            ? companies.find((c) => c.id === selectedCompanyId)
+            : null;
+          onCompanySelect(selectedCompanyObj || null);
         }}
       >
         <span>{companyName}</span>
@@ -141,7 +174,11 @@ export default function QuotationGrid({
       headerName: "제품명",
       field: "name",
       pinned: "left" as const,
-      width: 120,
+      width: getOptimalColumnWidth(
+        [...items.map((item) => item.name), "제품명"],
+        80,
+        200,
+      ),
 
       cellStyle: (params: CellStyleParams) => ({
         backgroundColor: selectedRows[params.data.id] ? "#DBEAFE" : "#f8f9fa",
@@ -152,25 +189,30 @@ export default function QuotationGrid({
       headerName: "원산지",
       field: "origin",
       pinned: "left" as const,
-      width: 80,
+      width: getOptimalColumnWidth(
+        [...items.map((item) => item.origin), "원산지"],
+        60,
+        120,
+      ),
       cellStyle: (params: CellStyleParams) => ({
         backgroundColor: selectedRows[params.data.id] ? "#DBEAFE" : "#f8f9fa",
       }),
       sortable: false,
     },
     ...companies.map((company) => ({
-      headerName: company.companyName,
+      headerName: company.companyColumnName,
       headerClass: "company-header", // ← 클래스 추가
       field: company.id,
       headerComponent: (props: CustomHeaderProps) =>
         CustomHeaderComponent({
           ...props,
-          displayName: company.companyName,
+          displayName: company.companyColumnName,
           selectedColumns,
           setSelectedColumns,
         }),
-      flex: 1,
-      width: 100,
+      // flex: 1,
+      minWidth: 100,
+      width: calculateColumnWidth(company.companyColumnName),
       cellRenderer: PriceCellRenderer,
       editable: true,
       cellStyle: (params: CellStyleParams) => {

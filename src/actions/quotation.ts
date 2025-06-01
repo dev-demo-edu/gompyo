@@ -7,7 +7,7 @@
  * 주요 기능:
  * 1. 그리드 데이터 조회
  * 2. 셀 값 업데이트
- * 3. 회사/품목 추가/삭제
+ * 3. 회사/품목 추가/삭제/업데이트
  */
 
 "use server";
@@ -18,6 +18,8 @@ import {
   addItem,
   deleteCompany,
   deleteItem,
+  updateCompany,
+  updateItem,
   QuotationItem,
   QuotationCompany,
   QuotationGridData,
@@ -30,6 +32,20 @@ import { revalidatePath } from "next/cache";
 import { renderToBuffer } from "@react-pdf/renderer";
 import QuotationDocument from "@/containers/quotation/quotation-document";
 import { QuotationData } from "@/containers/quotation/quotation-document";
+
+// 업데이트 관련 타입 정의
+export interface UpdateCompanyFormData {
+  companyName: string;
+  companyType: string;
+  priceType: string;
+}
+
+export interface UpdateItemFormData {
+  itemName: string;
+  itemOrigin: string;
+  itemNameEn?: string;
+  itemOriginEn?: string;
+}
 
 export async function getQuotationDataAction(): Promise<QuotationGridData> {
   try {
@@ -111,6 +127,53 @@ export async function deleteQuotationItemAction(itemId: string): Promise<void> {
     revalidatePath("/grid");
   } catch (error) {
     console.error("deleteQuotationItemAction error", error);
+    throw error;
+  }
+}
+
+/**
+ * 회사 정보 업데이트 액션
+ */
+export async function updateCompanyAction(
+  companyId: string,
+  formData: UpdateCompanyFormData,
+): Promise<QuotationCompany> {
+  try {
+    const updatedCompany = await updateCompany(companyId, {
+      companyName: formData.companyName,
+      companyType: formData.companyType,
+      priceType: formData.priceType,
+    });
+
+    revalidatePath("/quotation");
+
+    return updatedCompany;
+  } catch (error) {
+    console.error("updateCompanyAction error", error);
+    throw error;
+  }
+}
+
+/**
+ * 품목 정보 업데이트 액션
+ */
+export async function updateItemAction(
+  itemId: string,
+  formData: UpdateItemFormData,
+): Promise<QuotationItem> {
+  try {
+    const updatedItem = await updateItem(itemId, {
+      itemName: formData.itemName,
+      itemOrigin: formData.itemOrigin,
+      itemNameEn: formData.itemNameEn || null,
+      itemOriginEn: formData.itemOriginEn || null,
+    });
+
+    revalidatePath("/quotation");
+
+    return updatedItem;
+  } catch (error) {
+    console.error("updateItemAction error", error);
     throw error;
   }
 }

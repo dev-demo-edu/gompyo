@@ -4,25 +4,26 @@ import QuotationGrid from "./quotation-grid";
 import {
   CompanyAddModal,
   CompanyDeleteModal,
+  CompanyEditModal,
   ItemAddModal,
   ItemDeleteModal,
+  ItemEditModal,
   QuotationDocumentModal,
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
 import { Button, Stack, Tab, Tabs } from "@mui/material";
 import {
-  // getQuotationDataAction,
   updateQuotationCellAction,
   addQuotationCompanyAction,
   addQuotationItemAction,
   deleteQuotationCompanyAction,
   deleteQuotationItemAction,
-  // getCompaniesAction,
-  // getItemsAction,
   getDomesticAction,
   getForeignerAction,
   generateQuotationPDF,
+  updateCompanyAction,
+  updateItemAction,
 } from "@/actions/quotation";
 import {
   QuotationCompany,
@@ -32,14 +33,21 @@ import {
 import { nanoid } from "nanoid";
 import { CellValueChangedEvent } from "ag-grid-community";
 
+export interface ColumnCompany extends QuotationCompany {
+  companyColumnName: string;
+}
+
 export default function QuotationContainer() {
   // 모달 상태 관리
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
+  const [companyEditModalOpen, setCompanyEditModalOpen] = useState(false);
   const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [itemEditModalOpen, setItemEditModalOpen] = useState(false);
   const [companyDeleteModalOpen, setCompanyDeleteModalOpen] = useState(false);
   const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<string>("");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedCompany, setSelectedCompany] =
+    useState<QuotationCompany | null>(null);
+  const [selectedItems, setSelectedItems] = useState<string[] | null>(null);
   const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
     useState(false);
 
@@ -52,9 +60,9 @@ export default function QuotationContainer() {
   // 데이터 상태 관리
   const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
 
-  const [domesticCompanies, setDomesticCompanies] = useState<
-    QuotationCompany[]
-  >([]);
+  const [domesticCompanies, setDomesticCompanies] = useState<ColumnCompany[]>(
+    [],
+  );
 
   const [domesticPriceData, setDomesticPriceData] = useState<
     Record<string, Record<string, number>>
@@ -62,9 +70,9 @@ export default function QuotationContainer() {
 
   const [overseasItems, setOverseasItems] = useState<QuotationItem[]>([]);
 
-  const [overseasCompanies, setOverseasCompanies] = useState<
-    QuotationCompany[]
-  >([]);
+  const [overseasCompanies, setOverseasCompanies] = useState<ColumnCompany[]>(
+    [],
+  );
 
   const [overseasPriceData, setOverseasPriceData] = useState<
     Record<string, Record<string, number>>
@@ -85,11 +93,27 @@ export default function QuotationContainer() {
     const fetchData = async () => {
       const domesticData = await getDomesticAction();
       setDomesticItems(domesticData.items);
-      setDomesticCompanies(domesticData.companies);
+      setDomesticCompanies(
+        domesticData.companies.map((company) => ({
+          ...company,
+          companyColumnName: transformCompanyName(
+            company.companyName,
+            company.priceType,
+          ),
+        })),
+      );
       setDomesticPriceData(domesticData.priceData);
       const overseasData = await getForeignerAction();
       setOverseasItems(overseasData.items);
-      setOverseasCompanies(overseasData.companies);
+      setOverseasCompanies(
+        overseasData.companies.map((company) => ({
+          ...company,
+          companyColumnName: transformCompanyName(
+            company.companyName,
+            company.priceType,
+          ),
+        })),
+      );
       setOverseasPriceData(overseasData.priceData);
       console.log("domesticData", domesticData);
       console.log("overseasData", overseasData);
@@ -101,12 +125,57 @@ export default function QuotationContainer() {
   const formatNumber = (num: number) =>
     new Intl.NumberFormat("ko-KR").format(num);
 
+  const transformCompanyName = (companyName: string, priceType: string) => {
+    if (priceType === "arrival") {
+      return `${companyName} (도착도)`;
+    } else {
+      return `${companyName} (상차도)`;
+    }
+  };
+
+  // 업체 중복 체크 함수
+  const checkCompanyDuplicate = (
+    companyName: string,
+    priceType: string,
+    existingCompanies: ColumnCompany[],
+  ) => {
+    const isDuplicate = existingCompanies.some(
+      (company) =>
+        company.companyName === companyName && company.priceType === priceType,
+    );
+
+    if (isDuplicate) {
+      const priceTypeLabel = priceType === "arrival" ? "도착도" : "상차도";
+      throw new Error(
+        `이미 존재하는 업체명과 가격 타입입니다. (${companyName} - ${priceTypeLabel})`,
+      );
+    }
+  };
+
+  // 품목 중복 체크 함수
+  const checkItemDuplicate = (
+    itemName: string,
+    itemOrigin: string,
+    existingItems: QuotationItem[],
+  ) => {
+    const isDuplicate = existingItems.some(
+      (item) => item.itemName === itemName && item.itemOrigin === itemOrigin,
+    );
+
+    if (isDuplicate) {
+      throw new Error(
+        `이미 존재하는 품목입니다. (${itemName} - ${itemOrigin})`,
+      );
+    }
+  };
+
   // 교차점 데이터 계산 (QuotationGrid에서 상위로 이동)
   const getIntersectionItems = () => {
     const intersectionItems: Array<{
       productCode: string;
       productName: string;
       company: string;
+      priceType: string;
       price: number;
       origin: string;
       originEn: string;
@@ -129,6 +198,7 @@ export default function QuotationContainer() {
                   productName: product?.itemName || "",
                   origin: product?.itemOrigin || "",
                   company: company?.companyName || companyId,
+                  priceType: company?.priceType || "",
                   price,
                   originEn: product?.itemOriginEn || "",
                   productNameEn: product?.itemNameEn || "",
@@ -145,21 +215,29 @@ export default function QuotationContainer() {
   // 업체 추가 핸들러
   const handleAddCompany = (values: CompanyFormValues) => {
     const newCompany = values.name;
+    const newPriceType = values.priceType;
 
-    // 중복 체크
-    if (companies.some((company) => company.companyName === newCompany)) {
-      throw new Error("이미 존재하는 업체명입니다.");
-    }
+    // 중복 체크 - 업체명과 가격 타입(상차도/도착도) 모두 검사
+    checkCompanyDuplicate(newCompany, newPriceType, companies);
 
     const newCompanyObj = {
       id: nanoid(),
       companyName: newCompany,
       companyType: tab,
+      priceType: values.priceType,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    setCompanies((prev) => [...prev, newCompanyObj]);
+    const newColumnCompany = {
+      ...newCompanyObj,
+      companyColumnName: transformCompanyName(
+        newCompanyObj.companyName,
+        newCompanyObj.priceType,
+      ),
+    };
+
+    setCompanies((prev) => [...prev, newColumnCompany]);
     setPriceData((prev) => ({
       ...prev,
       [newCompanyObj.id]: {}, // 회사 ID를 키로 사용
@@ -175,10 +253,8 @@ export default function QuotationContainer() {
 
   // 품목 추가 핸들러
   const handleAddItem = (values: ItemFormValues) => {
-    // 중복 체크 (코드 기준)
-    if (items.some((item) => item.itemOrigin === values.itemOrigin)) {
-      throw new Error("이미 존재하는 품목 코드입니다.");
-    }
+    // 중복 체크 (이름과 원산지 기준)
+    checkItemDuplicate(values.itemName, values.itemOrigin, items);
 
     const newItem = {
       id: nanoid(),
@@ -204,20 +280,20 @@ export default function QuotationContainer() {
     if (!selectedCompany) return;
 
     setCompanies((prev) =>
-      prev.filter((company) => company.id !== selectedCompany),
+      prev.filter((company) => company.id !== selectedCompany.id),
     );
-    deleteQuotationCompanyAction(selectedCompany);
+    deleteQuotationCompanyAction(selectedCompany.id);
     setPriceData((prev) => {
       const updated = { ...prev };
-      delete updated[selectedCompany];
+      delete updated[selectedCompany.id];
       return updated;
     });
-    setSelectedCompany("");
+    setSelectedCompany(null);
     setCompanyDeleteModalOpen(false);
   };
 
   const handleDeleteItems = () => {
-    if (selectedItems.length === 0) return;
+    if (selectedItems === null || selectedItems.length === 0) return;
 
     setItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
     selectedItems.forEach((itemId) => {
@@ -237,6 +313,59 @@ export default function QuotationContainer() {
     });
     setSelectedItems([]);
     setItemDeleteModalOpen(false);
+  };
+
+  const handleEditCompany = (values: CompanyFormValues) => {
+    if (!selectedCompany) return;
+    checkCompanyDuplicate(values.name, values.priceType, companies);
+    updateCompanyAction(selectedCompany.id, {
+      companyName: values.name,
+      companyType: tab,
+      priceType: values.priceType,
+    });
+    setCompanies((prev) =>
+      prev.map((company) =>
+        company.id === selectedCompany.id
+          ? {
+              ...company,
+              companyName: values.name,
+              priceType: values.priceType,
+              companyColumnName: transformCompanyName(
+                values.name,
+                values.priceType,
+              ),
+            }
+          : company,
+      ),
+    );
+    // setSelectedCompany(null);
+    setCompanyEditModalOpen(false);
+  };
+
+  const handleEditItem = (values: ItemFormValues) => {
+    if (!selectedItems) return;
+    checkItemDuplicate(values.itemName, values.itemOrigin, items);
+    updateItemAction(selectedItems[0], {
+      itemName: values.itemName,
+      itemOrigin: values.itemOrigin,
+      itemNameEn: values.itemNameEn,
+      itemOriginEn: values.itemOriginEn,
+    });
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedItems[0]
+          ? {
+              ...item,
+              itemName: values.itemName,
+              itemOrigin: values.itemOrigin,
+              itemNameEn: values.itemNameEn,
+              itemOriginEn: values.itemOriginEn,
+            }
+          : item,
+      ),
+    );
+    // setSelectedItems(null);
+    setItemEditModalOpen(false);
   };
 
   //업데이트 함수
@@ -321,6 +450,7 @@ export default function QuotationContainer() {
         price: item.price,
       })),
       documentNumber: "GP202401-01",
+      priceType: quotationData[0].priceType,
       reference: "",
     });
 
@@ -442,6 +572,19 @@ export default function QuotationContainer() {
             </Button>
             <Button
               variant="contained"
+              onClick={() => setCompanyEditModalOpen(true)}
+              disabled={!selectedCompany}
+              sx={{
+                backgroundColor: "#22C55E",
+                "&:hover": { backgroundColor: "#16A34A" },
+                fontWeight: 600,
+                boxShadow: "none",
+              }}
+            >
+              업체 수정
+            </Button>
+            <Button
+              variant="contained"
               onClick={() => setItemModalOpen(true)}
               sx={{
                 backgroundColor: "#3B82F6",
@@ -451,6 +594,19 @@ export default function QuotationContainer() {
               }}
             >
               품목 추가
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setItemEditModalOpen(true)}
+              disabled={selectedItems === null || selectedItems.length !== 1}
+              sx={{
+                backgroundColor: "#3B82F6",
+                "&:hover": { backgroundColor: "#2563EB" },
+                fontWeight: 600,
+                boxShadow: "none",
+              }}
+            >
+              품목 수정
             </Button>
             <Button
               variant="contained"
@@ -468,7 +624,7 @@ export default function QuotationContainer() {
             <Button
               variant="contained"
               onClick={() => setItemDeleteModalOpen(true)}
-              disabled={selectedItems.length === 0}
+              disabled={selectedItems === null || selectedItems.length === 0}
               sx={{
                 backgroundColor: "#EF4444",
                 "&:hover": { backgroundColor: "#DC2626" },
@@ -546,11 +702,38 @@ export default function QuotationContainer() {
         onSubmit={handleAddCompany}
       />
 
+      {selectedCompany &&
+        companies.find((c) => c.id === selectedCompany.id) && (
+          <CompanyEditModal
+            open={companyEditModalOpen}
+            onClose={() => setCompanyEditModalOpen(false)}
+            onSubmit={handleEditCompany}
+            selectedCompany={
+              companies.find((c) => c.id === selectedCompany?.id) ||
+              selectedCompany
+            }
+          />
+        )}
+
       <ItemAddModal
         open={itemModalOpen}
         onClose={() => setItemModalOpen(false)}
         onSubmit={handleAddItem}
       />
+
+      {selectedItems &&
+        selectedItems.length > 0 &&
+        items.find((i) => i.id === selectedItems[0]) && (
+          <ItemEditModal
+            open={itemEditModalOpen}
+            onClose={() => setItemEditModalOpen(false)}
+            onSubmit={handleEditItem}
+            selectedItem={
+              items.find((i) => i.id === selectedItems?.[0]) as QuotationItem
+            }
+          />
+        )}
+
       <CompanyDeleteModal
         open={companyDeleteModalOpen}
         onClose={() => setCompanyDeleteModalOpen(false)}

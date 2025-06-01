@@ -275,6 +275,7 @@ export interface QuotationData {
   reference?: string;
   title?: string;
   date?: string;
+  priceType?: string;
   items: {
     no: number;
     name: string;
@@ -309,6 +310,7 @@ export default function QuotationDocument({
       warehouse:
         "안산시 단원구 별망로175 금은산업b동2층 T.032-888-9686, F.032-888-9685",
     },
+    priceType = "도착도",
   } = invoiceData;
 
   const displayItems = items.length > 0 ? items : [];
@@ -368,7 +370,9 @@ export default function QuotationDocument({
               <Text style={styles.tableCellHeader}>품 명</Text>
             </View>
             <View style={[styles.tableColHeader, styles.tableColPrice]}>
-              <Text style={styles.tableCellHeader}>도착도 원/kg</Text>
+              <Text style={styles.tableCellHeader}>
+                {priceType === "arrival" ? "도착도" : "상차도"} 원/kg
+              </Text>
             </View>
             <View style={[styles.tableColHeader, styles.tableColNote]}>
               <Text style={styles.tableCellHeader}>비고</Text>
