@@ -3,11 +3,13 @@
   "/_not-found/page": "/_not-found",
   "/cashflow/page": "/cashflow",
   "/detail/[cargo_id]/page": "/detail/[cargo_id]",
-  "/info/account-number/page": "/info/account-number",
   "/info/business-number/page": "/info/business-number",
-  "/info/links/page": "/info/links",
+  "/partner/page": "/partner",
+  "/info/account-number/page": "/info/account-number",
   "/login/page": "/login",
-  "/page": "/",
+  "/info/links/page": "/info/links",
   "/plan/page": "/plan",
+  "/page": "/",
+  "/quotation/page": "/quotation",
   "/shipment/page": "/shipment"
 }

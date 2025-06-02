@@ -7,6 +7,6 @@ export enum CalculationType {
 export interface Importer {
   id: string;
   importerName: string;
-  importerCode: string;
+  importerCode: string | null;
   calculationType: CalculationType;
 }

@@ -13,6 +13,7 @@ export async function getAllImporters(): Promise<Importer[]> {
     const importers = await importerService.getAllImporters();
     return importers.map((importer) => ({
       ...importer,
+      importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
     }));
   } catch (error) {
@@ -29,6 +30,7 @@ export async function searchImportersByName(name: string): Promise<Importer[]> {
     const importers = await importerService.searchImportersByName(name);
     return importers.map((importer) => ({
       ...importer,
+      importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
     }));
   } catch (error) {
@@ -55,6 +57,7 @@ export async function createImporter(
 
     return {
       ...importer,
+      importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
     };
   } catch (error) {
@@ -76,6 +79,7 @@ export async function updateImporter(
 
     return {
       ...importer,
+      importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
     };
   } catch (error) {

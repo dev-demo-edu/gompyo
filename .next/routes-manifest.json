@@ -73,10 +73,22 @@
       "namedRegex": "^/login(?:/)?$"
     },
     {
+      "page": "/partner",
+      "regex": "^/partner(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/partner(?:/)?$"
+    },
+    {
       "page": "/plan",
       "regex": "^/plan(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/plan(?:/)?$"
+    },
+    {
+      "page": "/quotation",
+      "regex": "^/quotation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/quotation(?:/)?$"
     },
     {
       "page": "/shipment",

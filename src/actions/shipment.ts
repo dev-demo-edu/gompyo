@@ -139,6 +139,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
       importer: {
         id: importer?.id || "",
         importerName: importer?.importerName || "",
+        importerCode: importer?.importerCode || "gompyo",
         calculationType:
           (importer?.calculationType as CalculationType) ||
           CalculationType.STANDARD,
