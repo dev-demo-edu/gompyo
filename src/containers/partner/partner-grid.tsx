@@ -317,6 +317,7 @@ export default function PartnerGrid({
           data={data}
           pagination={false}
           onCellValueChanged={handleCellValueChanged}
+          editMode={editMode}
         />
       ) : (
         <div className="w-full h-full bg-gray-50 border border-gray-300 rounded-lg flex items-center justify-center">
