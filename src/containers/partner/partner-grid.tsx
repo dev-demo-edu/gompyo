@@ -92,6 +92,7 @@ export default function PartnerGrid({
     () => [
       {
         headerName: "월",
+        suppressMovable: true,
         headerClass: "text-center",
         field: "month",
         pinned: "left",
@@ -103,11 +104,13 @@ export default function PartnerGrid({
       },
       {
         headerName: "램플",
+        suppressMovable: true,
         headerClass: "text-center",
         children: [
           {
             headerName: purchaseOrSaleText,
             field: "lamplePurchase",
+            suppressMovable: true,
             filter: false,
             sortable: false,
             minWidth: 120,
@@ -127,7 +130,7 @@ export default function PartnerGrid({
           {
             headerName: paymentOrCollectionText,
             field: "lamplePayment",
-
+            suppressMovable: true,
             filter: false,
             sortable: false,
             minWidth: 120,
@@ -147,6 +150,7 @@ export default function PartnerGrid({
           {
             headerName: "잔액",
             field: "lampleBalance",
+            suppressMovable: true,
             filter: false,
             sortable: false,
             minWidth: 120,
@@ -174,11 +178,13 @@ export default function PartnerGrid({
       {
         headerName: "곰표",
         headerClass: "text-center",
+        suppressMovable: true,
         children: [
           {
             headerName: "구매",
             filter: false,
             field: "gompyoPurchase",
+            suppressMovable: true,
             sortable: false,
             minWidth: 120,
             flex: 1,
@@ -198,6 +204,7 @@ export default function PartnerGrid({
             headerName: "지급",
             filter: false,
             field: "gompyoPayment",
+            suppressMovable: true,
             sortable: false,
             minWidth: 120,
             flex: 1,
@@ -217,6 +224,7 @@ export default function PartnerGrid({
             headerName: "잔액",
             filter: false,
             field: "gompyoBalance",
+            suppressMovable: true,
             sortable: false,
             minWidth: 120,
             flex: 1,
@@ -247,6 +255,7 @@ export default function PartnerGrid({
           {
             headerName: "구매",
             filter: false,
+            suppressMovable: true,
             sortable: false,
             field: "totalPurchase",
             minWidth: 120,
@@ -259,6 +268,7 @@ export default function PartnerGrid({
           {
             headerName: "지급",
             filter: false,
+            suppressMovable: true,
             sortable: false,
             field: "totalPayment",
             minWidth: 120,
@@ -271,6 +281,7 @@ export default function PartnerGrid({
           {
             headerName: "잔액",
             filter: false,
+            suppressMovable: true,
             sortable: false,
             field: "totalBalance",
             minWidth: 120,
