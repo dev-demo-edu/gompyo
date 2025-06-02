@@ -8,6 +8,8 @@ import {
 } from "ag-grid-community";
 import DataGrid from "@/components/data-grid";
 import { CircularProgress } from "@mui/material";
+import { changedDataIdsAtom } from "@/states/partner";
+import { useAtom } from "jotai";
 
 interface Company {
   id: string;
@@ -78,6 +80,9 @@ export default function PartnerGrid({
   const selectedCompanyInfo = companies.find(
     (company) => company.id === selectedCompany,
   );
+
+  // 변경사항 추적 상태 추가
+  const [changedDataIds, setChangedDataIds] = useAtom(changedDataIdsAtom);
 
   const isPayment = selectedCompanyInfo?.type === "payment";
   const purchaseOrSaleText = isPayment ? "구매" : "판매";
@@ -294,6 +299,11 @@ export default function PartnerGrid({
       새값: event.newValue,
       행: event.data.month,
     });
+
+    // 변경된 행 ID 추가
+    const newChangedIds = new Set(changedDataIds);
+    newChangedIds.add(event.data.id);
+    setChangedDataIds(newChangedIds);
 
     // 수정된 데이터를 상위 컴포넌트로 전달
     const updatedData = data.map((item) =>

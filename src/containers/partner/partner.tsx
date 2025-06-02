@@ -13,6 +13,8 @@ import {
 } from "./partner-modal-container";
 import {
   availableYearsAtom,
+  changedDataIdsAtom,
+  clearChangesAtom,
   companiesAtom,
   Company,
   FinancialData,
@@ -23,6 +25,7 @@ import {
 } from "@/states/partner";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
+// 서버액션 완성 시 삭제 - Mock데이터
 const generateMockCompanies = (): Company[] => {
   return [
     { id: "1", name: "디앤비", type: "payment" },
@@ -33,7 +36,7 @@ const generateMockCompanies = (): Company[] => {
   ];
 };
 
-// 회사 목록 API 호출 함수 (현재는 목업)
+// 서버액션 완성 시 삭제 - 회사 목록 API 호출 함수 (현재는 목업)
 const fetchCompanies = async (): Promise<Company[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -42,7 +45,7 @@ const fetchCompanies = async (): Promise<Company[]> => {
   });
 };
 
-// 임시 데이터 생성 함수 (나중에 API 호출로 대체)
+// 서버액션 완성 시 삭제 - Mock 재무 데이터 생성
 const generateMockData = (companyId: string, year: number): FinancialData[] => {
   const months = [
     "1월",
@@ -82,7 +85,7 @@ const generateMockData = (companyId: string, year: number): FinancialData[] => {
     }));
 };
 
-// API 호출 함수 (현재는 목업, 나중에 실제 API로 대체)
+// 서버액션 완성 시 삭제 - Mock API 호출
 const fetchFinancialData = async (
   companyId: string,
   year: number,
@@ -104,6 +107,10 @@ export default function Partner() {
   const availableYears = useAtomValue(availableYearsAtom);
   const refresh = useAtomValue(partnerRefreshAtom);
 
+  // 변경사항 관련 상태 추가
+  const changedDataIds = useAtomValue(changedDataIdsAtom);
+  const clearChanges = useSetAtom(clearChangesAtom);
+
   const setCompanies = useSetAtom(companiesAtom);
   const setAvailableYears = useSetAtom(availableYearsAtom);
   const setFinancialData = useSetAtom(financialDataAtom);
@@ -116,11 +123,13 @@ export default function Partner() {
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isCompanyDeleteModalOpen, setIsCompanyDeleteModalOpen] =
     useState(false);
+  const [saving, setSaving] = useState(false);
 
   // 초기 데이터 로드
   useEffect(() => {
     const loadCompanies = async () => {
       try {
+        //서버액션 완성 시 실제 api로 교체
         const companiesData = await fetchCompanies();
         setCompanies(companiesData);
 
@@ -144,6 +153,7 @@ export default function Partner() {
 
       setLoading(true);
       try {
+        //서버액션 완성 시 실제 API로 교체
         const data = await fetchFinancialData(selectedCompany, selectedYear);
         setFinancialData(data);
       } catch (error) {
@@ -156,6 +166,41 @@ export default function Partner() {
 
     loadData();
   }, [selectedCompany, selectedYear]);
+
+  const handleEditModeToggle = async () => {
+    if (editMode && changedDataIds.size > 0) {
+      setSaving(true);
+      try {
+        const changedData = financialData.filter((item) =>
+          changedDataIds.has(item.id),
+        );
+
+        // 서버액션 완성 시 아래 임시 코드들 삭제하고 실제 서버액션 호출
+        console.log("서버에 저장될 데이터:", {
+          companyId: selectedCompany,
+          year: selectedYear,
+          changedData,
+        });
+
+        // 서버액션 완성 시 삭제 - 임시 딜레이
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // 유지: 실제 서버액션으로 교체
+        // await saveFinancialDataAction(selectedCompany, selectedYear, changedData);
+
+        clearChanges();
+        console.log("저장 완료!");
+      } catch (error) {
+        console.error("저장 실패:", error);
+        setSaving(false);
+        return;
+      } finally {
+        setSaving(false);
+      }
+    }
+
+    setEditMode(!editMode);
+  };
 
   // 년도 변경 핸들러
   const handleYearChange = (value: string | number) => {
@@ -227,7 +272,7 @@ export default function Partner() {
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => setEditMode(!editMode)}
+              onClick={handleEditModeToggle}
               disabled={loading || financialData.length === 0}
               sx={{
                 minWidth: 120,
@@ -290,7 +335,7 @@ export default function Partner() {
               variant="contained"
               color="primary"
               onClick={() => setIsYearDeleteModalOpen(true)}
-              disabled={loading || financialData.length === 0}
+              disabled={loading || financialData.length === 0 || saving}
               sx={{
                 minWidth: 120,
                 fontWeight: 600,
