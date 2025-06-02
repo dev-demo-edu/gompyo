@@ -5,11 +5,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import {
   companiesAtom,
   selectedCompanyAtom,
@@ -18,6 +13,15 @@ import {
   type Company,
   financialDataAtom,
 } from "@/states/partner";
+import {
+  companyAddFields,
+  CompanyAddFormValues,
+  companyAddSchema,
+  yearAddFields,
+  YearAddFormValues,
+  yearAddSchema,
+} from "./partner-form";
+import DynamicForm from "@/components/dynamic-form";
 
 // 기본 삭제 확인 모달
 function DeleteConfirmModal({
@@ -57,53 +61,55 @@ export function CompanyAddModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const [companyName, setCompanyName] = useState("");
-  const [companyType, setCompanyType] = useState<"payment" | "collection">(
-    "payment",
-  );
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [companies, setCompanies] = useAtom(companiesAtom);
   const setSelectedCompany = useSetAtom(selectedCompanyAtom);
 
   const handleClose = () => {
-    setCompanyName("");
-    setCompanyType("payment");
+    setFieldErrors({});
     onClose();
   };
 
-  const handleSubmit = async () => {
-    if (!companyName.trim()) {
-      alert("회사명을 입력해주세요.");
-      return;
-    }
-
+  const handleSubmit = async (values: CompanyAddFormValues) => {
     try {
+      if (companies.some((c) => c.name === values.name)) {
+        setFieldErrors({ name: "이미 존재하는 회사명입니다." });
+        return;
+      }
+
       // 서버 액션 호출 (현재는 목업)
-      // await createPartnerCompany({ name: companyName.trim(), type: companyType });
+      // await createPartnerCompany({ name: values.name, type: values.type });
       console.log("createPartnerCompany 호출:", {
-        name: companyName.trim(),
-        type: companyType,
+        values,
       });
 
       // 새 회사 추가
       /* 서버액션 완성 시 newCompany = 서버액션함수({
-          name: companyName.trim(),
-          type: companyType,
+          name: values.name,
+          type: values.type,
         }) */
 
       // 서버액션 완성 시 삭제 - 임시 데이터
       const newCompany: Company = {
         id: `temp_${Date.now()}`,
-        name: companyName.trim(),
-        type: companyType,
+        name: values.name,
+        type: values.type,
       };
 
       setCompanies([...companies, newCompany]);
-      setSelectedCompany(newCompany.id); // 새 회사를 자동 선택
+      setSelectedCompany(newCompany.id);
 
       handleClose();
-    } catch (error) {
-      console.error("회사 추가 실패:", error);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "회사 추가 중 오류가 발생했습니다.";
+
+      setFieldErrors({
+        name: errorMessage,
+      });
     }
   };
 
@@ -111,39 +117,15 @@ export function CompanyAddModal({
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle>회사 추가</DialogTitle>
       <DialogContent sx={{ py: 3 }}>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="회사명"
-          fullWidth
-          variant="outlined"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          placeholder="예: 새로운회사"
-          sx={{ mb: 2 }}
+        <DynamicForm
+          fields={companyAddFields}
+          onSubmit={handleSubmit}
+          onCancel={handleClose}
+          submitLabel="추가"
+          zodSchema={companyAddSchema}
+          fieldErrors={fieldErrors}
         />
-        <FormControl fullWidth variant="outlined">
-          <InputLabel>회사 타입</InputLabel>
-          <Select
-            value={companyType}
-            label="회사 타입"
-            onChange={(e) =>
-              setCompanyType(e.target.value as "payment" | "collection")
-            }
-          >
-            <MenuItem value="payment">지급회사</MenuItem>
-            <MenuItem value="collection">수금회사</MenuItem>
-          </Select>
-        </FormControl>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={handleClose}>
-          취소
-        </Button>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          추가
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }
@@ -208,32 +190,22 @@ export function YearAddModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const [newYear, setNewYear] = useState("");
-
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [availableYears, setAvailableYears] = useAtom(availableYearsAtom);
   const setSelectedYear = useSetAtom(selectedYearAtom);
   const selectedCompany = useAtomValue(selectedCompanyAtom);
 
   const handleClose = () => {
-    setNewYear("");
+    setFieldErrors({});
     onClose();
   };
 
-  const handleSubmit = async () => {
-    const yearNumber = parseInt(newYear);
+  const handleSubmit = async (values: YearAddFormValues) => {
+    const yearNumber = parseInt(values.year);
 
-    if (isNaN(yearNumber)) {
-      alert("올바른 연도를 입력해주세요.");
-      return;
-    }
-
-    if (yearNumber < 1900 || yearNumber > 2100) {
-      alert("1900~2100 사이의 연도를 입력해주세요.");
-      return;
-    }
-
+    // 중복 검사
     if (availableYears.includes(yearNumber)) {
-      alert("이미 존재하는 연도입니다.");
+      setFieldErrors({ year: "이미 존재하는 연도입니다." });
       return;
     }
 
@@ -249,8 +221,15 @@ export function YearAddModal({
       setSelectedYear(yearNumber);
 
       handleClose();
-    } catch (error) {
-      console.error("연도 추가 실패:", error);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "연도 추가 중 오류가 발생했습니다.";
+
+      setFieldErrors({
+        year: errorMessage,
+      });
     }
   };
 
@@ -258,30 +237,15 @@ export function YearAddModal({
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle>연도 추가</DialogTitle>
       <DialogContent sx={{ py: 3 }}>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="연도"
-          type="number"
-          fullWidth
-          variant="outlined"
-          value={newYear}
-          onChange={(e) => setNewYear(e.target.value)}
-          placeholder="예: 2027"
-          inputProps={{
-            min: 1900,
-            max: 2100,
-          }}
+        <DynamicForm
+          fields={yearAddFields}
+          onSubmit={handleSubmit}
+          onCancel={handleClose}
+          submitLabel="추가"
+          zodSchema={yearAddSchema}
+          fieldErrors={fieldErrors}
         />
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={handleClose}>
-          취소
-        </Button>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          추가
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }
