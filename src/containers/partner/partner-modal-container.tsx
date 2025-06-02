@@ -86,6 +86,12 @@ export function CompanyAddModal({
       });
 
       // 새 회사 추가
+      /* 서버액션 완성 시 newCompany = 서버액션함수({
+          name: companyName.trim(),
+          type: companyType,
+        }) */
+
+      // 서버액션 완성 시 삭제 - 임시 데이터
       const newCompany: Company = {
         id: `temp_${Date.now()}`,
         name: companyName.trim(),
