@@ -8,6 +8,7 @@ import PartnerGrid from "./partner-grid";
 import {
   CompanyAddModal,
   CompanyDeleteModal,
+  EditCancelConfirmModal,
   YearAddModal,
   YearDeleteModal,
 } from "./partner-modal-container";
@@ -111,9 +112,12 @@ export default function Partner() {
   const changedDataIds = useAtomValue(changedDataIdsAtom);
   const clearChanges = useSetAtom(clearChangesAtom);
 
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
   const setCompanies = useSetAtom(companiesAtom);
   const setAvailableYears = useSetAtom(availableYearsAtom);
   const setFinancialData = useSetAtom(financialDataAtom);
+  const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
 
   // 로컬 UI 상태들
   const [loading, setLoading] = useState(false);
@@ -165,9 +169,15 @@ export default function Partner() {
     };
 
     loadData();
-  }, [selectedCompany, selectedYear]);
+  }, [selectedCompany, selectedYear, refresh]);
 
   const handleEditModeToggle = async () => {
+    if (!editMode) {
+      // 편집모드 시작 - 원본 데이터 백업
+      setEditMode(true);
+      return;
+    }
+
     if (editMode && changedDataIds.size > 0) {
       setSaving(true);
       try {
@@ -199,7 +209,25 @@ export default function Partner() {
       }
     }
 
-    setEditMode(!editMode);
+    setEditMode(false);
+  };
+
+  const cancelEditMode = () => {
+    // 원본 데이터로 복구
+    clearChanges();
+    setEditMode(false);
+    setShowCancelConfirm(false);
+    setPartnerRefresh((prev) => prev + 1);
+  };
+
+  // 편집 취소
+  const handleEditCancel = () => {
+    if (changedDataIds.size > 0) {
+      setShowCancelConfirm(true);
+    } else {
+      // 변경사항이 없으면 바로 취소
+      cancelEditMode();
+    }
   };
 
   // 년도 변경 핸들러
@@ -269,6 +297,97 @@ export default function Partner() {
 
           {/* 오른쪽: 버튼들 */}
           <Stack direction="row" spacing={2}>
+            {!editMode && (
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setIsCompanyModalOpen(true)}
+                  disabled={loading}
+                  sx={{
+                    minWidth: 120,
+                    fontWeight: 600,
+                    backgroundColor: "#22C55E",
+                    "&:hover": {
+                      backgroundColor: "#16A34A",
+                    },
+                    "&:disabled": {
+                      backgroundColor: "#9CA3AF",
+                    },
+                    boxShadow: "none",
+                  }}
+                >
+                  회사 추가
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setIsCompanyDeleteModalOpen(true)}
+                  disabled={loading}
+                  sx={{
+                    minWidth: 120,
+                    fontWeight: 600,
+                    backgroundColor: "#EF4444",
+                    "&:hover": {
+                      backgroundColor: "#DC2626",
+                    },
+                    "&:disabled": {
+                      backgroundColor: "#9CA3AF",
+                    },
+                    boxShadow: "none",
+                  }}
+                >
+                  회사 삭제
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setIsYearDeleteModalOpen(true)}
+                  disabled={loading || financialData.length === 0 || saving}
+                  sx={{
+                    minWidth: 120,
+                    fontWeight: 600,
+                    backgroundColor: "#EF4444",
+                    "&:hover": {
+                      backgroundColor: "#DC2626",
+                    },
+                    "&:disabled": {
+                      backgroundColor: "#9CA3AF",
+                    },
+                    boxShadow: "none",
+                  }}
+                >
+                  해당 연도 삭제
+                </Button>
+              </>
+            )}
+            {editMode && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleEditCancel}
+                  disabled={saving}
+                  sx={{
+                    minWidth: 120,
+                    fontWeight: 600,
+                    borderColor: "#EF4444",
+                    color: "#EF4444",
+                    "&:hover": {
+                      backgroundColor: "#FEF2F2",
+                      borderColor: "#DC2626",
+                      color: "#DC2626",
+                    },
+                    "&:disabled": {
+                      borderColor: "#9CA3AF",
+                      color: "#9CA3AF",
+                    },
+                  }}
+                >
+                  편집 취소
+                </Button>
+              </>
+            )}
             <Button
               variant="contained"
               color="secondary"
@@ -289,67 +408,7 @@ export default function Partner() {
                 border: editMode ? "1px solid #cbd5e1" : "none",
               }}
             >
-              {editMode ? "편집 종료" : "편집 모드"}
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setIsCompanyModalOpen(true)}
-              disabled={loading}
-              sx={{
-                minWidth: 120,
-                fontWeight: 600,
-                backgroundColor: "#22C55E",
-                "&:hover": {
-                  backgroundColor: "#16A34A",
-                },
-                "&:disabled": {
-                  backgroundColor: "#9CA3AF",
-                },
-                boxShadow: "none",
-              }}
-            >
-              회사 추가
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setIsCompanyDeleteModalOpen(true)}
-              disabled={loading}
-              sx={{
-                minWidth: 120,
-                fontWeight: 600,
-                backgroundColor: "#EF4444",
-                "&:hover": {
-                  backgroundColor: "#DC2626",
-                },
-                "&:disabled": {
-                  backgroundColor: "#9CA3AF",
-                },
-                boxShadow: "none",
-              }}
-            >
-              회사 삭제
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setIsYearDeleteModalOpen(true)}
-              disabled={loading || financialData.length === 0 || saving}
-              sx={{
-                minWidth: 120,
-                fontWeight: 600,
-                backgroundColor: "#EF4444",
-                "&:hover": {
-                  backgroundColor: "#DC2626",
-                },
-                "&:disabled": {
-                  backgroundColor: "#9CA3AF",
-                },
-                boxShadow: "none",
-              }}
-            >
-              해당 연도 삭제
+              {editMode ? "편집 저장" : "편집 모드"}
             </Button>
           </Stack>
         </Stack>
@@ -392,6 +451,12 @@ export default function Partner() {
         companyName={
           companies.find((c) => c.id === selectedCompany)?.name || ""
         }
+      />
+      <EditCancelConfirmModal
+        open={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={cancelEditMode}
+        changedCount={changedDataIds.size}
       />
     </div>
   );

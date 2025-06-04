@@ -385,3 +385,45 @@ export function YearDeleteModal({
     />
   );
 }
+
+// EditCancelConfirmModal 추가
+export function EditCancelConfirmModal({
+  open,
+  onClose,
+  onConfirm,
+  changedCount,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  changedCount: number;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ fontWeight: 600 }}>편집 취소 확인</DialogTitle>
+
+      <DialogContent sx={{ py: 3 }}>
+        <p style={{ marginBottom: "8px", color: "#374151" }}>
+          변경된 <strong>{changedCount}개 항목</strong>이 저장되지 않습니다.
+        </p>
+        <p style={{ color: "#6B7280" }}>정말로 편집을 취소하시겠습니까?</p>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 2, pt: 0 }}>
+        <Button onClick={onClose} variant="outlined" color="primary">
+          계속 편집
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          sx={{
+            backgroundColor: "#EF4444",
+            "&:hover": { backgroundColor: "#DC2626" },
+          }}
+        >
+          취소하고 나가기
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
