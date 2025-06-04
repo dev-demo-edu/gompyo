@@ -341,7 +341,6 @@ export default function PartnerGrid({
           data={data}
           pagination={false}
           onCellValueChanged={handleCellValueChanged}
-          editMode={editMode}
           onGridReady={onGridReady} // gridApi 받기
         />
       ) : (
