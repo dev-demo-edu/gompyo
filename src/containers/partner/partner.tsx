@@ -25,6 +25,7 @@ import {
   selectedYearAtom,
 } from "@/states/partner";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { GridApi } from "ag-grid-community";
 
 // 서버액션 완성 시 삭제 - Mock데이터
 const generateMockCompanies = (): Company[] => {
@@ -129,6 +130,9 @@ export default function Partner() {
     useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [editingCellError, setEditingCellError] = useState("");
+  const [gridApi, setGridApi] = useState<GridApi | null>(null);
+
   // 초기 데이터 로드
   useEffect(() => {
     const loadCompanies = async () => {
@@ -173,13 +177,26 @@ export default function Partner() {
 
   const handleEditModeToggle = async () => {
     if (!editMode) {
-      // 편집모드 시작 - 원본 데이터 백업
       setEditMode(true);
+      setEditingCellError(""); // 편집 모드 시작할 때 에러 메시지 클리어
       return;
     }
 
+    // 편집 중인 셀 체크
+    if (gridApi) {
+      const editingCells = gridApi.getEditingCells();
+
+      if (editingCells.length > 0) {
+        setEditingCellError("편집 중인 셀을 완료해주세요");
+        return;
+      }
+    }
+
+    setEditingCellError("");
+
     if (editMode && changedDataIds.size > 0) {
       setSaving(true);
+
       try {
         const changedData = financialData.filter((item) =>
           changedDataIds.has(item.id),
@@ -193,7 +210,7 @@ export default function Partner() {
         });
 
         // 서버액션 완성 시 삭제 - 임시 딜레이
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // 유지: 실제 서버액션으로 교체
         // await saveFinancialDataAction(selectedCompany, selectedYear, changedData);
@@ -228,6 +245,7 @@ export default function Partner() {
       // 변경사항이 없으면 바로 취소
       cancelEditMode();
     }
+    setEditingCellError("");
   };
 
   // 년도 변경 핸들러
@@ -237,6 +255,9 @@ export default function Partner() {
     } else {
       setSelectedYear(value as number);
     }
+  };
+  const handleGridReady = (api: GridApi) => {
+    setGridApi(api);
   };
 
   return (
@@ -296,7 +317,7 @@ export default function Partner() {
           </Stack>
 
           {/* 오른쪽: 버튼들 */}
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="flex-start">
             {!editMode && (
               <>
                 <Button
@@ -388,28 +409,35 @@ export default function Partner() {
                 </Button>
               </>
             )}
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleEditModeToggle}
-              disabled={loading || financialData.length === 0}
-              sx={{
-                minWidth: 120,
-                fontWeight: 600,
-                backgroundColor: editMode ? "#f3f4f6" : "#64748b",
-                color: editMode ? "#374151" : "#fff",
-                "&:hover": {
-                  backgroundColor: editMode ? "#e5e7eb" : "#475569",
-                },
-                "&:disabled": {
-                  backgroundColor: "#9CA3AF",
-                },
-                boxShadow: "none",
-                border: editMode ? "1px solid #cbd5e1" : "none",
-              }}
-            >
-              {editMode ? "편집 저장" : "편집 모드"}
-            </Button>
+            <div className="flex flex-col">
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleEditModeToggle}
+                disabled={loading || financialData.length === 0}
+                sx={{
+                  minWidth: 120,
+                  fontWeight: 600,
+                  backgroundColor: editMode ? "#f3f4f6" : "#64748b",
+                  color: editMode ? "#374151" : "#fff",
+                  "&:hover": {
+                    backgroundColor: editMode ? "#e5e7eb" : "#475569",
+                  },
+                  "&:disabled": {
+                    backgroundColor: "#9CA3AF",
+                  },
+                  boxShadow: "none",
+                  border: editMode ? "1px solid #cbd5e1" : "none",
+                }}
+              >
+                {editMode ? "편집 저장" : "편집 모드"}
+              </Button>
+              {editingCellError && (
+                <span className="text-red-500 text-xs mt-1 whitespace-nowrap">
+                  {editingCellError}
+                </span>
+              )}
+            </div>
           </Stack>
         </Stack>
 
@@ -423,6 +451,7 @@ export default function Partner() {
             data={financialData}
             loading={loading}
             onDataChange={setFinancialData}
+            onGridReady={handleGridReady}
           />
         </div>
       </div>

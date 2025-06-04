@@ -3,6 +3,7 @@ import {
   CellClassParams,
   CellValueChangedEvent,
   ColDef,
+  GridApi,
   NewValueParams,
   ValueFormatterParams,
 } from "ag-grid-community";
@@ -40,6 +41,7 @@ interface PartnerGridProps {
   loading?: boolean;
   editMode: boolean;
   onDataChange: (data: FinancialData[]) => void;
+  onGridReady: (api: GridApi) => void;
 }
 
 // 숫자 포맷팅 함수
@@ -76,6 +78,7 @@ export default function PartnerGrid({
   loading = false,
   editMode = false,
   onDataChange,
+  onGridReady,
 }: PartnerGridProps) {
   const selectedCompanyInfo = companies.find(
     (company) => company.id === selectedCompany,
@@ -339,6 +342,7 @@ export default function PartnerGrid({
           pagination={false}
           onCellValueChanged={handleCellValueChanged}
           editMode={editMode}
+          onGridReady={onGridReady} // gridApi 받기
         />
       ) : (
         <div className="w-full h-full bg-gray-50 border border-gray-300 rounded-lg flex items-center justify-center">

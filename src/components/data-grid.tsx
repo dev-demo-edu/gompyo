@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useCallback, useEffect } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import type {
   ColDef,
   DragStartedEvent,
@@ -31,7 +31,7 @@ interface DataGridProps<T> {
   paginationPageSize?: number;
   onRowDragEnd?: (event: RowDragEndEvent) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
-  editMode?: boolean;
+  onGridReady?: (api: GridApi) => void;
 }
 
 // 추후 사용 여부에 따라서 utils로 빼기
@@ -48,7 +48,7 @@ export default function DataGrid<T>({
   paginationPageSize = 15,
   onRowDragEnd,
   onCellValueChanged,
-  editMode,
+  onGridReady,
 }: DataGridProps<T>) {
   const gridApiRef = useRef<GridApi | null>(null);
 
@@ -63,13 +63,6 @@ export default function DataGrid<T>({
     }),
     [],
   );
-
-  // editMode 변경 감지
-  useEffect(() => {
-    if (editMode === false && gridApiRef.current) {
-      gridApiRef.current.stopEditing();
-    }
-  }, [editMode]);
 
   // 컬럼 상태 생성
   const columnState = useMemo(
@@ -102,8 +95,13 @@ export default function DataGrid<T>({
         state: columnState,
         applyOrder: true,
       });
+
+      // 부모 컴포넌트에 gridApi 전달
+      if (onGridReady) {
+        onGridReady(params.api);
+      }
     },
-    [columnState],
+    [columnState, onGridReady],
   );
 
   if (error) {
