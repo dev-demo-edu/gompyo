@@ -49,9 +49,17 @@ export class CheckboxFilterReact extends Component {
   private eGui!: HTMLDivElement;
   private uniqueValues: string[] = [];
   private selectedValues: Set<string> = new Set();
+  private searchTerm: string = "";
+  private filteredValues: string[] = [];
 
   constructor(props: Record<string, unknown>) {
     super(props);
+  }
+
+  // Helper function to create safe CSS selector IDs
+  private createSafeId(value: string): string {
+    // Replace special characters with underscores
+    return value.replace(/[^a-zA-Z0-9-_]/g, "_");
   }
 
   init(params: IFilterParams): void {
@@ -85,6 +93,7 @@ export class CheckboxFilterReact extends Component {
     });
 
     this.uniqueValues = [...new Set(rowData)].sort();
+    this.filteredValues = [...this.uniqueValues];
     this.selectedValues = new Set(this.uniqueValues);
     console.log("Unique values:", this.uniqueValues);
     console.log("Selected values:", Array.from(this.selectedValues));
@@ -97,14 +106,31 @@ export class CheckboxFilterReact extends Component {
     this.eGui.innerHTML = `
       <div class="filter-container">
         <div class="filter-header">
-          <button class="filter-btn select-all-btn" id="selectAll">
-            <span class="btn-icon">✓</span>
-            전체 선택
-          </button>
-          <button class="filter-btn deselect-all-btn" id="deselectAll">
-            <span class="btn-icon">✕</span>
-            전체 해제
-          </button>
+          <div class="action-buttons">
+            <button class="filter-btn select-all-btn" id="selectAll">
+              <span class="btn-icon">✓</span>
+              전체 선택
+            </button>
+            <button class="filter-btn deselect-all-btn" id="deselectAll">
+              <span class="btn-icon">✕</span>
+              전체 해제
+            </button>
+          </div>
+          <div class="selected-count" id="selectedCount">
+            0개 선택됨
+          </div>
+          <div class="search-container">
+            <input
+              type="text"
+              class="search-input"
+              id="searchInput"
+              placeholder="검색..."
+              autocomplete="off"
+            />
+            <button class="clear-search-btn" id="clearSearch" style="display: none;">
+              <span class="btn-icon">✕</span>
+            </button>
+          </div>
         </div>
         <div class="filter-content" id="filterContent">
           <div class="checkbox-container" id="checkboxContainer"></div>
@@ -118,6 +144,10 @@ export class CheckboxFilterReact extends Component {
     // 이벤트 리스너 추가
     const selectAllBtn = this.eGui.querySelector("#selectAll");
     const deselectAllBtn = this.eGui.querySelector("#deselectAll");
+    const searchInput = this.eGui.querySelector(
+      "#searchInput",
+    ) as HTMLInputElement;
+    const clearSearchBtn = this.eGui.querySelector("#clearSearch");
 
     if (selectAllBtn) {
       selectAllBtn.addEventListener("click", () => this.selectAll());
@@ -125,8 +155,23 @@ export class CheckboxFilterReact extends Component {
     if (deselectAllBtn) {
       deselectAllBtn.addEventListener("click", () => this.deselectAll());
     }
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) =>
+        this.handleSearch((e.target as HTMLInputElement).value),
+      );
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          this.clearSearch();
+        }
+      });
+    }
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener("click", () => this.clearSearch());
+    }
 
     this.createCheckboxes();
+    this.updateSelectedCount();
+    this.updateButtonStates();
   }
 
   private addStyles(): void {
@@ -149,8 +194,58 @@ export class CheckboxFilterReact extends Component {
         padding: 16px;
         border-bottom: 1px solid #f3f4f6;
         display: flex;
-        gap: 8px;
+        flex-direction: column;
+        gap: 12px;
         background: #fafafa;
+      }
+
+      .search-container {
+        position: relative;
+        width: 100%;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 8px 36px 8px 12px;
+        font-size: 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        outline: none;
+        transition: all 0.2s ease;
+      }
+
+      .search-input:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+      }
+
+      .clear-search-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        color: #6b7280;
+        transition: color 0.2s ease;
+      }
+
+      .clear-search-btn:hover {
+        color: #374151;
+      }
+
+      .selected-count {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
       }
 
       .filter-btn {
@@ -187,6 +282,17 @@ export class CheckboxFilterReact extends Component {
       .deselect-all-btn:hover {
         background: #e5e7eb;
         transform: translateY(-1px);
+      }
+
+      .filter-btn:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+      }
+
+      .filter-btn:disabled:hover {
+        background-color: inherit !important;
+        transform: none !important;
       }
 
       .btn-icon {
@@ -293,8 +399,47 @@ export class CheckboxFilterReact extends Component {
     }
   }
 
+  private handleSearch(term: string): void {
+    this.searchTerm = term.toLowerCase();
+    const clearBtn = this.eGui.querySelector("#clearSearch") as HTMLElement;
+
+    if (clearBtn) {
+      clearBtn.style.display = term ? "block" : "none";
+    }
+
+    if (term) {
+      this.filteredValues = this.uniqueValues.filter((value) =>
+        value.toLowerCase().includes(this.searchTerm),
+      );
+    } else {
+      this.filteredValues = [...this.uniqueValues];
+    }
+
+    this.createCheckboxes();
+    this.updateButtonStates();
+  }
+
+  private clearSearch(): void {
+    const searchInput = this.eGui.querySelector(
+      "#searchInput",
+    ) as HTMLInputElement;
+    if (searchInput) {
+      searchInput.value = "";
+      this.handleSearch("");
+    }
+  }
+
+  private updateSelectedCount(): void {
+    const countElement = this.eGui.querySelector("#selectedCount");
+    if (countElement) {
+      const count = this.selectedValues.size;
+      const total = this.uniqueValues.length;
+      countElement.textContent = `${count}/${total}개 선택됨`;
+    }
+  }
+
   private createCheckboxes(): void {
-    console.log("Creating checkboxes for values:", this.uniqueValues);
+    console.log("Creating checkboxes for values:", this.filteredValues);
 
     const container = this.eGui.querySelector("#checkboxContainer");
     if (!container) {
@@ -304,25 +449,26 @@ export class CheckboxFilterReact extends Component {
 
     container.innerHTML = "";
 
-    if (this.uniqueValues.length === 0) {
+    if (this.filteredValues.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
-          <span class="empty-state-icon">📋</span>
-          데이터가 없습니다
+          <span class="empty-state-icon">🔍</span>
+          ${this.searchTerm ? "검색 결과가 없습니다" : "데이터가 없습니다"}
         </div>
       `;
       return;
     }
 
-    this.uniqueValues.forEach((value) => {
+    this.filteredValues.forEach((value) => {
       const checkboxItem = document.createElement("div");
       checkboxItem.className = "checkbox-item";
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "checkbox-input";
-      checkbox.id = `checkbox-${value}-${this.params.colDef.field}`;
+      checkbox.id = `checkbox-${this.createSafeId(value)}-${this.createSafeId(this.params.colDef.field)}`;
       checkbox.checked = this.selectedValues.has(value);
+      checkbox.setAttribute("data-value", value); // Store original value
 
       checkbox.addEventListener("change", (e) => {
         this.handleCheckboxChange(
@@ -349,6 +495,8 @@ export class CheckboxFilterReact extends Component {
       this.selectedValues.delete(value);
     }
 
+    this.updateSelectedCount();
+
     // 필터 변경 콜백 호출
     setTimeout(() => {
       this.params.filterChangedCallback();
@@ -356,16 +504,34 @@ export class CheckboxFilterReact extends Component {
   }
 
   private selectAll(): void {
-    this.selectedValues = new Set(this.uniqueValues);
+    // Don't do anything if no filtered values
+    if (this.filteredValues.length === 0) return;
+
+    // Select only filtered values when search is active
+    if (this.searchTerm) {
+      this.filteredValues.forEach((value) => this.selectedValues.add(value));
+    } else {
+      this.selectedValues = new Set(this.uniqueValues);
+    }
     this.updateCheckboxes();
+    this.updateSelectedCount();
     setTimeout(() => {
       this.params.filterChangedCallback();
     }, 0);
   }
 
   private deselectAll(): void {
-    this.selectedValues = new Set();
+    // Don't do anything if no filtered values
+    if (this.filteredValues.length === 0) return;
+
+    // Deselect only filtered values when search is active
+    if (this.searchTerm) {
+      this.filteredValues.forEach((value) => this.selectedValues.delete(value));
+    } else {
+      this.selectedValues = new Set();
+    }
     this.updateCheckboxes();
+    this.updateSelectedCount();
     setTimeout(() => {
       this.params.filterChangedCallback();
     }, 0);
@@ -375,14 +541,44 @@ export class CheckboxFilterReact extends Component {
     const container = this.eGui.querySelector("#checkboxContainer");
     if (!container) return;
 
-    this.uniqueValues.forEach((value) => {
+    // Update checkboxes for filtered values
+    this.filteredValues.forEach((value) => {
+      const safeId = `checkbox-${this.createSafeId(value)}-${this.createSafeId(this.params.colDef.field)}`;
       const checkbox = container.querySelector(
-        `#checkbox-${value}-${this.params.colDef.field}`,
+        `#${safeId}`,
       ) as HTMLInputElement;
       if (checkbox) {
         checkbox.checked = this.selectedValues.has(value);
       }
     });
+  }
+
+  private updateButtonStates(): void {
+    const selectAllBtn = this.eGui.querySelector(
+      "#selectAll",
+    ) as HTMLButtonElement;
+    const deselectAllBtn = this.eGui.querySelector(
+      "#deselectAll",
+    ) as HTMLButtonElement;
+
+    if (selectAllBtn && deselectAllBtn) {
+      const isDisabled = this.filteredValues.length === 0;
+      selectAllBtn.disabled = isDisabled;
+      deselectAllBtn.disabled = isDisabled;
+
+      // Update button styles when disabled
+      if (isDisabled) {
+        selectAllBtn.style.opacity = "0.5";
+        selectAllBtn.style.cursor = "not-allowed";
+        deselectAllBtn.style.opacity = "0.5";
+        deselectAllBtn.style.cursor = "not-allowed";
+      } else {
+        selectAllBtn.style.opacity = "1";
+        selectAllBtn.style.cursor = "pointer";
+        deselectAllBtn.style.opacity = "1";
+        deselectAllBtn.style.cursor = "pointer";
+      }
+    }
   }
 
   getGui(): HTMLElement {
@@ -420,7 +616,10 @@ export class CheckboxFilterReact extends Component {
   onNewRowsLoaded(): void {
     this.extractUniqueValues();
     if (this.eGui) {
+      this.clearSearch();
       this.createCheckboxes();
+      this.updateSelectedCount();
+      this.updateButtonStates();
     }
   }
 
