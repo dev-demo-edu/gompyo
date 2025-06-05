@@ -14,8 +14,6 @@ import {
 } from "./partner-modal-container";
 import {
   availableYearsAtom,
-  changedDataIdsAtom,
-  clearChangesAtom,
   companiesAtom,
   financialDataAtom,
   partnerRefreshAtom,
@@ -125,10 +123,6 @@ export default function Partner() {
   const availableYears = useAtomValue(availableYearsAtom);
   const refresh = useAtomValue(partnerRefreshAtom);
 
-  // 변경사항 관련 상태 추가
-  const changedDataIds = useAtomValue(changedDataIdsAtom);
-  const clearChanges = useSetAtom(clearChangesAtom);
-
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   const setCompanies = useSetAtom(companiesAtom);
@@ -210,28 +204,22 @@ export default function Partner() {
 
     setEditingCellError("");
 
-    if (editMode && changedDataIds.size > 0) {
+    if (editMode) {
       setSaving(true);
 
       try {
-        const changedData = financialData.filter((item) =>
-          changedDataIds.has(item.id),
-        );
-
         // 서버액션 완성 시 아래 임시 코드들 삭제하고 실제 서버액션 호출
         console.log("서버에 저장될 데이터:", {
           companyId: selectedCompany,
           year: selectedYear,
-          changedData,
+          allData: financialData,
         });
 
         // 서버액션 완성 시 삭제 - 임시 딜레이
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         // 유지: 실제 서버액션으로 교체
-        // await saveFinancialDataAction(selectedCompany, selectedYear, changedData);
-
-        clearChanges();
+        // await saveFinancialDataAction(selectedCompany, selectedYear, financialData);
         console.log("저장 완료!");
       } catch (error) {
         console.error("저장 실패:", error);
@@ -247,7 +235,6 @@ export default function Partner() {
 
   const cancelEditMode = () => {
     // 원본 데이터로 복구
-    clearChanges();
     setEditMode(false);
     setShowCancelConfirm(false);
     setPartnerRefresh((prev) => prev + 1);
@@ -255,12 +242,7 @@ export default function Partner() {
 
   // 편집 취소
   const handleEditCancel = () => {
-    if (changedDataIds.size > 0) {
-      setShowCancelConfirm(true);
-    } else {
-      // 변경사항이 없으면 바로 취소
-      cancelEditMode();
-    }
+    setShowCancelConfirm(true);
     setEditingCellError("");
   };
 
@@ -501,7 +483,6 @@ export default function Partner() {
         open={showCancelConfirm}
         onClose={() => setShowCancelConfirm(false)}
         onConfirm={cancelEditMode}
-        changedCount={changedDataIds.size}
       />
     </div>
   );

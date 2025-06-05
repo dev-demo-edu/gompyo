@@ -391,12 +391,10 @@ export function EditCancelConfirmModal({
   open,
   onClose,
   onConfirm,
-  changedCount,
 }: {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  changedCount: number;
 }) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
@@ -404,7 +402,7 @@ export function EditCancelConfirmModal({
 
       <DialogContent sx={{ py: 3 }}>
         <p style={{ marginBottom: "8px", color: "#374151" }}>
-          변경된 <strong>{changedCount}개 항목</strong>이 저장되지 않습니다.
+          편집한 모든 변경사항이 저장되지 않습니다.
         </p>
         <p style={{ color: "#6B7280" }}>정말로 편집을 취소하시겠습니까?</p>
       </DialogContent>
