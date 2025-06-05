@@ -49,6 +49,22 @@ const fetchCompanies = async (): Promise<Company[]> => {
 
 // 서버액션 완성 시 삭제 - Mock 재무 데이터 생성
 const generateMockData = (companyId: string, year: number): FinancialData[] => {
+  const carryoverData: FinancialData = {
+    id: `${year}-carryover`,
+    month: "이월잔액",
+    year,
+    isCarryover: true,
+    lamplePurchase: null,
+    lamplePayment: null,
+    lampleBalance: null, // 사용자가 입력할 수 있음
+    gompyoPurchase: null,
+    gompyoPayment: null,
+    gompyoBalance: null, // 사용자가 입력할 수 있음
+    totalPurchase: null,
+    totalPayment: null,
+    totalBalance: null,
+  };
+
   const months = [
     "1월",
     "2월",
@@ -64,7 +80,7 @@ const generateMockData = (companyId: string, year: number): FinancialData[] => {
     "12월",
   ];
 
-  return months
+  const monthlyDaya = months
     .map((month, index) => ({
       id: `${year}-${index + 1}`,
       month,
@@ -85,6 +101,7 @@ const generateMockData = (companyId: string, year: number): FinancialData[] => {
       totalPayment: (item.lamplePayment || 0) + (item.gompyoPayment || 0),
       totalBalance: (item.lampleBalance || 0) + (item.gompyoBalance || 0),
     }));
+  return [carryoverData, ...monthlyDaya];
 };
 
 // 서버액션 완성 시 삭제 - Mock API 호출

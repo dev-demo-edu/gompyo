@@ -3,6 +3,7 @@ import {
   CellClassParams,
   CellValueChangedEvent,
   ColDef,
+  EditableCallbackParams,
   GridApi,
   NewValueParams,
   ValueFormatterParams,
@@ -92,30 +93,6 @@ export default function PartnerGrid({
   const purchaseOrSaleText = isPayment ? "구매" : "판매";
   const paymentOrCollectionText = isPayment ? "지급" : "수금";
 
-  // 이월잔액을 포함한 데이터 생성
-  const dataWithCarryover = useMemo(() => {
-    if (data.length === 0) return [];
-
-    // 이월잔액 행 생성 (사용자가 직접 입력 가능)
-    const carryoverData: FinancialData = {
-      id: `${selectedYear}-carryover`,
-      year: selectedYear,
-      month: "이월잔액",
-      lamplePurchase: null,
-      lamplePayment: null,
-      lampleBalance: null, // 사용자 입력용
-      gompyoPurchase: null,
-      gompyoPayment: null,
-      gompyoBalance: null, // 사용자 입력용
-      totalPurchase: null,
-      totalPayment: null,
-      totalBalance: null, // 계산값
-      isCarryover: true,
-    };
-
-    return [carryoverData, ...data];
-  }, [data, selectedYear]);
-
   const columnDefs: ColDef[] = useMemo(
     () => [
       {
@@ -143,7 +120,8 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: editMode,
+            editable: (params: EditableCallbackParams) =>
+              editMode && !params.data?.isCarryover,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -163,7 +141,8 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: editMode,
+            editable: (params: EditableCallbackParams) =>
+              editMode && !params.data?.isCarryover,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -216,7 +195,8 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: editMode,
+            editable: (params: EditableCallbackParams) =>
+              editMode && !params.data?.isCarryover,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -236,7 +216,8 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: editMode,
+            editable: (params: EditableCallbackParams) =>
+              editMode && !params.data?.isCarryover,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
@@ -360,10 +341,10 @@ export default function PartnerGrid({
             <p className="text-gray-500">데이터를 불러오는 중...</p>
           </div>
         </div>
-      ) : dataWithCarryover.length > 0 ? (
+      ) : data.length > 0 ? (
         <DataGrid
           columnDefs={columnDefs}
-          data={dataWithCarryover}
+          data={data}
           pagination={false}
           onCellValueChanged={handleCellValueChanged}
           onGridReady={onGridReady} // gridApi 받기

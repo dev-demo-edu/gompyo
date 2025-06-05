@@ -16,6 +16,7 @@ export const selectedYearAtom = atom<number>(2025);
 
 // 재무 데이터
 export interface FinancialData {
+  isCarryover?: boolean;
   id: string;
   year: number;
   month: string;
