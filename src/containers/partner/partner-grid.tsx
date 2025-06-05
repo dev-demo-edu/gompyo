@@ -177,7 +177,8 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: editMode,
+            editable: (params: EditableCallbackParams) =>
+              editMode && params.data?.isCarryover,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams): boolean => {
@@ -296,7 +297,8 @@ export default function PartnerGrid({
             sortable: false,
             minWidth: 120,
             flex: 1,
-            editable: editMode,
+            editable: (params: EditableCallbackParams) =>
+              editMode && params.data?.isCarryover,
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
