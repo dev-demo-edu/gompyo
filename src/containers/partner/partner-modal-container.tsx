@@ -10,7 +10,6 @@ import {
   selectedCompanyAtom,
   availableYearsAtom,
   selectedYearAtom,
-  type Company,
   financialDataAtom,
 } from "@/states/partner";
 import {
@@ -22,6 +21,7 @@ import {
   yearAddSchema,
 } from "./partner-form";
 import DynamicForm from "@/components/dynamic-form";
+import { Company } from "@/types/partner";
 
 // 기본 삭제 확인 모달
 function DeleteConfirmModal({

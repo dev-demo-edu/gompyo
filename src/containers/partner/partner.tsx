@@ -17,8 +17,6 @@ import {
   changedDataIdsAtom,
   clearChangesAtom,
   companiesAtom,
-  Company,
-  FinancialData,
   financialDataAtom,
   partnerRefreshAtom,
   selectedCompanyAtom,
@@ -26,6 +24,7 @@ import {
 } from "@/states/partner";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { GridApi } from "ag-grid-community";
+import { Company, FinancialData } from "@/types/partner";
 
 // 서버액션 완성 시 삭제 - Mock데이터
 const generateMockCompanies = (): Company[] => {

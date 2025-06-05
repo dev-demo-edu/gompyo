@@ -12,28 +12,7 @@ import DataGrid from "@/components/data-grid";
 import { CircularProgress } from "@mui/material";
 import { changedDataIdsAtom } from "@/states/partner";
 import { useAtom } from "jotai";
-
-interface Company {
-  id: string;
-  name: string;
-  type: "payment" | "collection";
-}
-
-interface FinancialData {
-  id: string;
-  year: number;
-  isCarryover?: boolean;
-  month: string;
-  lamplePurchase: number | null;
-  lamplePayment: number | null;
-  lampleBalance: number | null;
-  gompyoPurchase: number | null;
-  gompyoPayment: number | null;
-  gompyoBalance: number | null;
-  totalPurchase: number | null;
-  totalPayment: number | null;
-  totalBalance: number | null;
-}
+import { Company, FinancialData } from "@/types/partner";
 
 interface PartnerGridProps {
   companies: Company[];
