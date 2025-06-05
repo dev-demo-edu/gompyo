@@ -21,6 +21,7 @@ interface Company {
 interface FinancialData {
   id: string;
   year: number;
+  isCarryover?: boolean;
   month: string;
   lamplePurchase: number | null;
   lamplePayment: number | null;
@@ -90,6 +91,30 @@ export default function PartnerGrid({
   const isPayment = selectedCompanyInfo?.type === "payment";
   const purchaseOrSaleText = isPayment ? "구매" : "판매";
   const paymentOrCollectionText = isPayment ? "지급" : "수금";
+
+  // 이월잔액을 포함한 데이터 생성
+  const dataWithCarryover = useMemo(() => {
+    if (data.length === 0) return [];
+
+    // 이월잔액 행 생성 (사용자가 직접 입력 가능)
+    const carryoverData: FinancialData = {
+      id: `${selectedYear}-carryover`,
+      year: selectedYear,
+      month: "이월잔액",
+      lamplePurchase: null,
+      lamplePayment: null,
+      lampleBalance: null, // 사용자 입력용
+      gompyoPurchase: null,
+      gompyoPayment: null,
+      gompyoBalance: null, // 사용자 입력용
+      totalPurchase: null,
+      totalPayment: null,
+      totalBalance: null, // 계산값
+      isCarryover: true,
+    };
+
+    return [carryoverData, ...data];
+  }, [data, selectedYear]);
 
   const columnDefs: ColDef[] = useMemo(
     () => [
@@ -335,10 +360,10 @@ export default function PartnerGrid({
             <p className="text-gray-500">데이터를 불러오는 중...</p>
           </div>
         </div>
-      ) : data.length > 0 ? (
+      ) : dataWithCarryover.length > 0 ? (
         <DataGrid
           columnDefs={columnDefs}
-          data={data}
+          data={dataWithCarryover}
           pagination={false}
           onCellValueChanged={handleCellValueChanged}
           onGridReady={onGridReady} // gridApi 받기
