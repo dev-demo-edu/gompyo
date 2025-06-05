@@ -13,6 +13,12 @@ import { CircularProgress } from "@mui/material";
 import { changedDataIdsAtom } from "@/states/partner";
 import { useAtom } from "jotai";
 import { Company, FinancialData } from "@/types/partner";
+import {
+  recalculateAllBalances,
+  recalculateBalancesFromMonth,
+  calculateCarryoverTotal,
+  CompanyType,
+} from "@/utils/partner";
 
 interface PartnerGridProps {
   companies: Company[];
@@ -71,6 +77,7 @@ export default function PartnerGrid({
   const isPayment = selectedCompanyInfo?.type === "payment";
   const purchaseOrSaleText = isPayment ? "구매" : "판매";
   const paymentOrCollectionText = isPayment ? "지급" : "수금";
+  const companyType: CompanyType = selectedCompanyInfo?.type || "collection";
 
   const columnDefs: ColDef[] = useMemo(
     () => [
@@ -109,6 +116,20 @@ export default function PartnerGrid({
               // 전체 구매 금액 재계산
               params.data.totalPurchase =
                 (newValue || 0) + (params.data.gompyoPurchase || 0);
+
+              // 현재 행의 인덱스 찾기
+              const currentIndex = data.findIndex(
+                (item) => item.id === params.data.id,
+              );
+
+              // 램플 잔액 재계산 (현재 월부터 이후 모든 월)
+              const updatedData = recalculateBalancesFromMonth(
+                currentIndex,
+                "lampleBalance",
+                data,
+                companyType,
+              );
+              onDataChange(updatedData);
               return true;
             },
           },
@@ -127,9 +148,24 @@ export default function PartnerGrid({
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.lamplePayment = newValue;
+
               // 전체 지급 금액 재계산
               params.data.totalPayment =
                 (newValue || 0) + (params.data.gompyoPayment || 0);
+
+              // 현재 행의 인덱스 찾기
+              const currentIndex = data.findIndex(
+                (item) => item.id === params.data.id,
+              );
+
+              // 램플 잔액 재계산 (현재 월부터 이후 모든 월)
+              const updatedData = recalculateBalancesFromMonth(
+                currentIndex,
+                "lampleBalance",
+                data,
+                companyType,
+              );
+              onDataChange(updatedData);
               return true;
             },
           },
@@ -145,12 +181,30 @@ export default function PartnerGrid({
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams): boolean => {
-              const newValue = parseNumber(params.newValue);
-              params.data.lampleBalance = newValue;
-              // 전체 잔액 재계산
-              params.data.totalBalance =
-                (newValue || 0) + (params.data.gompyoBalance || 0);
-              return true;
+              // 이월잔액인 경우만 직접 편집 허용
+              if (params.data.isCarryover) {
+                const newValue = parseNumber(params.newValue);
+                params.data.lampleBalance = newValue;
+
+                // 이월잔액의 전체 잔액 계산
+                const updatedCarryover = calculateCarryoverTotal(params.data);
+
+                // 데이터 업데이트
+                const updatedData = data.map((item) =>
+                  item.id === params.data.id ? updatedCarryover : item,
+                );
+
+                // 모든 월별 잔액 재계산
+                const finalData = recalculateAllBalances(
+                  updatedData,
+                  companyType,
+                );
+
+                onDataChange(finalData);
+                return true;
+              }
+
+              return false; // 월별 데이터는 자동 계산으로 편집 불가
             },
             cellStyle: (params: CellClassParams) => {
               if (params.value < 0) {
@@ -181,9 +235,22 @@ export default function PartnerGrid({
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gompyoPurchase = newValue;
-              // 전체 구매 금액 재계산
+
               params.data.totalPurchase =
                 (params.data.lamplePurchase || 0) + (newValue || 0);
+
+              const currentIndex = data.findIndex(
+                (item) => item.id === params.data.id,
+              );
+
+              const updatedData = recalculateBalancesFromMonth(
+                currentIndex,
+                "gompyoBalance",
+                data,
+                companyType,
+              );
+
+              onDataChange(updatedData);
               return true;
             },
           },
@@ -202,9 +269,22 @@ export default function PartnerGrid({
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gompyoPayment = newValue;
-              // 전체 지급 금액 재계산
+
               params.data.totalPayment =
                 (params.data.lamplePayment || 0) + (newValue || 0);
+
+              const currentIndex = data.findIndex(
+                (item) => item.id === params.data.id,
+              );
+
+              const updatedData = recalculateBalancesFromMonth(
+                currentIndex,
+                "gompyoBalance",
+                data,
+                companyType,
+              );
+
+              onDataChange(updatedData);
               return true;
             },
           },
@@ -220,12 +300,25 @@ export default function PartnerGrid({
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             valueSetter: (params: NewValueParams) => {
-              const newValue = parseNumber(params.newValue);
-              params.data.gompyoBalance = newValue;
-              // 전체 잔액 재계산
-              params.data.totalBalance =
-                (params.data.lampleBalance || 0) + (newValue || 0);
-              return true;
+              if (params.data.isCarryover) {
+                const newValue = parseNumber(params.newValue);
+                params.data.gompyoBalance = newValue;
+
+                const updatedCarryover = calculateCarryoverTotal(params.data);
+
+                const updatedData = data.map((item) =>
+                  item.id === params.data.id ? updatedCarryover : item,
+                );
+
+                const finalData = recalculateAllBalances(
+                  updatedData,
+                  companyType,
+                );
+
+                onDataChange(finalData);
+                return true;
+              }
+              return false;
             },
             cellStyle: (params: CellClassParams) => {
               if (params.value < 0) {
@@ -288,7 +381,14 @@ export default function PartnerGrid({
         ],
       },
     ],
-    [purchaseOrSaleText, paymentOrCollectionText, editMode],
+    [
+      purchaseOrSaleText,
+      paymentOrCollectionText,
+      editMode,
+      companyType,
+      data,
+      onDataChange,
+    ],
   );
 
   const handleCellValueChanged = (event: CellValueChangedEvent) => {

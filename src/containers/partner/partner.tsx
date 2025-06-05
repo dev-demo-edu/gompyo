@@ -86,10 +86,10 @@ const generateMockData = (companyId: string, year: number): FinancialData[] => {
       year,
       lamplePurchase: Math.floor(Math.random() * 5000) + 1000,
       lamplePayment: Math.floor(Math.random() * 4000) + 800,
-      lampleBalance: Math.floor(Math.random() * 1000) + 200,
+      lampleBalance: null,
       gompyoPurchase: Math.floor(Math.random() * 6000) + 1200,
       gompyoPayment: Math.floor(Math.random() * 5000) + 1000,
-      gompyoBalance: Math.floor(Math.random() * 1200) + 200,
+      gompyoBalance: null,
       totalPurchase: null, // 계산되어 설정됨
       totalPayment: null, // 계산되어 설정됨
       totalBalance: null, // 계산되어 설정됨
