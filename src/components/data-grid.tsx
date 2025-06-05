@@ -31,6 +31,7 @@ interface DataGridProps<T> {
   paginationPageSize?: number;
   onRowDragEnd?: (event: RowDragEndEvent) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
+  onGridReady?: (api: GridApi) => void;
 }
 
 // 추후 사용 여부에 따라서 utils로 빼기
@@ -47,6 +48,7 @@ export default function DataGrid<T>({
   paginationPageSize = 15,
   onRowDragEnd,
   onCellValueChanged,
+  onGridReady,
 }: DataGridProps<T>) {
   const gridApiRef = useRef<GridApi | null>(null);
 
@@ -93,8 +95,13 @@ export default function DataGrid<T>({
         state: columnState,
         applyOrder: true,
       });
+
+      // 부모 컴포넌트에 gridApi 전달
+      if (onGridReady) {
+        onGridReady(params.api);
+      }
     },
-    [columnState],
+    [columnState, onGridReady],
   );
 
   if (error) {
