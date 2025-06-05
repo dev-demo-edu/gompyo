@@ -395,12 +395,6 @@ export default function PartnerGrid({
       새값: event.newValue,
       행: event.data.month,
     });
-
-    // 수정된 데이터를 상위 컴포넌트로 전달
-    const updatedData = data.map((item) =>
-      item.id === event.data.id ? { ...event.data } : item,
-    );
-    onDataChange(updatedData);
   };
 
   return (

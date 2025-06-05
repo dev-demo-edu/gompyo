@@ -19,21 +19,11 @@ export const calculateBalance = (
   payment: number,
   companyType: Company["type"],
 ): number => {
-  console.log("계산 입력값:", { prevBalance, purchase, payment, companyType });
-
   if (companyType === "payment") {
     const result = prevBalance - purchase + payment;
-    console.log(
-      "지급 타입 계산:",
-      `${prevBalance} - ${purchase} + ${payment} = ${result}`,
-    );
     return result;
   } else {
     const result = prevBalance + purchase - payment;
-    console.log(
-      "수금 타입 계산:",
-      `${prevBalance} + ${purchase} - ${payment} = ${result}`,
-    );
     return result;
   }
 };
