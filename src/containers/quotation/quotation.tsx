@@ -60,7 +60,6 @@ export default function QuotationContainer() {
   const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] =
     useState<QuotationCompany | null>(null);
-  const [selectedItems, setSelectedItems] = useState<string[] | null>(null);
   const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
     useState(false);
 
@@ -68,7 +67,9 @@ export default function QuotationContainer() {
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [selectedColumns, setSelectedColumns] = useState<
     Record<string, boolean>
-  >({});
+  >({}); // 견적서용 품목 선택
+  const [selectedColumnsForManagement, setSelectedColumnsForManagement] =
+    useState<Record<string, boolean>>({}); // 컬럼 관리용 품목 선택
 
   // 데이터 상태 관리
   const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
@@ -182,7 +183,7 @@ export default function QuotationContainer() {
     }
   };
 
-  // 교차점 데이터 계산 (QuotationGrid에서 상위로 이동)
+  // 교차점 데이터 계산 (행/열 변경: selectedRows=회사, selectedColumns=품목)
   const getIntersectionItems = () => {
     const intersectionItems: Array<{
       productCode: string;
@@ -195,31 +196,30 @@ export default function QuotationContainer() {
       productNameEn: string;
     }> = [];
 
-    Object.entries(selectedRows).forEach(([itemId, isRowSelected]) => {
+    // selectedRows는 이제 회사 선택 상태
+    Object.entries(selectedRows).forEach(([companyId, isRowSelected]) => {
       if (isRowSelected) {
-        Object.entries(selectedColumns).forEach(
-          ([companyId, isColSelected]) => {
-            if (isColSelected) {
-              const product = items.find((item) => item.id === itemId);
-              const company = companies.find((c) => c.id === companyId);
-              const price =
-                priceData[companyId]?.[product?.itemName || ""] || 0;
+        // selectedColumns는 이제 품목 선택 상태
+        Object.entries(selectedColumns).forEach(([itemId, isColSelected]) => {
+          if (isColSelected) {
+            const product = items.find((item) => item.id === itemId);
+            const company = companies.find((c) => c.id === companyId);
+            const price = priceData[companyId]?.[product?.itemName || ""] || 0;
 
-              if (price > 0) {
-                intersectionItems.push({
-                  productCode: itemId,
-                  productName: product?.itemName || "",
-                  origin: product?.itemOrigin || "",
-                  company: company?.companyName || companyId,
-                  priceType: company?.priceType || "",
-                  price,
-                  originEn: product?.itemOriginEn || "",
-                  productNameEn: product?.itemNameEn || "",
-                });
-              }
+            if (price > 0) {
+              intersectionItems.push({
+                productCode: itemId,
+                productName: product?.itemName || "",
+                origin: product?.itemOrigin || "",
+                company: company?.companyName || companyId,
+                priceType: company?.priceType || "",
+                price,
+                originEn: product?.itemOriginEn || "",
+                productNameEn: product?.itemNameEn || "",
+              });
             }
-          },
-        );
+          }
+        });
       }
     });
     return intersectionItems;
@@ -306,16 +306,22 @@ export default function QuotationContainer() {
   };
 
   const handleDeleteItems = () => {
-    if (selectedItems === null || selectedItems.length === 0) return;
+    const selectedManagementItems = Object.keys(
+      selectedColumnsForManagement,
+    ).filter((key) => selectedColumnsForManagement[key]);
 
-    setItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
-    selectedItems.forEach((itemId) => {
+    if (selectedManagementItems.length === 0) return;
+
+    setItems((prev) =>
+      prev.filter((item) => !selectedManagementItems.includes(item.id)),
+    );
+    selectedManagementItems.forEach((itemId) => {
       deleteQuotationItemAction(itemId);
     });
     setPriceData((prev) => {
       const updated = { ...prev };
       Object.keys(updated).forEach((company) => {
-        selectedItems.forEach((itemId) => {
+        selectedManagementItems.forEach((itemId) => {
           const item = items.find((i) => i.id === itemId);
           if (item && updated[company][item.itemName]) {
             delete updated[company][item.itemName];
@@ -324,7 +330,7 @@ export default function QuotationContainer() {
       });
       return updated;
     });
-    setSelectedItems([]);
+    setSelectedColumnsForManagement({});
     setItemDeleteModalOpen(false);
   };
 
@@ -356,9 +362,14 @@ export default function QuotationContainer() {
   };
 
   const handleEditItem = (values: ItemFormValues) => {
-    if (!selectedItems) return;
+    const selectedManagementItems = Object.keys(
+      selectedColumnsForManagement,
+    ).filter((key) => selectedColumnsForManagement[key]);
+
+    if (selectedManagementItems.length === 0) return;
+
     checkItemDuplicate(values.itemName, values.itemOrigin, items);
-    updateItemAction(selectedItems[0], {
+    updateItemAction(selectedManagementItems[0], {
       itemName: values.itemName,
       itemOrigin: values.itemOrigin,
       itemNameEn: values.itemNameEn,
@@ -366,7 +377,7 @@ export default function QuotationContainer() {
     });
     setItems((prev) =>
       prev.map((item) =>
-        item.id === selectedItems[0]
+        item.id === selectedManagementItems[0]
           ? {
               ...item,
               itemName: values.itemName,
@@ -377,33 +388,37 @@ export default function QuotationContainer() {
           : item,
       ),
     );
-    // setSelectedItems(null);
+    setSelectedColumnsForManagement({});
     setItemEditModalOpen(false);
   };
 
-  //업데이트 함수
+  //업데이트 함수 (행/열 변경: data.id=회사ID, column=품목ID)
   const handleCellValueChanged = async (params: CellValueChangedEvent) => {
     try {
       // ag-grid에서 제공하는 정보 추출
-      const itemId = params.data.id; // 제품 ID
-      const companyId = params.column.getColId(); // 회사 ID (컬럼 필드명)
+      const companyId = params.data.id; // 회사 ID (이제 행이 회사)
+      const itemId = params.column.getColId(); // 품목 ID (이제 컬럼이 품목)
 
       // 여러 방법으로 새로운 값 확인
       const newValue = params.newValue; // 새로운 값
       const oldValue = params.oldValue; // 이전 값
-      const currentValue = params.data[companyId]; // 현재 데이터에서 값
+      const currentValue = params.data[itemId]; // 현재 데이터에서 값
 
       console.log("=== 셀 값 변경 디버깅 ===");
-      console.log("itemId:", itemId);
       console.log("companyId:", companyId);
+      console.log("itemId:", itemId);
       console.log("newValue:", newValue);
       console.log("oldValue:", oldValue);
       console.log("currentValue:", currentValue);
       console.log("params:", params);
 
-      // companyId가 없으면 처리하지 않음 (체크박스 컬럼 등)
-      if (!companyId || typeof companyId !== "string") {
-        console.log("companyId가 유효하지 않음, 처리 중단");
+      // itemId가 없으면 처리하지 않음 (체크박스 컬럼, 업체명 컬럼 등)
+      if (
+        !itemId ||
+        typeof itemId !== "string" ||
+        itemId === "companyColumnName"
+      ) {
+        console.log("itemId가 유효하지 않음, 처리 중단");
         return;
       }
 
@@ -439,7 +454,7 @@ export default function QuotationContainer() {
       });
 
       console.log(
-        `셀 값 업데이트 완료: 제품 ${itemId}, 회사 ${companyId}, 값 ${numericValue}`,
+        `셀 값 업데이트 완료: 회사 ${companyId}, 제품 ${itemId}, 값 ${numericValue}`,
       );
     } catch (error) {
       console.error("셀 값 업데이트 실패:", error);
@@ -643,7 +658,11 @@ export default function QuotationContainer() {
             <Button
               variant="contained"
               onClick={() => setItemEditModalOpen(true)}
-              disabled={selectedItems === null || selectedItems.length !== 1}
+              disabled={
+                Object.keys(selectedColumnsForManagement).filter(
+                  (key) => selectedColumnsForManagement[key],
+                ).length !== 1
+              }
               sx={{
                 backgroundColor: "#3B82F6",
                 "&:hover": { backgroundColor: "#2563EB" },
@@ -669,7 +688,11 @@ export default function QuotationContainer() {
             <Button
               variant="contained"
               onClick={() => setItemDeleteModalOpen(true)}
-              disabled={selectedItems === null || selectedItems.length === 0}
+              disabled={
+                Object.keys(selectedColumnsForManagement).filter(
+                  (key) => selectedColumnsForManagement[key],
+                ).length === 0
+              }
               sx={{
                 backgroundColor: "#EF4444",
                 "&:hover": { backgroundColor: "#DC2626" },
@@ -710,10 +733,11 @@ export default function QuotationContainer() {
             setSelectedRows={setSelectedRows}
             selectedColumns={selectedColumns}
             setSelectedColumns={setSelectedColumns}
+            selectedColumnsForManagement={selectedColumnsForManagement}
+            setSelectedColumnsForManagement={setSelectedColumnsForManagement}
             getIntersectionItems={getIntersectionItems}
             formatNumber={formatNumber}
             onCompanySelect={setSelectedCompany}
-            onItemsSelect={setSelectedItems}
             onCellValueChanged={handleCellValueChanged}
           />
         </div>
@@ -763,18 +787,24 @@ export default function QuotationContainer() {
         onSubmit={handleAddItem}
       />
 
-      {selectedItems &&
-        selectedItems.length > 0 &&
-        items.find((i) => i.id === selectedItems[0]) && (
+      {(() => {
+        const selectedManagementItems = Object.keys(
+          selectedColumnsForManagement,
+        ).filter((key) => selectedColumnsForManagement[key]);
+        const selectedItem =
+          selectedManagementItems.length > 0
+            ? items.find((i) => i.id === selectedManagementItems[0])
+            : null;
+
+        return selectedItem ? (
           <ItemEditModal
             open={itemEditModalOpen}
             onClose={() => setItemEditModalOpen(false)}
             onSubmit={handleEditItem}
-            selectedItem={
-              items.find((i) => i.id === selectedItems?.[0]) as QuotationItem
-            }
+            selectedItem={selectedItem}
           />
-        )}
+        ) : null;
+      })()}
 
       <CompanyDeleteModal
         open={companyDeleteModalOpen}

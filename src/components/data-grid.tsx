@@ -32,6 +32,8 @@ interface DataGridProps<T> {
   paginationPageSize?: number;
   onRowDragEnd?: (event: RowDragEndEvent) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
+  rowSelection?: "single" | "multiple";
+  suppressRowClickSelection?: boolean;
 }
 
 // 추후 사용 여부에 따라서 utils로 빼기
@@ -48,6 +50,8 @@ export default function DataGrid<T>({
   paginationPageSize = 15,
   onRowDragEnd,
   onCellValueChanged,
+  rowSelection = "multiple",
+  suppressRowClickSelection = true,
 }: DataGridProps<T>) {
   const gridApiRef = useRef<GridApi | null>(null);
 
@@ -120,6 +124,7 @@ export default function DataGrid<T>({
   const localeText = useMemo(() => AG_GRID_LOCALE_KR, []);
 
   const onCellClicked = useCallback((params: CellClickedEvent) => {
+    // 체크박스 컬럼에서만 선택 처리
     if (params.colDef.field === "checkbox") {
       params.node.setSelected(!params.node.isSelected());
     }
@@ -171,7 +176,7 @@ export default function DataGrid<T>({
             components={components}
             pagination={pagination}
             paginationPageSize={paginationPageSize}
-            rowSelection="multiple"
+            rowSelection={rowSelection}
             localeText={localeText}
             onDragStarted={onDragStarted}
             onDragStopped={onDragStopped}
@@ -181,7 +186,7 @@ export default function DataGrid<T>({
             animateRows={true}
             getRowId={(params) => params.data.id}
             onRowDragEnd={onRowDragEnd}
-            suppressRowClickSelection={true}
+            suppressRowClickSelection={suppressRowClickSelection}
             onCellClicked={onCellClicked}
             onCellValueChanged={onCellValueChanged}
           />
