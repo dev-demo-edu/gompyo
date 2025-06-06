@@ -739,6 +739,7 @@ export default function QuotationContainer() {
             formatNumber={formatNumber}
             onCompanySelect={setSelectedCompany}
             onCellValueChanged={handleCellValueChanged}
+            onItemsSelect={() => {}}
           />
         </div>
 
