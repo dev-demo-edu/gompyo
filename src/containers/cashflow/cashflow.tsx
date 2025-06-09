@@ -92,80 +92,86 @@ export default function CashflowContainer() {
               ))}
             </Tabs>
           </div>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{
-              justifyContent: { sm: "flex-start", lg: "flex-end" },
-              overflowX: "scroll",
-              width: "100%",
-              minWidth: 0,
-            }}
-            className="w-full justify-start mb-4 sm:mb-6 mt-4"
-          >
-            {/* TODO: 버튼 스타일 통일하기 */}
-            <CommonButton
-              variant="info"
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setOpenCashflowAddModal(true);
+          <div className="overflow-auto w-full h-fit">
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{
+                width: "100%",
+                justifyContent: { xs: "flex-start", lg: "flex-end" },
+                pb: 1,
+                overflowX: "auto",
+                flexWrap: "nowrap",
+                minWidth: "max-content",
+                "& > *": {
+                  flexShrink: 0,
+                },
               }}
             >
-              목록 추가
-            </CommonButton>
-            <CommonButton
-              variant="primary"
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setOpenCashflowBalanceModal(true);
-              }}
-            >
-              잔액 설정
-            </CommonButton>
-            <CommonButton
-              variant="primary"
-              disabled={
-                !(
-                  selectedIncomeRows.length === 1 &&
-                  selectedExpenseRows.length === 0
-                ) &&
-                !(
+              {/* TODO: 버튼 스타일 통일하기 */}
+              <CommonButton
+                variant="info"
+                onClick={(e) => {
+                  (e.currentTarget as HTMLButtonElement).blur();
+                  setOpenCashflowAddModal(true);
+                }}
+              >
+                목록 추가
+              </CommonButton>
+              <CommonButton
+                variant="primary"
+                onClick={(e) => {
+                  (e.currentTarget as HTMLButtonElement).blur();
+                  setOpenCashflowBalanceModal(true);
+                }}
+              >
+                잔액 설정
+              </CommonButton>
+              <CommonButton
+                variant="primary"
+                disabled={
+                  !(
+                    selectedIncomeRows.length === 1 &&
+                    selectedExpenseRows.length === 0
+                  ) &&
+                  !(
+                    selectedIncomeRows.length === 0 &&
+                    selectedExpenseRows.length === 1
+                  )
+                }
+                onClick={(e) => {
+                  (e.currentTarget as HTMLButtonElement).blur();
+                  setOpenCashflowEditModal(true);
+                }}
+              >
+                선택 목록 수정
+              </CommonButton>
+              <CommonButton
+                variant="danger"
+                disabled={
                   selectedIncomeRows.length === 0 &&
-                  selectedExpenseRows.length === 1
-                )
-              }
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setOpenCashflowEditModal(true);
-              }}
-            >
-              선택 목록 수정
-            </CommonButton>
-            <CommonButton
-              variant="danger"
-              disabled={
-                selectedIncomeRows.length === 0 &&
-                selectedExpenseRows.length === 0
-              }
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setOpenCashflowDeleteConfirmModal(true);
-              }}
-            >
-              선택 목록 삭제
-            </CommonButton>
+                  selectedExpenseRows.length === 0
+                }
+                onClick={(e) => {
+                  (e.currentTarget as HTMLButtonElement).blur();
+                  setOpenCashflowDeleteConfirmModal(true);
+                }}
+              >
+                선택 목록 삭제
+              </CommonButton>
 
-            <CommonButton
-              variant="secondary"
-              editMode={editMode}
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setEditMode((v) => !v);
-              }}
-            >
-              {editMode ? "편집 종료" : "편집 모드"}
-            </CommonButton>
-          </Stack>
+              <CommonButton
+                variant="secondary"
+                editMode={editMode}
+                onClick={(e) => {
+                  (e.currentTarget as HTMLButtonElement).blur();
+                  setEditMode((v) => !v);
+                }}
+              >
+                {editMode ? "편집 종료" : "편집 모드"}
+              </CommonButton>
+            </Stack>
+          </div>
         </Stack>
         <CashflowGrid />
       </div>
