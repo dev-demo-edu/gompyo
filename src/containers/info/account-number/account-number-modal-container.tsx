@@ -80,7 +80,7 @@ export function AccountNumberDeleteConfirmModal({
         {/* <Button variant="contained" color="primary" onClick={onConfirm}>
           삭제
         </Button> */}
-        <CommonButton variant="danger" onClick={onConfirm}>
+        <CommonButton variant="outline-danger" onClick={onConfirm}>
           삭제
         </CommonButton>
       </DialogActions>

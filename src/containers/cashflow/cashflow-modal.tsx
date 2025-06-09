@@ -64,7 +64,7 @@ export function CashflowDeleteConfirmModal({
         <CommonButton variant="outline" onClick={onClose}>
           취소
         </CommonButton>
-        <CommonButton variant="danger" onClick={onConfirm}>
+        <CommonButton variant="outline-danger" onClick={onConfirm}>
           삭제
         </CommonButton>
       </DialogActions>
