@@ -104,7 +104,15 @@ export default function CashflowContainer() {
             className="w-full justify-start mb-4 sm:mb-6 mt-4"
           >
             {/* TODO: 버튼 스타일 통일하기 */}
-
+            <CommonButton
+              variant="info"
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowAddModal(true);
+              }}
+            >
+              목록 추가
+            </CommonButton>
             <CommonButton
               variant="primary"
               onClick={(e) => {
@@ -114,21 +122,6 @@ export default function CashflowContainer() {
             >
               잔액 설정
             </CommonButton>
-
-            <CommonButton
-              variant="danger"
-              disabled={
-                selectedIncomeRows.length === 0 &&
-                selectedExpenseRows.length === 0
-              }
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setOpenCashflowDeleteConfirmModal(true);
-              }}
-            >
-              선택 목록 삭제
-            </CommonButton>
-
             <CommonButton
               variant="primary"
               disabled={
@@ -148,6 +141,20 @@ export default function CashflowContainer() {
             >
               선택 목록 수정
             </CommonButton>
+            <CommonButton
+              variant="danger"
+              disabled={
+                selectedIncomeRows.length === 0 &&
+                selectedExpenseRows.length === 0
+              }
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                setOpenCashflowDeleteConfirmModal(true);
+              }}
+            >
+              선택 목록 삭제
+            </CommonButton>
+
             {/* <Button
               variant="contained"
               color="primary"
@@ -175,16 +182,6 @@ export default function CashflowContainer() {
             >
               선택 목록 반영
             </Button> */}
-
-            <CommonButton
-              variant="info"
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                setOpenCashflowAddModal(true);
-              }}
-            >
-              목록 추가
-            </CommonButton>
 
             <CommonButton
               variant="secondary"
