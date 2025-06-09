@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Typography, Button, Stack } from "@mui/material";
+import { Box, Container, Typography, Stack } from "@mui/material";
 import { useState, useEffect, useRef, useCallback } from "react";
 import CargoDetail from "@/containers/detail-view/entire";
 import CargoInfo from "@/containers/detail-view/cargo";
@@ -18,6 +18,7 @@ import {
   reverseStatusMapping,
 } from "@/constants/cargo-status";
 import { useRouter } from "next/navigation";
+import CommonButton from "@/components/common-button";
 
 // 상태 순서 정의
 const statusOrder = Object.values(CargoStatus);
@@ -347,44 +348,46 @@ export default function DetailPage() {
                 alignItems="center"
               >
                 <Stack direction="row" spacing={2}>
-                  <Button
+                  {/* <Button
                     variant="contained"
                     color={activeTab === "entire" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("entire")}
                   >
                     전체정보
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color={activeTab === "document" ? "primary" : "inherit"}
+                  </Button> */}
+                  <CommonButton
+                    variant={activeTab === "entire" ? "primary" : "inherit"}
+                    onClick={() => setActiveTab("entire")}
+                  >
+                    전체정보
+                  </CommonButton>
+                  <CommonButton
+                    variant={activeTab === "document" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("document")}
                   >
                     서류정보
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color={activeTab === "cargo" ? "primary" : "inherit"}
+                  </CommonButton>
+                  <CommonButton
+                    variant={activeTab === "cargo" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("cargo")}
                   >
                     화물 정보
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color={activeTab === "stock" ? "primary" : "inherit"}
+                  </CommonButton>
+                  <CommonButton
+                    variant={activeTab === "stock" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("stock")}
                   >
                     재고 정보
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color={activeTab === "history" ? "primary" : "inherit"}
+                  </CommonButton>
+                  <CommonButton
+                    variant={activeTab === "history" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("history")}
                   >
                     히스토리
-                  </Button>
+                  </CommonButton>
                 </Stack>
                 <Stack direction="row" spacing={2}>
-                  <Button
+                  {/* <Button
                     variant="contained"
                     color="primary"
                     onClick={
@@ -398,16 +401,27 @@ export default function DetailPage() {
                     }
                   >
                     {isEditMode ? "편집 완료" : "편집 모드"}
-                  </Button>
+                  </Button> */}
+
+                  <CommonButton
+                    variant="primary"
+                    onClick={
+                      isEditMode
+                        ? handleEditComplete
+                        : () => {
+                            setIsEditMode(true);
+                            setIsDragging(false);
+                            setDragPosition(getCurrentStatusIndex());
+                          }
+                    }
+                  >
+                    {isEditMode ? "편집 완료" : "편집 모드"}
+                  </CommonButton>
 
                   {isEditMode && (
-                    <Button
-                      variant="outlined"
-                      color="inherit"
-                      onClick={handleEditCancel}
-                    >
+                    <CommonButton variant="outline" onClick={handleEditCancel}>
                       취소
-                    </Button>
+                    </CommonButton>
                   )}
                 </Stack>
               </Stack>

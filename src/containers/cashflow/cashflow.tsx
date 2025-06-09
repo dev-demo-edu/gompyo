@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CashflowGrid from "./cashflow-grid";
 import { useEffect, useState } from "react";
@@ -26,6 +25,7 @@ import CashflowAddModal, {
 // import { calculateCashflowAmountByType } from "@/utils/cashflow";
 import Tabs from "@mui/material/Tabs";
 import { Tab } from "@mui/material";
+import CommonButton from "@/components/common-button";
 
 export default function CashflowContainer() {
   const [openCashflowAddModal, setOpenCashflowAddModal] = useState(false);
@@ -104,60 +104,33 @@ export default function CashflowContainer() {
             className="w-full justify-start mb-4 sm:mb-6 mt-4"
           >
             {/* TODO: 버튼 스타일 통일하기 */}
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{
-                minWidth: 120,
-                minHeight: 44,
-                maxHeight: 44,
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: 1.5,
-                py: 0,
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                boxShadow: "none",
-                alignSelf: "flex-end",
-              }}
+
+            <CommonButton
+              variant="primary"
               onClick={(e) => {
                 (e.currentTarget as HTMLButtonElement).blur();
                 setOpenCashflowBalanceModal(true);
               }}
             >
               잔액 설정
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
+            </CommonButton>
+
+            <CommonButton
+              variant="danger"
               disabled={
                 selectedIncomeRows.length === 0 &&
                 selectedExpenseRows.length === 0
               }
-              sx={{
-                minWidth: 120,
-                minHeight: 44,
-                maxHeight: 44,
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: 1.5,
-                py: 0,
-                whiteSpace: "nowrap",
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                boxShadow: "none",
-                alignSelf: "flex-end",
-              }}
               onClick={(e) => {
                 (e.currentTarget as HTMLButtonElement).blur();
                 setOpenCashflowDeleteConfirmModal(true);
               }}
             >
               선택 목록 삭제
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
+            </CommonButton>
+
+            <CommonButton
+              variant="primary"
               disabled={
                 !(
                   selectedIncomeRows.length === 1 &&
@@ -168,27 +141,13 @@ export default function CashflowContainer() {
                   selectedExpenseRows.length === 1
                 )
               }
-              sx={{
-                minWidth: 120,
-                minHeight: 44,
-                maxHeight: 44,
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: 1.5,
-                py: 0,
-                whiteSpace: "nowrap",
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                boxShadow: "none",
-                alignSelf: "flex-end",
-              }}
               onClick={(e) => {
                 (e.currentTarget as HTMLButtonElement).blur();
                 setOpenCashflowEditModal(true);
               }}
             >
               선택 목록 수정
-            </Button>
+            </CommonButton>
             {/* <Button
               variant="contained"
               color="primary"
@@ -216,57 +175,26 @@ export default function CashflowContainer() {
             >
               선택 목록 반영
             </Button> */}
-            <Button
-              className="px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
-              variant="contained"
-              color="primary"
-              sx={{
-                minWidth: 120,
-                minHeight: 44,
-                maxHeight: 44,
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: 1.5,
-                py: 0,
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                boxShadow: "none",
-                alignSelf: "flex-end",
-              }}
+
+            <CommonButton
+              variant="info"
               onClick={(e) => {
                 (e.currentTarget as HTMLButtonElement).blur();
                 setOpenCashflowAddModal(true);
               }}
             >
               목록 추가
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{
-                minWidth: 120,
-                minHeight: 44,
-                maxHeight: 44,
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: 1.5,
-                py: 0,
-                backgroundColor: editMode ? "#f3f4f6" : "#64748b",
-                color: editMode ? "#374151" : "#fff",
-                "&:hover": {
-                  backgroundColor: editMode ? "#e5e7eb" : "#475569",
-                },
-                boxShadow: "none",
-                border: editMode ? "1px solid #cbd5e1" : "none",
-                alignSelf: "flex-end",
-              }}
+            </CommonButton>
+
+            <CommonButton
+              variant="secondary"
               onClick={(e) => {
                 (e.currentTarget as HTMLButtonElement).blur();
                 setEditMode((v) => !v);
               }}
             >
               {editMode ? "편집 종료" : "편집 모드"}
-            </Button>
+            </CommonButton>
           </Stack>
         </Stack>
         <CashflowGrid />

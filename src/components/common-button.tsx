@@ -8,7 +8,8 @@ export type ButtonVariant =
   | "info" // 파란색 - 정보성 액션 (품목 관련)
   | "special" // 보라색 - 특별한 액션 (견적서 작성)
   | "outline" // 기본 아웃라인
-  | "outline-danger"; // 빨간색 아웃라인 (편집 취소)
+  | "outline-danger" // 빨간색 아웃라인 (편집 취소)
+  | "inherit"; //
 
 interface CommonButtonProps extends Omit<ButtonProps, "variant" | "color"> {
   variant?: ButtonVariant;
@@ -20,6 +21,7 @@ const getButtonStyles = (variant: ButtonVariant = "primary") => {
   const baseStyles = {
     fontWeight: 600,
     boxShadow: "none",
+    whiteSpace: "nowrap",
     "&:disabled": {
       backgroundColor: "#9CA3AF",
       color: "#FFFFFF",
@@ -36,6 +38,9 @@ const getButtonStyles = (variant: ButtonVariant = "primary") => {
           backgroundColor: "#16A34A",
         },
       };
+
+    case "inherit":
+      return {};
 
     case "secondary":
       return {
@@ -81,11 +86,12 @@ const getButtonStyles = (variant: ButtonVariant = "primary") => {
       return {
         ...baseStyles,
         backgroundColor: "transparent",
-        borderColor: "#D1D5DB",
-        color: "#374151",
+        borderColor: "primary",
+        color: "#22C55E",
+
         "&:hover": {
           backgroundColor: "#F9FAFB",
-          borderColor: "#9CA3AF",
+          borderColor: "primary",
         },
         "&:disabled": {
           backgroundColor: "transparent",
@@ -120,17 +126,26 @@ const getButtonStyles = (variant: ButtonVariant = "primary") => {
 export default function CommonButton({
   variant = "primary",
   children,
-  minWidth = 120,
+  minWidth,
   sx,
   ...props
 }: CommonButtonProps) {
   const buttonStyles = getButtonStyles(variant);
   const isOutline = variant.includes("outline");
 
+  const getMuiVariant = () => {
+    if (variant === "inherit") return "contained";
+    return isOutline ? "outlined" : "contained";
+  };
+
+  const getMuiColor = () => {
+    return variant === "inherit" ? "inherit" : "primary";
+  };
+
   return (
     <Button
-      variant={isOutline ? "outlined" : "contained"}
-      color="primary"
+      variant={getMuiVariant()}
+      color={getMuiColor()}
       sx={{
         ...buttonStyles,
         minWidth,
