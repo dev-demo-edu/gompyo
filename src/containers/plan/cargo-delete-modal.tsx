@@ -2,10 +2,11 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
+
 import { deletePlans } from "@/actions/plan";
 import { useAtomValue, useSetAtom } from "jotai";
 import { cargoRefreshAtom, selectedCargosAtom } from "@/states/plan";
+import CommonButton from "@/components/common-button";
 
 // 계획 삭제 확인 모달 컴포넌트
 interface CargoDeleteConfirmModalProps {
@@ -33,12 +34,15 @@ export function CargoDeleteConfirmModal({
         정말로 선택한 화물을 삭제하시겠습니까?
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={onClose}>
+        {/* <Button variant="outlined" color="primary" onClick={onClose}>
           취소
-        </Button>
-        <Button variant="contained" color="primary" onClick={onConfirm}>
+        </Button> */}
+        <CommonButton variant="outline" onClick={onClose}>
+          취소
+        </CommonButton>
+        <CommonButton variant="danger" onClick={onConfirm}>
           삭제
-        </Button>
+        </CommonButton>
       </DialogActions>
     </Dialog>
   );
