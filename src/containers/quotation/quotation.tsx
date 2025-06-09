@@ -12,7 +12,7 @@ import {
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
-import { Button, Stack, Tab, Tabs } from "@mui/material";
+import { Stack, Tab, Tabs } from "@mui/material";
 import {
   updateQuotationCellAction,
   addQuotationCompanyAction,
@@ -32,6 +32,7 @@ import {
 } from "@/services/quotation-service";
 import { nanoid } from "nanoid";
 import { CellValueChangedEvent } from "ag-grid-community";
+import CommonButton from "@/components/common-button";
 
 // 문서 번호 생성 함수 추가
 const generateDocumentNumber = (): string => {
@@ -629,103 +630,66 @@ export default function QuotationContainer() {
                 },
               }}
             >
-              <Button
-                variant="contained"
+              <CommonButton
+                variant="info"
                 onClick={() => setCompanyModalOpen(true)}
-                sx={{
-                  backgroundColor: "#22C55E",
-                  "&:hover": { backgroundColor: "#16A34A" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
               >
                 업체 추가
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => setCompanyEditModalOpen(true)}
-                disabled={!selectedCompany}
-                sx={{
-                  backgroundColor: "#22C55E",
-                  "&:hover": { backgroundColor: "#16A34A" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
-              >
-                업체 수정
-              </Button>
-              <Button
-                variant="contained"
+              </CommonButton>
+
+              <CommonButton
+                variant="info"
                 onClick={() => setItemModalOpen(true)}
-                sx={{
-                  backgroundColor: "#3B82F6",
-                  "&:hover": { backgroundColor: "#2563EB" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
               >
                 품목 추가
-              </Button>
-              <Button
-                variant="contained"
+              </CommonButton>
+              <CommonButton
+                variant="primary"
+                onClick={() => setCompanyEditModalOpen(true)}
+                disabled={!selectedCompany}
+              >
+                업체 수정
+              </CommonButton>
+
+              <CommonButton
+                variant="primary"
                 onClick={() => setItemEditModalOpen(true)}
                 disabled={
                   Object.keys(selectedColumnsForManagement).filter(
                     (key) => selectedColumnsForManagement[key],
                   ).length !== 1
                 }
-                sx={{
-                  backgroundColor: "#3B82F6",
-                  "&:hover": { backgroundColor: "#2563EB" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
               >
                 품목 수정
-              </Button>
-              <Button
-                variant="contained"
+              </CommonButton>
+
+              <CommonButton
+                variant="danger"
                 onClick={() => setCompanyDeleteModalOpen(true)}
                 disabled={!selectedCompany}
-                sx={{
-                  backgroundColor: "#EF4444",
-                  "&:hover": { backgroundColor: "#DC2626" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
               >
                 업체 삭제
-              </Button>
-              <Button
-                variant="contained"
+              </CommonButton>
+
+              <CommonButton
+                variant="danger"
                 onClick={() => setItemDeleteModalOpen(true)}
                 disabled={
                   Object.keys(selectedColumnsForManagement).filter(
                     (key) => selectedColumnsForManagement[key],
                   ).length === 0
                 }
-                sx={{
-                  backgroundColor: "#EF4444",
-                  "&:hover": { backgroundColor: "#DC2626" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
               >
                 품목 삭제
-              </Button>
-              <Button
-                variant="contained"
-                disabled={getIntersectionItems().length === 0}
+              </CommonButton>
+
+              <CommonButton
+                variant="special"
                 onClick={() => setQuotationDocumentModalOpen(true)}
-                sx={{
-                  backgroundColor: "#6366F1",
-                  "&:hover": { backgroundColor: "#4F46E5" },
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
+                disabled={getIntersectionItems().length === 0}
               >
                 견적서 작성 ({getIntersectionItems().length})
-              </Button>
+              </CommonButton>
             </Stack>
           </div>
         </Stack>
