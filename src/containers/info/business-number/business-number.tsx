@@ -36,16 +36,6 @@ export default function BusinessNumber() {
           className="w-full justify-end mb-4 sm:mb-6"
         >
           <CommonButton
-            variant="danger"
-            disabled={selectedRows.length === 0}
-            onClick={(e) => {
-              (e.currentTarget as HTMLButtonElement).blur();
-              setOpenDeleteModal(true);
-            }}
-          >
-            선택 삭제
-          </CommonButton>
-          <CommonButton
             variant="info"
             onClick={(e) => {
               (e.currentTarget as HTMLButtonElement).blur();
@@ -54,7 +44,6 @@ export default function BusinessNumber() {
           >
             사업자 번호 추가
           </CommonButton>
-
           <CommonButton
             variant="primary"
             onClick={(e) => {
@@ -64,6 +53,16 @@ export default function BusinessNumber() {
             disabled={selectedRows.length !== 1}
           >
             계좌 수정
+          </CommonButton>
+          <CommonButton
+            variant="danger"
+            disabled={selectedRows.length === 0}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenDeleteModal(true);
+            }}
+          >
+            선택 삭제
           </CommonButton>
         </Stack>
         {/* 그리드 */}

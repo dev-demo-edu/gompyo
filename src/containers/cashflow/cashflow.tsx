@@ -188,6 +188,7 @@ export default function CashflowContainer() {
 
             <CommonButton
               variant="secondary"
+              editMode={editMode}
               onClick={(e) => {
                 (e.currentTarget as HTMLButtonElement).blur();
                 setEditMode((v) => !v);

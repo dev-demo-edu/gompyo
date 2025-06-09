@@ -56,18 +56,7 @@ export default function AccountNumber() {
             선택 삭제
           </Button> */}
           <CommonButton
-            variant="danger"
-            disabled={selectedRows.length === 0}
-            onClick={(e) => {
-              (e.currentTarget as HTMLButtonElement).blur();
-              setOpenDeleteModal(true);
-            }}
-          >
-            선택 삭제
-          </CommonButton>
-
-          <CommonButton
-            variant="primary"
+            variant="info"
             onClick={(e) => {
               (e.currentTarget as HTMLButtonElement).blur();
               setOpenAddModal(true);
@@ -84,6 +73,16 @@ export default function AccountNumber() {
             }}
           >
             계좌 수정
+          </CommonButton>
+          <CommonButton
+            variant="danger"
+            disabled={selectedRows.length === 0}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenDeleteModal(true);
+            }}
+          >
+            선택 삭제
           </CommonButton>
         </Stack>
         {/* 그리드 */}

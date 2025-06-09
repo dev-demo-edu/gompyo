@@ -22,7 +22,7 @@ export default function Links() {
           className="w-full justify-end mb-4 sm:mb-6"
         >
           <CommonButton
-            variant="primary"
+            variant="info"
             onClick={() => setOpenLinkAddModal(true)}
             minWidth={120}
           >
