@@ -3,7 +3,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
+
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
@@ -13,6 +13,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import LinkIcon from "@mui/icons-material/Link";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import CommonButton from "./common-button";
 
 export interface LinkCardType {
   id: string;
@@ -157,7 +158,7 @@ const LinkCard = ({
             mt: 2,
           }}
         >
-          <Button
+          {/* <Button
             variant="outlined"
             size="small"
             startIcon={<LinkIcon fontSize="small" />}
@@ -166,7 +167,15 @@ const LinkCard = ({
             disabled={disable}
           >
             방문하기
-          </Button>
+          </Button> */}
+          <CommonButton
+            variant="outline"
+            onClick={handleLinkClick}
+            startIcon={<LinkIcon fontSize="small" />}
+            disabled={disable}
+          >
+            방문하기
+          </CommonButton>
           {onDelete && (
             <Tooltip title="삭제">
               <IconButton
