@@ -155,34 +155,6 @@ export default function CashflowContainer() {
               선택 목록 삭제
             </CommonButton>
 
-            {/* <Button
-              variant="contained"
-              color="primary"
-              disabled={
-                selectedIncomeRows.length === 0 &&
-                selectedExpenseRows.length === 0
-              }
-              sx={{
-                minWidth: 120,
-                minHeight: 44,
-                maxHeight: 44,
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: 1.5,
-                py: 0,
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                boxShadow: "none",
-                alignSelf: "flex-end",
-              }}
-              onClick={(e) => {
-                (e.currentTarget as HTMLButtonElement).blur();
-                handleUpdateCompanyBalance();
-              }}
-            >
-              선택 목록 반영
-            </Button> */}
-
             <CommonButton
               variant="secondary"
               editMode={editMode}

@@ -348,13 +348,6 @@ export default function DetailPage() {
                 alignItems="center"
               >
                 <Stack direction="row" spacing={2}>
-                  {/* <Button
-                    variant="contained"
-                    color={activeTab === "entire" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("entire")}
-                  >
-                    전체정보
-                  </Button> */}
                   <CommonButton
                     variant={activeTab === "entire" ? "primary" : "inherit"}
                     onClick={() => setActiveTab("entire")}
@@ -387,22 +380,6 @@ export default function DetailPage() {
                   </CommonButton>
                 </Stack>
                 <Stack direction="row" spacing={2}>
-                  {/* <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={
-                      isEditMode
-                        ? handleEditComplete
-                        : () => {
-                            setIsEditMode(true);
-                            setIsDragging(false);
-                            setDragPosition(getCurrentStatusIndex());
-                          }
-                    }
-                  >
-                    {isEditMode ? "편집 완료" : "편집 모드"}
-                  </Button> */}
-
                   <CommonButton
                     variant="primary"
                     onClick={

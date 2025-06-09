@@ -34,9 +34,6 @@ export function CargoDeleteConfirmModal({
         정말로 선택한 화물을 삭제하시겠습니까?
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        {/* <Button variant="outlined" color="primary" onClick={onClose}>
-          취소
-        </Button> */}
         <CommonButton variant="outline" onClick={onClose}>
           취소
         </CommonButton>

@@ -84,12 +84,6 @@ export function CargoHistoryTimeline({
           }}
         >
           <ButtonGroup size="small" variant="outlined">
-            {/* <Button
-              variant={filter === "all" ? "contained" : "outlined"}
-              onClick={() => setFilter("all")}
-            >
-              전체
-            </Button> */}
             <CommonButton
               variant={filter === "all" ? "primary" : "outline"}
               onClick={() => setFilter("all")}

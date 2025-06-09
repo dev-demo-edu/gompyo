@@ -35,26 +35,6 @@ export default function AccountNumber() {
           spacing={2}
           className="w-full justify-end mb-4 sm:mb-6"
         >
-          {/* <Button
-            variant="contained"
-            color="primary"
-            disabled={selectedRows.length === 0}
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#22C55E",
-              "&:hover": {
-                backgroundColor: "#16A34A",
-              },
-              boxShadow: "none",
-            }}
-            onClick={(e) => {
-              (e.currentTarget as HTMLButtonElement).blur();
-              setOpenDeleteModal(true);
-            }}
-          >
-            선택 삭제
-          </Button> */}
           <CommonButton
             variant="info"
             onClick={(e) => {
