@@ -15,11 +15,16 @@ interface CommonButtonProps extends Omit<ButtonProps, "variant" | "color"> {
   variant?: ButtonVariant;
   children: ReactNode;
   minWidth?: number;
+  editMode?: boolean;
 }
 
-const getButtonStyles = (variant: ButtonVariant = "primary") => {
+const getButtonStyles = (
+  variant: ButtonVariant = "primary",
+  editMode?: boolean,
+) => {
   const baseStyles = {
     fontWeight: 600,
+    border: "1px solid",
     boxShadow: "none",
     whiteSpace: "nowrap",
     "&:disabled": {
@@ -45,10 +50,11 @@ const getButtonStyles = (variant: ButtonVariant = "primary") => {
     case "secondary":
       return {
         ...baseStyles,
-        backgroundColor: "#64748b",
-        color: "#FFFFFF",
+        backgroundColor: editMode ? "#f3f4f6" : "#64748b",
+        color: editMode ? "#374151" : "#FFFFFF",
+        border: editMode ? "1px solid #cbd5e1" : "none",
         "&:hover": {
-          backgroundColor: "#475569",
+          backgroundColor: editMode ? "#e5e7eb" : "#475569",
         },
       };
 
@@ -128,9 +134,10 @@ export default function CommonButton({
   children,
   minWidth,
   sx,
+  editMode = false,
   ...props
 }: CommonButtonProps) {
-  const buttonStyles = getButtonStyles(variant);
+  const buttonStyles = getButtonStyles(variant, editMode);
   const isOutline = variant.includes("outline");
 
   const getMuiVariant = () => {
