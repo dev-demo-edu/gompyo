@@ -8,20 +8,13 @@ import {
 import { ColumnCompany } from "./quotation";
 import { QuotationCompany } from "@/services/quotation-service";
 
-// CustomHeaderComponent의 props 타입 정의
+// CustomHeaderComponent의 props 타입 정의 (이제 품목 선택용)
 interface CustomHeaderProps {
   displayName: string;
   selectedColumns: Record<string, boolean>;
   setSelectedColumns: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
-}
-
-// cellStyle의 params 타입 정의
-interface CellStyleParams {
-  data: {
-    id: string;
-  };
 }
 
 // Item 타입 정의
@@ -36,11 +29,11 @@ interface QuotationGridProps {
   items: Item[];
   companies: ColumnCompany[];
   priceData: Record<string, Record<string, number>>;
-  selectedRows: Record<string, boolean>;
+  selectedRows: Record<string, boolean>; // 이제 회사 선택 상태
   setSelectedRows: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
-  selectedColumns: Record<string, boolean>;
+  selectedColumns: Record<string, boolean>; // 견적서용 품목 선택 상태
   setSelectedColumns: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
@@ -55,13 +48,17 @@ interface QuotationGridProps {
   onCompanySelect: (company: QuotationCompany | null) => void;
   onItemsSelect: (itemIds: string[]) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
+  // 컬럼 관리용 선택 상태 추가
+  selectedColumnsForManagement?: Record<string, boolean>;
+  setSelectedColumnsForManagement?: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
 }
 
 export default function QuotationGrid({
   items,
   companies,
   priceData,
-  selectedRows,
   setSelectedRows,
   selectedColumns,
   setSelectedColumns,
@@ -69,6 +66,8 @@ export default function QuotationGrid({
   onCompanySelect,
   onItemsSelect,
   onCellValueChanged,
+  selectedColumnsForManagement,
+  setSelectedColumnsForManagement,
 }: QuotationGridProps) {
   // 텍스트 길이에 따른 컬럼 너비 계산 함수
   const calculateColumnWidth = (
@@ -99,34 +98,48 @@ export default function QuotationGrid({
     return Math.max(minWidth, Math.min(maxWidth, maxWidth_calculated));
   };
 
-  // 커스텀 헤더 컴포넌트 (세로줄 선택용)
+  // 커스텀 헤더 컴포넌트 (견적서용 선택 + 컬럼 관리용 선택 로직 분리)
   const CustomHeaderComponent = (props: CustomHeaderProps) => {
-    const companyName = props.displayName;
-    // company.id를 가져오기 위해 companies 배열에서 찾기
-    const company = companies.find((c) => c.companyColumnName === companyName);
-    const companyId = company?.id || companyName;
-    const isSelected = props.selectedColumns[companyId];
+    const itemDisplayName = props.displayName;
+    // item.id를 가져오기 위해 items 배열에서 찾기
+    const item = items.find(
+      (i) => `${i.name} (${i.origin})` === itemDisplayName,
+    );
+    const itemId = item?.id || itemDisplayName;
+    const isQuotationSelected = props.selectedColumns[itemId]; // 견적서용 선택 상태
+    const isManagementSelected =
+      selectedColumnsForManagement?.[itemId] || false; // 컬럼 관리용 선택 상태
 
     return (
       <div
         className={`w-full h-full flex items-center justify-start cursor-pointer px-[24px] ${
-          isSelected ? "bg-blue-200 font-bold" : ""
+          isManagementSelected ? "bg-blue-200 font-bold" : ""
         }`}
         onClick={() => {
-          const newSelection = { [companyId]: !isSelected };
-          setSelectedColumns(newSelection);
+          // 견적서용 다중 선택 로직 (시각적 표시 없음)
+          const newQuotationSelection = {
+            ...props.selectedColumns,
+            [itemId]: !isQuotationSelected,
+          };
+          setSelectedColumns(newQuotationSelection);
 
-          // 선택된 업체를 부모로 전달
-          const selectedCompanyId = Object.keys(newSelection).find(
-            (key) => newSelection[key],
+          // 선택된 품목들을 부모로 전달 (견적서용)
+          const selectedItemIds = Object.keys(newQuotationSelection).filter(
+            (key) => newQuotationSelection[key],
           );
-          const selectedCompanyObj = selectedCompanyId
-            ? companies.find((c) => c.id === selectedCompanyId)
-            : null;
-          onCompanySelect(selectedCompanyObj || null);
+          onItemsSelect(selectedItemIds);
+
+          // 컬럼 관리용 다중 선택 로직 (파란색 하이라이팅)
+          if (setSelectedColumnsForManagement) {
+            const newManagementSelection = {
+              ...selectedColumnsForManagement,
+              [itemId]: !isManagementSelected,
+            };
+            setSelectedColumnsForManagement(newManagementSelection);
+          }
         }}
       >
-        <span>{companyName}</span>
+        <span>{itemDisplayName}</span>
       </div>
     );
   };
@@ -134,36 +147,30 @@ export default function QuotationGrid({
   // 가격 셀 렌더러
   const PriceCellRenderer = ({ data, colDef }: ICellRendererParams) => {
     if (!data) return null; // data가 없으면 렌더링하지 않음
-    const productName = data.name;
-    const companyId = colDef?.field;
-    const price = companyId ? priceData[companyId]?.[productName] || 0 : 0;
-    const isRowSelected = selectedRows[data.id];
-    const isColumnSelected = companyId ? selectedColumns[companyId] : false;
-    const isIntersection = isRowSelected && isColumnSelected;
+    const companyId = data.id; // 이제 data는 회사 정보
+    const itemField = colDef?.field;
+
+    // itemField에서 실제 item을 찾기
+    const item = items.find((i) => i.id === itemField);
+    const itemName = item?.name || "";
+
+    const price = priceData[companyId]?.[itemName] || 0;
 
     return (
-      <div
-        className={`w-full h-full flex items-center justify-start ${
-          isIntersection
-            ? "bg-green-200 font-bold"
-            : isRowSelected
-              ? "bg-blue-100"
-              : ""
-        }`}
-      >
+      <div className="w-full h-full flex items-center justify-start">
         <span>{price > 0 ? formatNumber(price) : ""}</span>
       </div>
     );
   };
 
-  // 컬럼 정의
+  // 컬럼 정의 (이제 회사가 행이므로 품목들이 컬럼이 됨)
   const columnDefs = [
     {
       headerName: "",
       checkboxSelection: true,
       minWidth: 50,
       flex: 1,
-      headerCheckboxSelection: true,
+      headerCheckboxSelection: false, // 헤더 체크박스 제거 (단일 선택이므로)
       filter: false,
       pinned: "left" as const,
       lockPinned: true,
@@ -171,95 +178,97 @@ export default function QuotationGrid({
       field: "checkbox",
     },
     {
-      headerName: "제품명",
-      field: "name",
+      headerName: "업체명",
+      field: "companyColumnName",
       pinned: "left" as const,
       width: getOptimalColumnWidth(
-        [...items.map((item) => item.name), "제품명"],
-        80,
-        200,
-      ),
-
-      cellStyle: (params: CellStyleParams) => ({
-        backgroundColor: selectedRows[params.data.id] ? "#DBEAFE" : "#f8f9fa",
-      }),
-      sortable: false,
-    },
-    {
-      headerName: "원산지",
-      field: "origin",
-      pinned: "left" as const,
-      width: getOptimalColumnWidth(
-        [...items.map((item) => item.origin), "원산지"],
-        60,
+        [...companies.map((company) => company.companyColumnName), "업체명"],
         120,
+        250,
       ),
-      cellStyle: (params: CellStyleParams) => ({
-        backgroundColor: selectedRows[params.data.id] ? "#DBEAFE" : "#f8f9fa",
-      }),
       sortable: false,
     },
-    ...companies.map((company) => ({
-      headerName: company.companyColumnName,
-      headerClass: "company-header", // ← 클래스 추가
-      field: company.id,
+    ...items.map((item) => ({
+      headerName: `${item.name} (${item.origin})`,
+      headerClass: "item-header", // 클래스 변경
+      field: item.id,
       headerComponent: (props: CustomHeaderProps) =>
         CustomHeaderComponent({
           ...props,
-          displayName: company.companyColumnName,
+          displayName: `${item.name} (${item.origin})`,
           selectedColumns,
           setSelectedColumns,
         }),
-      // flex: 1,
       minWidth: 100,
-      width: calculateColumnWidth(company.companyColumnName),
+      width: calculateColumnWidth(`${item.name} (${item.origin})`),
       cellRenderer: PriceCellRenderer,
       editable: true,
-      cellStyle: (params: CellStyleParams) => {
-        const isRowSelected = selectedRows[params.data.id];
-        const isColumnSelected = selectedColumns[company.id];
-        const isIntersection = isRowSelected && isColumnSelected;
-
-        return {
-          backgroundColor: isIntersection
-            ? "#BBF7D0"
-            : isRowSelected
-              ? "#DBEAFE"
-              : isColumnSelected
-                ? "#FEF3C7"
-                : "#ffffff",
-        };
-      },
       sortable: false,
     })),
   ];
 
-  // 행 데이터
-  const rowData = items.map((item) => {
-    const row: Record<string, string | number> = { ...item };
-    companies.forEach((company) => {
-      row[company.id] = priceData[company.id]?.[item.name] || 0;
+  // 행 데이터 (이제 회사들이 행이 됨)
+  const rowData = companies.map((company) => {
+    const row: Record<string, string | number> = {
+      id: company.id,
+      companyColumnName: company.companyColumnName,
+    };
+    items.forEach((item) => {
+      row[item.id] = priceData[company.id]?.[item.name] || 0;
     });
     return row;
   });
 
-  // 선택 이벤트 처리
+  // 선택 이벤트 처리 (이제 회사 선택 - 단일 선택 모드)
   const handleSelectionChanged = (event: SelectionChangedEvent) => {
     const selectedNodes = event.api.getSelectedNodes();
-    const newSelectedRows: Record<string, boolean> = {};
-    selectedNodes.forEach((node) => {
-      newSelectedRows[node.data.id] = true;
-    });
-    setSelectedRows(newSelectedRows);
-    const selectedItemIds = selectedNodes.map((node) => node.data.id);
-    onItemsSelect(selectedItemIds);
+
+    if (selectedNodes.length === 1) {
+      // 단일 선택
+      const selectedCompanyId = selectedNodes[0].data.id;
+      const newSelectedRows: Record<string, boolean> = {
+        [selectedCompanyId]: true,
+      };
+      setSelectedRows(newSelectedRows);
+
+      // 선택된 회사의 가격이 있는 모든 품목들을 자동으로 선택
+      const companyPriceData = priceData[selectedCompanyId] || {};
+      const availableItemIds: string[] = [];
+
+      items.forEach((item) => {
+        const price = companyPriceData[item.name];
+        if (price && price > 0) {
+          availableItemIds.push(item.id);
+        }
+      });
+
+      // 가격이 있는 품목들을 선택 상태로 설정
+      const newSelectedColumns: Record<string, boolean> = {};
+      availableItemIds.forEach((itemId) => {
+        newSelectedColumns[itemId] = true;
+      });
+      setSelectedColumns(newSelectedColumns);
+
+      // 선택된 회사를 부모로 전달
+      const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+      onCompanySelect(selectedCompany || null);
+
+      // 선택된 품목들을 부모로 전달
+      onItemsSelect(availableItemIds);
+    } else {
+      // 선택 해제
+      setSelectedRows({});
+      setSelectedColumns({}); // 품목 선택도 모두 해제
+      onCompanySelect(null);
+      onItemsSelect([]);
+    }
   };
 
   return (
     <div className="w-full">
       <div className="w-full h-[600px]">
         <style jsx>{`
-          div :global(.ag-header-cell.company-header) {
+          div :global(.ag-header-cell.item-header) {
             padding: 0 !important;
           }
         `}</style>
@@ -270,6 +279,7 @@ export default function QuotationGrid({
           loading={false}
           onSelectionChanged={handleSelectionChanged}
           onCellValueChanged={onCellValueChanged}
+          rowSelection="single"
         />
       </div>
     </div>
