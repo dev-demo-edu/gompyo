@@ -7,9 +7,9 @@ import CompanyForm, {
 } from "./company-form";
 import ItemForm, { ItemEditForm, ItemFormValues } from "./item-form";
 import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
 import { useState } from "react";
 import { QuotationCompany, QuotationItem } from "@/services/quotation-service";
+import CommonButton from "@/components/common-button";
 
 interface CompanyAddModalProps {
   open: boolean;
@@ -37,12 +37,13 @@ function DeleteConfirmModal({
       <DialogTitle>{title}</DialogTitle>
       <DialogContent sx={{ py: 3 }}>{message}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={onClose}>
+        <CommonButton variant="outline" onClick={onClose}>
           취소
-        </Button>
-        <Button variant="contained" color="primary" onClick={onConfirm}>
+        </CommonButton>
+
+        <CommonButton variant="outline-danger" onClick={onConfirm}>
           삭제
-        </Button>
+        </CommonButton>
       </DialogActions>
     </Dialog>
   );
@@ -207,30 +208,29 @@ export function QuotationDocumentModal({
         아래 버튼을 클릭하여 견적서를 출력할 수 있습니다.
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button
-          variant="outlined"
-          color="primary"
+        <CommonButton
+          variant="outline"
           onClick={onClose}
           disabled={isAnyActionInProgress}
         >
           창 닫기
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
+        </CommonButton>
+
+        <CommonButton
+          variant="primary"
           onClick={handleDownload}
           disabled={isAnyActionInProgress}
         >
           {isDownloading ? "다운로드 중..." : "다운로드"}
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
+        </CommonButton>
+
+        <CommonButton
+          variant="primary"
           onClick={handleOpenInNewWindow}
           disabled={isAnyActionInProgress}
         >
           {isOpeningNewWindow ? "새창 열기 중..." : "새창에서 열기"}
-        </Button>
+        </CommonButton>
       </DialogActions>
     </Dialog>
   );

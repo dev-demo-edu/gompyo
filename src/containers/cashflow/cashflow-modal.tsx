@@ -2,7 +2,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
+
 import CashflowForm from "./cashflow-form";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
@@ -13,6 +13,7 @@ import {
 import { deleteCashflows } from "@/actions/cashflow";
 import CashflowBalanceForm from "./balance-form";
 import CashflowEditForm from "./cashflow-edit-form";
+import CommonButton from "@/components/common-button";
 
 interface CashflowAddModalProps {
   open: boolean;
@@ -60,12 +61,12 @@ export function CashflowDeleteConfirmModal({
         정말로 선택한 내역을 삭제하시겠습니까?
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={onClose}>
+        <CommonButton variant="outline" onClick={onClose}>
           취소
-        </Button>
-        <Button variant="contained" color="primary" onClick={onConfirm}>
+        </CommonButton>
+        <CommonButton variant="outline-danger" onClick={onConfirm}>
           삭제
-        </Button>
+        </CommonButton>
       </DialogActions>
     </Dialog>
   );
