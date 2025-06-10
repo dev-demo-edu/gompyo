@@ -137,6 +137,7 @@ export default function CommonButton({
   minWidth,
   sx,
   editMode = false,
+  onClick,
   ...props
 }: CommonButtonProps) {
   const buttonStyles = getButtonStyles(variant, editMode);
@@ -151,6 +152,18 @@ export default function CommonButton({
     return variant === "inherit" ? "inherit" : "primary";
   };
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // 원래 onClick 핸들러 실행
+    if (onClick) {
+      onClick(e);
+    }
+
+    // 클릭 후 포커스 제거 (약간의 딜레이를 두어 모달 등이 열린 후 실행)
+    setTimeout(() => {
+      e.currentTarget.blur();
+    });
+  };
+
   return (
     <Button
       variant={getMuiVariant()}
@@ -160,6 +173,7 @@ export default function CommonButton({
         minWidth,
         ...sx,
       }}
+      onClick={handleClick}
       {...props}
     >
       {children}
