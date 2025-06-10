@@ -19,7 +19,7 @@ export default function Links() {
         <Stack
           direction="row"
           spacing={2}
-          className="w-full justify-end mb-4 sm:mb-6"
+          className="w-full justify-start mb-4 sm:mb-6 md:justify-end"
         >
           <CommonButton
             variant="info"
