@@ -2,18 +2,13 @@ import {
   AppBar,
   IconButton,
   Toolbar,
-  Badge,
-  Avatar,
   Box,
-  Tooltip,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import MenuIcon from "@mui/icons-material/Menu";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 interface MobileAppBarProps {
   onMenuClick: () => void;
@@ -80,30 +75,6 @@ export default function MobileAppBar({
               priority
             />
           )}
-        </Box>
-
-        <Box display="flex" alignItems="center" gap={1}>
-          <Tooltip title="알림">
-            <IconButton size="large" color="inherit">
-              <Badge badgeContent={3} color="primary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="프로필">
-            <IconButton
-              size="small"
-              edge="end"
-              aria-label="account of current user"
-              color="inherit"
-              sx={{ ml: 1 }}
-            >
-              <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
-                <AccountCircleIcon />
-              </Avatar>
-            </IconButton>
-          </Tooltip>
         </Box>
       </Toolbar>
     </AppBar>
