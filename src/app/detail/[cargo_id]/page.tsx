@@ -337,6 +337,37 @@ export default function DetailPage() {
               </Box>
             </Container>
           </Box>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              justifyContent: "flex-end",
+              paddingX: { xs: 2, md: 3 },
+              marginTop: 2,
+            }}
+          >
+            <CommonButton
+              variant="secondary"
+              editMode={isEditMode}
+              onClick={
+                isEditMode
+                  ? handleEditComplete
+                  : () => {
+                      setIsEditMode(true);
+                      setIsDragging(false);
+                      setDragPosition(getCurrentStatusIndex());
+                    }
+              }
+            >
+              {isEditMode ? "편집 완료" : "편집모드"}
+            </CommonButton>
+
+            {isEditMode && (
+              <CommonButton variant="outline" onClick={handleEditCancel}>
+                취소
+              </CommonButton>
+            )}
+          </Stack>
 
           <Container maxWidth="xl" className="mt-8">
             {/* 메뉴 버튼 */}
@@ -347,60 +378,54 @@ export default function DetailPage() {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Stack direction="row" spacing={2}>
-                  <CommonButton
-                    variant={activeTab === "entire" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("entire")}
+                <div className="overflow-auto w-full flex flex-col gap-4">
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "flex-start",
+                      pb: 1,
+                      overflowX: "auto",
+                      flexWrap: "nowrap",
+                      minWidth: "max-content",
+                      "& > *": {
+                        flexShrink: 0,
+                      },
+                    }}
                   >
-                    전체정보
-                  </CommonButton>
-                  <CommonButton
-                    variant={activeTab === "document" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("document")}
-                  >
-                    서류정보
-                  </CommonButton>
-                  <CommonButton
-                    variant={activeTab === "cargo" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("cargo")}
-                  >
-                    화물 정보
-                  </CommonButton>
-                  <CommonButton
-                    variant={activeTab === "stock" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("stock")}
-                  >
-                    재고 정보
-                  </CommonButton>
-                  <CommonButton
-                    variant={activeTab === "history" ? "primary" : "inherit"}
-                    onClick={() => setActiveTab("history")}
-                  >
-                    히스토리
-                  </CommonButton>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <CommonButton
-                    variant="primary"
-                    onClick={
-                      isEditMode
-                        ? handleEditComplete
-                        : () => {
-                            setIsEditMode(true);
-                            setIsDragging(false);
-                            setDragPosition(getCurrentStatusIndex());
-                          }
-                    }
-                  >
-                    {isEditMode ? "편집 완료" : "편집 모드"}
-                  </CommonButton>
-
-                  {isEditMode && (
-                    <CommonButton variant="outline" onClick={handleEditCancel}>
-                      취소
+                    <CommonButton
+                      variant={activeTab === "entire" ? "primary" : "inherit"}
+                      onClick={() => setActiveTab("entire")}
+                    >
+                      전체정보
                     </CommonButton>
-                  )}
-                </Stack>
+                    <CommonButton
+                      variant={activeTab === "document" ? "primary" : "inherit"}
+                      onClick={() => setActiveTab("document")}
+                    >
+                      서류정보
+                    </CommonButton>
+                    <CommonButton
+                      variant={activeTab === "cargo" ? "primary" : "inherit"}
+                      onClick={() => setActiveTab("cargo")}
+                    >
+                      화물 정보
+                    </CommonButton>
+                    <CommonButton
+                      variant={activeTab === "stock" ? "primary" : "inherit"}
+                      onClick={() => setActiveTab("stock")}
+                    >
+                      재고 정보
+                    </CommonButton>
+                    <CommonButton
+                      variant={activeTab === "history" ? "primary" : "inherit"}
+                      onClick={() => setActiveTab("history")}
+                    >
+                      히스토리
+                    </CommonButton>
+                  </Stack>
+                </div>
               </Stack>
             </Box>
             {renderContent()}
