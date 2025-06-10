@@ -189,8 +189,8 @@ export default function CashflowGrid() {
     {
       headerName: "업체",
       field: "company",
-      minWidth: 120,
-      flex: 1,
+      minWidth: 180,
+      flex: 2,
       filter: false,
       sortable: false,
       suppressHeaderMenuButton: true,
@@ -198,8 +198,8 @@ export default function CashflowGrid() {
     {
       headerName: "금액",
       field: "amount",
-      minWidth: 120,
-      flex: 1,
+      minWidth: 100,
+      flex: 0.8,
       filter: false,
       sortable: false,
       valueFormatter: oneDecimalFormatter,
@@ -208,8 +208,8 @@ export default function CashflowGrid() {
     {
       headerName: "합계",
       field: "total",
-      minWidth: 120,
-      flex: 1,
+      minWidth: 100,
+      flex: 0.8,
       filter: false,
       sortable: false,
       valueFormatter: oneDecimalFormatter,
@@ -218,8 +218,8 @@ export default function CashflowGrid() {
     {
       headerName: "우선순위",
       field: "priority",
-      minWidth: 120,
-      flex: 1,
+      minWidth: 100,
+      flex: 0.6,
       filter: false,
       sortable: false,
       cellRenderer: (params: ICellRendererParams) => {
