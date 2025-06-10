@@ -113,7 +113,14 @@ export default function FilterGrid<T>({
     <div className="flex flex-col md:flex-row w-full h-[800px] bg-transparent rounded-xl overflow-hidden shadow-lg  gap-6">
       {/* 필터 토글 버튼 (모바일) */}
       <button
-        onClick={() => setShowFilter(!showFilter)}
+        onClick={() => {
+          const newShowFilter = !showFilter;
+          setShowFilter(newShowFilter);
+          // 필터를 보여줄 때는 자동으로 펼치기
+          if (newShowFilter) {
+            setIsCollapsed(false);
+          }
+        }}
         className="md:hidden flex items-center justify-center gap-2 mb-4 px-4 py-2 bg-white rounded-lg shadow-sm text-gray-700 hover:bg-gray-100 transition-colors"
       >
         <FilterListIcon className="w-5 h-5" />
