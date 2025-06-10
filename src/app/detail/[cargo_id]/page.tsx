@@ -234,6 +234,21 @@ export default function DetailPage() {
           {/* 진행 상태 */}
           <Box className="w-full h-32 p-4 relative">
             <Container maxWidth="xl" className="progress-container h-full">
+              {/* 편집 모드 안내 텍스트 */}
+              {isEditMode && (
+                <Typography
+                  className="absolute text-xs text-gray-500 whitespace-nowrap bg-white px-2 py-1 rounded shadow-sm"
+                  style={{
+                    left: "50%",
+                    top: 0,
+                    transform: "translateX(-50%)",
+                  }}
+                >
+                  {isDragging
+                    ? "드래그 중... 잠시 멈춰서 상태를 저장하세요"
+                    : "동그라미를 드래그하거나 점을 클릭하여 상태를 변경하세요"}
+                </Typography>
+              )}
               <Box className="relative h-full flex items-center">
                 {/* 프로그레스 바 배경 */}
                 <Box
@@ -318,22 +333,6 @@ export default function DetailPage() {
                     ? statusOrder[getActiveStatusIndex()]
                     : ""}
                 </Typography>
-
-                {/* 편집 모드 안내 텍스트 */}
-                {isEditMode && (
-                  <Typography
-                    className="absolute text-xs text-gray-500 whitespace-nowrap bg-white px-2 py-1 rounded shadow-sm"
-                    style={{
-                      left: "50%",
-                      top: "calc(50% - 45px)",
-                      transform: "translateX(-50%)",
-                    }}
-                  >
-                    {isDragging
-                      ? "드래그 중... 잠시 멈춰서 상태를 저장하세요"
-                      : "동그라미를 드래그하거나 점을 클릭하여 상태를 변경하세요"}
-                  </Typography>
-                )}
               </Box>
             </Container>
           </Box>
