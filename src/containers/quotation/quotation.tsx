@@ -585,7 +585,7 @@ export default function QuotationContainer() {
         <div className="flex flex-col lg:flex-row lg:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">견적서 작성</h1>
         </div>
-        <Stack direction="row" spacing={2}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
           <div
             className="flex flex-row justify-between items-end flex-shrink-0 overflow-x-auto"
             style={{ minHeight: 24 }}
@@ -594,7 +594,6 @@ export default function QuotationContainer() {
               value={tab}
               onChange={(_, v) => setTab(v)}
               sx={{
-                mb: 2,
                 "& .MuiTabs-indicator": {
                   backgroundColor: "#22C55E", // 선택된 탭 하단 인디케이터 색상
                 },
@@ -620,8 +619,8 @@ export default function QuotationContainer() {
               spacing={2}
               sx={{
                 width: "100%",
-                justifyContent: "flex-end",
-                pb: 2,
+                justifyContent: { xs: "flex-start", lg: "flex-end" },
+                pb: 1,
                 overflowX: "auto",
                 flexWrap: "nowrap",
                 minWidth: "max-content",

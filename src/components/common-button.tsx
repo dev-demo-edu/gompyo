@@ -45,7 +45,9 @@ const getButtonStyles = (
       };
 
     case "inherit":
-      return {};
+      return {
+        whiteSpace: "nowrap",
+      };
 
     case "secondary":
       return {
