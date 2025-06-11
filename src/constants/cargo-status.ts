@@ -11,6 +11,7 @@ export enum CargoStatus {
   DONE_ARRIVAL = "입항완료",
   AFTER_CUSTOMS = "통관완료",
   SELLING = "판매중",
+  SOLD_DONE = "판매완료",
 }
 
 // 영어 상태값과 한글 상태값 매핑
@@ -26,6 +27,7 @@ export const statusMapping: Record<string, CargoStatus> = {
   DONE_ARRIVAL: CargoStatus.DONE_ARRIVAL,
   AFTER_CUSTOMS: CargoStatus.AFTER_CUSTOMS,
   SELLING: CargoStatus.SELLING,
+  SOLD_DONE: CargoStatus.SOLD_DONE,
 };
 
 // 한글 상태값과 영어 상태값 매핑 (역방향)
@@ -41,4 +43,5 @@ export const reverseStatusMapping: Partial<Record<CargoStatus, string>> = {
   [CargoStatus.DONE_ARRIVAL]: "DONE_ARRIVAL",
   [CargoStatus.AFTER_CUSTOMS]: "AFTER_CUSTOMS",
   [CargoStatus.SELLING]: "SELLING",
+  [CargoStatus.SOLD_DONE]: "SOLD_DONE",
 };
