@@ -156,7 +156,7 @@ export default function Stock({ cargoId }: StockProps) {
     <Box>
       <Box
         sx={{
-          width: "50%",
+          width: "100%",
           height: `${56 + 56 * editedRows.length}px`,
           display: "flex",
           justifyContent: "flex-start",

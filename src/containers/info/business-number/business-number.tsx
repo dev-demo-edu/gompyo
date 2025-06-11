@@ -3,13 +3,13 @@
 import BusinessNumberGrid from "./business-number-grid";
 import { useAtomValue, useSetAtom } from "jotai";
 import { selectedBusinessNumbersAtom } from "@/states/business-number";
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { useState, useEffect } from "react";
 import BusinessNumberAddModal, {
   BusinessNumberEditModal,
 } from "./business-number-modal";
 import { BusinessNumberDeleteConfirmModal } from "./business-number-modal";
+import CommonButton from "@/components/common-button";
 
 export default function BusinessNumber() {
   const selectedRows = useAtomValue(selectedBusinessNumbersAtom);
@@ -33,59 +33,19 @@ export default function BusinessNumber() {
         <Stack
           direction="row"
           spacing={2}
-          className="w-full justify-end mb-4 sm:mb-6"
+          className="w-full justify-start mb-4 sm:mb-6 md:justify-end"
         >
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={selectedRows.length === 0}
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#22C55E",
-              "&:hover": {
-                backgroundColor: "#16A34A",
-              },
-              boxShadow: "none",
-            }}
-            onClick={(e) => {
-              (e.currentTarget as HTMLButtonElement).blur();
-              setOpenDeleteModal(true);
-            }}
-          >
-            선택 삭제
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#22C55E",
-              "&:hover": {
-                backgroundColor: "#16A34A",
-              },
-              boxShadow: "none",
-            }}
+          <CommonButton
+            variant="info"
             onClick={(e) => {
               (e.currentTarget as HTMLButtonElement).blur();
               setOpenAddModal(true);
             }}
           >
             사업자 번호 추가
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              minWidth: 120,
-              fontWeight: 600,
-              backgroundColor: "#22C55E",
-              "&:hover": {
-                backgroundColor: "#16A34A",
-              },
-              boxShadow: "none",
-            }}
+          </CommonButton>
+          <CommonButton
+            variant="primary"
             onClick={(e) => {
               (e.currentTarget as HTMLButtonElement).blur();
               setOpenEditModal(true);
@@ -93,10 +53,20 @@ export default function BusinessNumber() {
             disabled={selectedRows.length !== 1}
           >
             계좌 수정
-          </Button>
+          </CommonButton>
+          <CommonButton
+            variant="danger"
+            disabled={selectedRows.length === 0}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenDeleteModal(true);
+            }}
+          >
+            선택 삭제
+          </CommonButton>
         </Stack>
         {/* 그리드 */}
-        <div className="overflow-hidden">
+        <div className="overflow-auto md:h-[75vh]">
           <BusinessNumberGrid />
         </div>
         <BusinessNumberAddModal

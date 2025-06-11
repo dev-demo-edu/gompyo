@@ -3,8 +3,8 @@
 import { useState } from "react";
 import LinkAddModal from "./links-modal";
 import LinkList from "@/components/link-list";
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import CommonButton from "@/components/common-button";
 
 export default function Links() {
   const [openLinkAddModal, setOpenLinkAddModal] = useState(false);
@@ -19,47 +19,24 @@ export default function Links() {
         <Stack
           direction="row"
           spacing={2}
-          className="w-full justify-end mb-4 sm:mb-6"
+          className="w-full justify-start mb-4 sm:mb-6 md:justify-end"
         >
-          {/* TODO: 버튼 스타일 통일하기 */}
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              minWidth: 120,
-              minHeight: 44,
-              fontWeight: 600,
-              fontSize: 16,
-              lineHeight: 1.5,
-              py: 0,
-              backgroundColor: "#22C55E",
-              "&:hover": { backgroundColor: "#16A34A" },
-              boxShadow: "none",
-            }}
+          <CommonButton
+            variant="info"
             onClick={() => setOpenLinkAddModal(true)}
+            minWidth={120}
           >
             링크 추가
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{
-              minWidth: 120,
-              minHeight: 44,
-              fontWeight: 600,
-              fontSize: 16,
-              lineHeight: 1.5,
-              py: 0,
-              backgroundColor: editMode ? "#f3f4f6" : "#64748b",
-              color: editMode ? "#374151" : "#fff",
-              "&:hover": { backgroundColor: editMode ? "#e5e7eb" : "#475569" },
-              boxShadow: "none",
-              border: editMode ? "1px solid #cbd5e1" : "none",
-            }}
+          </CommonButton>
+
+          <CommonButton
+            variant="secondary"
+            minWidth={120}
+            editMode={editMode}
             onClick={() => setEditMode((v) => !v)}
           >
             {editMode ? "편집 종료" : "편집 모드"}
-          </Button>
+          </CommonButton>
         </Stack>
         {/* LinkList에서 links 상태와 핸들러를 모두 관리 */}
         <LinkList editMode={editMode} />

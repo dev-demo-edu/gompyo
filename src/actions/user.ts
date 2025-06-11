@@ -76,6 +76,18 @@ export async function getUserShipmentColumnOrder() {
   return columnOrder;
 }
 
+export async function getUserQuotationColumnOrder() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    return [];
+  }
+
+  const columnOrder = await userService.getQuotationColumnOrder(userId);
+  return columnOrder;
+}
+
 export interface ColumnOrder {
   field: string;
   width: number;
@@ -112,6 +124,27 @@ export async function saveUserShipmentColumnOrder(columnOrder: ColumnOrder[]) {
 
   try {
     await userService.updateShipmentColumnOrder(
+      userId,
+      JSON.stringify(columnOrder),
+    );
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("컬럼 순서 저장 오류:", error);
+    return { error: "컬럼 순서를 저장하는 중 오류가 발생했습니다." };
+  }
+}
+
+export async function saveUserQuotationColumnOrder(columnOrder: ColumnOrder[]) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    return { error: "로그인이 필요합니다." };
+  }
+
+  try {
+    await userService.updateQuotationColumnOrder(
       userId,
       JSON.stringify(columnOrder),
     );

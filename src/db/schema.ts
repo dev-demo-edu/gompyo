@@ -10,6 +10,7 @@ import { relations } from "drizzle-orm";
 import {
   defaultPlanColumnOrderFields,
   defaultShipmentColumnOrderFields,
+  defaultQuotationColumnOrderFields,
 } from "@/constants/column";
 
 // Importers table
@@ -122,6 +123,9 @@ export const users = sqliteTable("users", {
   shipmentColumnOrder: text("shipment_column_order").default(
     JSON.stringify(defaultShipmentColumnOrderFields),
   ),
+  quotationColumnOrder: text("quotation_column_order").default(
+    JSON.stringify(defaultQuotationColumnOrderFields),
+  ),
 });
 
 // Shipments table
@@ -166,7 +170,7 @@ export const cargos = sqliteTable(
   (table) => [
     check(
       "progress_status_check",
-      sql`${table.progressStatus} IN ('REVIEW', 'CONTRACTING', 'BEFORE_LC', 'BEFORE_ARRIVAL', 'WAREHOUSE_MOVING', 'BEFORE_QUARANTINE', 'QUARANTINING', 'CUSTOMS_DECLARING', 'DONE_ARRIVAL', 'AFTER_CUSTOMS', 'SELLING')`,
+      sql`${table.progressStatus} IN ('REVIEW', 'CONTRACTING', 'BEFORE_LC', 'BEFORE_ARRIVAL', 'WAREHOUSE_MOVING', 'BEFORE_QUARANTINE', 'QUARANTINING', 'CUSTOMS_DECLARING', 'DONE_ARRIVAL', 'AFTER_CUSTOMS', 'SELLING', 'SOLD_DONE')`,
     ),
   ],
 );

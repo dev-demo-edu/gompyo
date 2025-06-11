@@ -3,10 +3,10 @@
 import { CargoDeleteConfirmModal } from "@/containers/shipment/cargo-delete-modal";
 import ShipmentGrid from "@/components/shipment-grid";
 import { selectedCargosAtom } from "@/states/shipment";
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { useAtomValue } from "jotai";
 import { useState } from "react";
+import CommonButton from "@/components/common-button";
 
 export default function Shipment() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -20,18 +20,17 @@ export default function Shipment() {
         <Stack
           direction="row"
           spacing={2}
-          className="w-full justify-end mb-4 sm:mb-6"
+          className="w-full justify-start mb-4 sm:mb-6 md:justify-end"
         >
-          <Button
-            variant="contained"
+          <CommonButton
+            variant="danger"
             onClick={() => setOpenDeleteModal(true)}
             disabled={selectedRows.length === 0}
-            className="px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
           >
             삭제하기
-          </Button>
+          </CommonButton>
         </Stack>
-        <div className="overflow-hidden">
+        <div className="overflow-auto md:h-[75vh]">
           <ShipmentGrid />
         </div>
         <CargoDeleteConfirmModal

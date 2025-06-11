@@ -163,6 +163,7 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
       packagingUnit: item?.packingUnit || "",
       unitPrice: calculatedData.costDetail.unitPrice || 0,
       totalPrice: calculatedData.costDetail.totalContractPrice || 0,
+      totalPriceUsd: calculatedData.costDetail.totalPriceUsd || 0,
       supplyPrice: calculatedData.cost.supplyPrice || 0,
       sellingPrice: calculatedData.cargo.sellingPrice || 0,
       paymentMethod: payment?.paymentMethod || "",

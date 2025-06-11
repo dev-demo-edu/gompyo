@@ -30,6 +30,13 @@ export class UserService {
       : null;
   }
 
+  async getQuotationColumnOrder(id: string) {
+    const user = await this.findById(id);
+    return user.quotationColumnOrder
+      ? JSON.parse(user.quotationColumnOrder)
+      : null;
+  }
+
   // 사용자의 컬럼 순서 업데이트
   async updatePlanColumnOrder(id: string, columnOrder: string) {
     const [user] = await db
@@ -44,6 +51,15 @@ export class UserService {
     const [user] = await db
       .update(users)
       .set({ shipmentColumnOrder: columnOrder })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateQuotationColumnOrder(id: string, columnOrder: string) {
+    const [user] = await db
+      .update(users)
+      .set({ quotationColumnOrder: columnOrder })
       .where(eq(users.id, id))
       .returning();
     return user;

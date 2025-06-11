@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import StarIcon from "@mui/icons-material/Star";
 import Box from "@mui/material/Box";
 import LinkCard, { LinkCardType, SortableLinkCard } from "./link-card";
@@ -26,6 +25,7 @@ import {
 } from "@/actions/info/link-actions";
 import { useAtomValue } from "jotai";
 import { linkRefreshAtom } from "@/states/link";
+import CommonButton from "./common-button";
 
 interface LinkListProps {
   editMode?: boolean;
@@ -113,27 +113,17 @@ const LinkList = ({ editMode = false }: LinkListProps) => {
         내 링크
       </Typography>
       <Stack direction="row" spacing={2} alignItems="center">
-        <Button
-          variant={showFavoritesOnly ? "contained" : "outlined"}
-          color={showFavoritesOnly ? "primary" : "primary"}
+        <CommonButton
+          variant={showFavoritesOnly ? "primary" : "outline"}
           startIcon={
             <StarIcon
               sx={{ color: showFavoritesOnly ? "#facc15" : undefined }}
             />
           }
           onClick={() => setShowFavoritesOnly((v) => !v)}
-          sx={{
-            minWidth: 120,
-            minHeight: 44,
-            fontWeight: 600,
-            fontSize: 16,
-            lineHeight: 1.5,
-            py: 0,
-            boxShadow: "none",
-          }}
         >
           즐겨찾기{showFavoritesOnly ? " 보기 해제" : "만 보기"}
-        </Button>
+        </CommonButton>
       </Stack>
     </Stack>
   );
