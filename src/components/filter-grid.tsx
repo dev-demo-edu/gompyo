@@ -110,7 +110,7 @@ export default function FilterGrid<T>({
   }, [data, searchTerm, startDate, endDate, columnDefs, searchDateField]);
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-[800px] bg-transparent rounded-xl overflow-hidden shadow-lg  gap-6">
+    <div className="flex flex-col md:flex-row w-full h-full bg-transparent rounded-xl overflow-hidden shadow-lg  gap-6">
       {/* 필터 토글 버튼 (모바일) */}
       <button
         onClick={() => {
@@ -188,7 +188,7 @@ export default function FilterGrid<T>({
         )}
       </div>
       {/* 그리드 */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden min-h-[400px]">
+      <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden h-full">
         <DataGrid
           columnDefs={columnDefs}
           data={filteredData}

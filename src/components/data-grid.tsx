@@ -144,7 +144,7 @@ export default function DataGrid<T>({
 
   if (error) {
     return (
-      <div className="w-full h-[800px] bg-white flex items-center justify-center overflow-y-auto">
+      <div className="w-full h-full bg-white flex items-center justify-center overflow-y-auto">
         <p className="text-red-500">{error}</p>
       </div>
     );

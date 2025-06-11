@@ -30,7 +30,7 @@ export default function Shipment() {
             삭제하기
           </CommonButton>
         </Stack>
-        <div className="overflow-hidden">
+        <div className="overflow-auto h-[70vh]">
           <ShipmentGrid />
         </div>
         <CargoDeleteConfirmModal
