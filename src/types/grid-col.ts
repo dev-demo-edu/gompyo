@@ -24,6 +24,7 @@ export interface IShipmentData {
 }
 
 export interface IPlanData {
+  id: string;
   contractNumber: string;
   progressStatus: string;
   contractDate: string;

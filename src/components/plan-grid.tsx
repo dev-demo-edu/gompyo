@@ -24,6 +24,8 @@ import { DetailButtonRenderer } from "./cell-renderers";
 import { selectedCargosAtom } from "@/states/plan";
 import { useSetAtom } from "jotai";
 import { ColumnOrder } from "@/actions/user";
+import { useMediaQuery } from "@mui/material";
+import PlanMobileCard from "./card";
 // 컬럼 드래그 커스텀 훅
 
 export default function PlanGrid() {
@@ -31,6 +33,8 @@ export default function PlanGrid() {
   const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   // 컬럼 정의
   const columnDefs = useMemo<ColDef[]>(() => {
@@ -125,6 +129,7 @@ export default function PlanGrid() {
       try {
         setLoading(true);
         const data = await getPlanData();
+        console.log("data", data);
         const userColumnOrder = await getUserPlanColumnOrder();
         setRowData(data);
         setColumnOrder(userColumnOrder || defaultPlanColumnOrderFields);
@@ -152,7 +157,20 @@ export default function PlanGrid() {
     [setSelectedRows],
   );
 
-  return (
+  return isMobile ? (
+    <div className="flex flex-col gap-1">
+      {rowData.map((row) => (
+        <PlanMobileCard
+          key={row.id}
+          id={row.id}
+          contractNo={row.contractNumber}
+          importer={row.importer}
+          contractDate={row.contractDate}
+          item={row.itemName}
+        />
+      ))}
+    </div>
+  ) : (
     <FilterGrid
       columnDefs={columnDefs}
       data={rowData}
