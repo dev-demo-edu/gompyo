@@ -265,7 +265,7 @@ export default function QuotationGrid({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-[600px] lg:h-full">
       <div className="w-full h-full">
         <style jsx>{`
           div :global(.ag-header-cell.item-header) {

@@ -282,7 +282,7 @@ export default function CashflowGrid() {
   };
 
   return (
-    <div className="h-[90vh] md:h-[70vh] flex flex-col overflow-hidden ">
+    <div className="h-[90vh] md:h-[75vh] flex flex-col overflow-hidden ">
       <div className="flex flex-col md:flex-row w-full flex-1 gap-x-6 h-full">
         <div className="w-full h-full flex flex-col overflow-hidden">
           <div className="flex flex-row justify-between h-[44px]">

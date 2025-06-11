@@ -694,7 +694,7 @@ export default function QuotationContainer() {
         </Stack>
 
         {/* 그리드 */}
-        <div className="overflow-auto h-[70vh]">
+        <div className="overflow-auto lg:h-[75vh]">
           <QuotationGrid
             items={items.map((item) => ({
               id: item.id,
