@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import QuotationGrid from "./quotation-grid";
 import {
   CompanyAddModal,
@@ -76,6 +76,25 @@ export default function QuotationContainer() {
   >({}); // 견적서용 품목 선택
   const [selectedColumnsForManagement, setSelectedColumnsForManagement] =
     useState<Record<string, boolean>>({}); // 컬럼 관리용 품목 선택
+
+  // 컬럼 순서 로딩
+  useEffect(() => {
+    const loadColumnOrder = async () => {
+      try {
+        const userColumnOrder = await getUserQuotationColumnOrder();
+        setColumnOrder(userColumnOrder || defaultQuotationColumnOrderFields);
+      } catch (error) {
+        console.error("컬럼 순서 로딩 오류:", error);
+        setColumnOrder(defaultQuotationColumnOrderFields);
+      }
+    };
+    loadColumnOrder();
+  }, []);
+
+  // 컬럼 순서 변경 핸들러
+  const handleColumnOrderChange = useCallback((newOrder: ColumnOrder[]) => {
+    setColumnOrder(newOrder);
+  }, []);
 
   // 데이터 상태 관리
   const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
@@ -497,11 +516,38 @@ export default function QuotationContainer() {
   // PDF 생성 공통 로직
   const generatePDFData = async () => {
     const quotationData = getIntersectionItems();
+
+    if (quotationData.length === 0) {
+      throw new Error("선택된 견적 항목이 없습니다.");
+    }
+
+    // 컬럼 순서에 따라 품목들을 한 번 더 정렬하여 PDF에 반영
+    console.log("PDF 생성 시 컬럼 순서:", columnOrder);
+    console.log("PDF 생성 시 견적 데이터:", quotationData);
+
+    const sortedQuotationData = quotationData.sort((a, b) => {
+      const aIndex = columnOrder.findIndex(
+        (col) => col.field === a.productCode,
+      );
+      const bIndex = columnOrder.findIndex(
+        (col) => col.field === b.productCode,
+      );
+
+      // 컬럼 순서에 없는 항목은 뒤로 정렬
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+
+    console.log("PDF 생성 시 정렬된 견적 데이터:", sortedQuotationData);
+
     const pdfResponse = await generateQuotationPDF({
       sender: "㈜ 곰표",
-      receiver: quotationData[0].company,
+      receiver: sortedQuotationData[0].company,
       date: new Date().toISOString().split("T")[0],
-      items: quotationData.map((item, index) => ({
+      items: sortedQuotationData.map((item, index) => ({
         no: index + 1,
         name: item.productName,
         originEn: item.originEn,
@@ -509,7 +555,7 @@ export default function QuotationContainer() {
         price: item.price,
       })),
       documentNumber: generateDocumentNumber(),
-      priceType: quotationData[0].priceType,
+      priceType: sortedQuotationData[0].priceType,
       reference: "",
     });
 
@@ -745,6 +791,7 @@ export default function QuotationContainer() {
             onCompanySelect={setSelectedCompany}
             onCellValueChanged={handleCellValueChanged}
             onItemsSelect={() => {}}
+            onColumnOrderChange={handleColumnOrderChange}
           />
         </div>
 

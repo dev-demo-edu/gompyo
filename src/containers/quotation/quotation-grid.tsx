@@ -61,6 +61,8 @@ interface QuotationGridProps {
   setSelectedColumnsForManagement?: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
+  // 컬럼 순서 변경 콜백 추가
+  onColumnOrderChange?: (newOrder: ColumnOrder[]) => void;
 }
 
 export default function QuotationGrid({
@@ -76,6 +78,7 @@ export default function QuotationGrid({
   onCellValueChanged,
   selectedColumnsForManagement,
   setSelectedColumnsForManagement,
+  onColumnOrderChange,
 }: QuotationGridProps) {
   const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
 
@@ -145,6 +148,8 @@ export default function QuotationGrid({
           .then((result) => {
             if (result.success) {
               setColumnOrder(newColumnOrder);
+              // 부모 컴포넌트에 컬럼 순서 변경 알림
+              onColumnOrderChange?.(newColumnOrder);
               console.log("컬럼 순서가 업데이트되었습니다.");
             }
           })
@@ -169,6 +174,8 @@ export default function QuotationGrid({
       const result = await saveUserQuotationColumnOrder(newColumnOrder);
       if (result.success) {
         setColumnOrder(newColumnOrder);
+        // 부모 컴포넌트에 컬럼 순서 변경 알림
+        onColumnOrderChange?.(newColumnOrder);
       }
     } catch (error) {
       console.error("컬럼 순서 저장 중 오류:", error);
