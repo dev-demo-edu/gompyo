@@ -10,6 +10,7 @@ import { relations } from "drizzle-orm";
 import {
   defaultPlanColumnOrderFields,
   defaultShipmentColumnOrderFields,
+  defaultQuotationColumnOrderFields,
 } from "@/constants/column";
 
 // Importers table
@@ -121,6 +122,9 @@ export const users = sqliteTable("users", {
   ),
   shipmentColumnOrder: text("shipment_column_order").default(
     JSON.stringify(defaultShipmentColumnOrderFields),
+  ),
+  quotationColumnOrder: text("quotation_column_order").default(
+    JSON.stringify(defaultQuotationColumnOrderFields),
   ),
 });
 

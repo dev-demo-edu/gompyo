@@ -261,3 +261,8 @@ export const defaultShipmentColumnOrderFields: ColumnOrder[] =
     field: col.field as string,
     width: col.width || 100,
   })) as ColumnOrder[];
+
+// Quotation 그리드는 동적으로 컬럼이 생성되므로 기본 컬럼만 정의
+export const defaultQuotationColumnOrderFields: ColumnOrder[] = [
+  { field: "companyColumnName", width: 150 },
+];
