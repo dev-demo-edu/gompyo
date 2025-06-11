@@ -68,9 +68,9 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
     width: 130,
   },
   {
-    field: "totalPrice",
-    headerName: "단가 * 무게",
-    valueFormatter: currencyFormatter,
+    field: "totalPriceUsd",
+    headerName: "단가 * 톤수",
+    valueFormatter: currencyDollarFormatter,
     width: 150,
   },
   {
@@ -183,9 +183,9 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
     width: 130,
   },
   {
-    field: "totalPrice",
-    headerName: "단가 * 무게",
-    valueFormatter: currencyFormatter,
+    field: "totalPriceUsd",
+    headerName: "단가 * 톤수",
+    valueFormatter: currencyDollarFormatter,
     width: 150,
   },
   {
