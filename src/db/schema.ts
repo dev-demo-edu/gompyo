@@ -404,3 +404,84 @@ export const stocksRelations = relations(stocks, ({ one }) => ({
     references: [cargos.id],
   }),
 }));
+
+// Partner Companies table (거래처 관리용)
+export const partnerCompanies = sqliteTable(
+  "partner_companies",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    type: text("type").notNull(), // payment | collection
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "partner_company_type_check",
+      sql`${table.type} IN ('payment', 'collection')`,
+    ),
+  ],
+);
+
+// Company Years table (회사별 연도 관리)
+export const companyYears = sqliteTable("company_years", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id")
+    .notNull()
+    .references(() => partnerCompanies.id, { onDelete: "cascade" }),
+  year: integer("year").notNull(),
+  // 연초 이월 잔액 (전년도 12월 말 잔액)
+  lampleOpeningBalance: real("lample_opening_balance").default(0),
+  gompyoOpeningBalance: real("gompyo_opening_balance").default(0),
+  // 연말 잔액 (계산된 값, 다음 연도 이월잔액이 됨)
+  lampleClosingBalance: real("lample_closing_balance").default(0),
+  gompyoClosingBalance: real("gompyo_closing_balance").default(0),
+  // 연도별 상태 관리
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Financial Data table (재무 데이터)
+export const financialData = sqliteTable("financial_data", {
+  id: text("id").primaryKey(),
+  yearId: text("year_id")
+    .notNull()
+    .references(() => companyYears.id, { onDelete: "cascade" }),
+  month: text("month").notNull(), // "이월잔액", "1월", "2월", ... "12월"
+  isCarryover: integer("is_carryover", { mode: "boolean" }).default(false),
+  lamplePurchase: real("lample_purchase"),
+  lamplePayment: real("lample_payment"),
+  gompyoPurchase: real("gompyo_purchase"),
+  gompyoPayment: real("gompyo_payment"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Company Years relations
+export const companyYearsRelations = relations(
+  companyYears,
+  ({ one, many }) => ({
+    company: one(partnerCompanies, {
+      fields: [companyYears.companyId],
+      references: [partnerCompanies.id],
+    }),
+    financialData: many(financialData),
+  }),
+);
+
+// Partner Companies relations
+export const partnerCompaniesRelations = relations(
+  partnerCompanies,
+  ({ many }) => ({
+    companyYears: many(companyYears),
+  }),
+);
+
+// Financial Data relations
+export const financialDataRelations = relations(financialData, ({ one }) => ({
+  companyYear: one(companyYears, {
+    fields: [financialData.yearId],
+    references: [companyYears.id],
+  }),
+}));

@@ -1,6 +1,6 @@
 // utils/financial-calculator.ts
 
-import { Company, FinancialData } from "@/types/partner";
+import { Company, FinancialDataWithCalculated } from "@/types/partner";
 
 export type CompanyType = "payment" | "collection";
 export type BalanceField = "lampleBalance" | "gompyoBalance";
@@ -39,7 +39,7 @@ export const calculateBalance = (
 export const calculateMonthlyBalance = (
   monthIndex: number,
   field: BalanceField,
-  data: FinancialData[],
+  data: FinancialDataWithCalculated[],
   companyType: CompanyType,
 ): number => {
   // 이월잔액 찾기
@@ -74,9 +74,89 @@ export const calculateMonthlyBalance = (
 };
 
 /**
- * 특정 행의 구매/지급 변경 시 해당 월부터 12월까지 잔액 재계산
- * @param changedRowIndex 변경된 행의 인덱스
- * @param field 변경된 잔액 필드
+ * 전체 데이터의 모든 잔액 재계산 (누적 방식)
+ * @param data 전체 재무 데이터
+ * @param companyType 회사 타입
+ * @returns 업데이트된 데이터 배열
+ */
+export const recalculateAllBalances = (
+  data: FinancialDataWithCalculated[],
+  companyType: CompanyType,
+): FinancialDataWithCalculated[] => {
+  const updatedData = [...data];
+
+  // 데이터를 월 순서대로 정렬
+  updatedData.sort((a, b) => {
+    const monthOrder = {
+      이월잔액: 0,
+      "1월": 1,
+      "2월": 2,
+      "3월": 3,
+      "4월": 4,
+      "5월": 5,
+      "6월": 6,
+      "7월": 7,
+      "8월": 8,
+      "9월": 9,
+      "10월": 10,
+      "11월": 11,
+      "12월": 12,
+    };
+    const orderA = monthOrder[a.month as keyof typeof monthOrder] ?? 999;
+    const orderB = monthOrder[b.month as keyof typeof monthOrder] ?? 999;
+    return orderA - orderB;
+  });
+
+  let lampleRunningBalance = 0;
+  let gompyoRunningBalance = 0;
+
+  for (let i = 0; i < updatedData.length; i++) {
+    const item = updatedData[i];
+
+    if (item.isCarryover) {
+      // 이월잔액: 편집된 잔액 값 사용
+      lampleRunningBalance = item.lampleBalance || 0;
+      gompyoRunningBalance = item.gompyoBalance || 0;
+
+      item.totalBalance = lampleRunningBalance + gompyoRunningBalance;
+    } else {
+      // 월별 데이터: 이전 잔액 + 구매 - 지급으로 누적 계산
+      const lamplePurchase = item.lamplePurchase || 0;
+      const lamplePayment = item.lamplePayment || 0;
+      const gompyoPurchase = item.gompyoPurchase || 0;
+      const gompyoPayment = item.gompyoPayment || 0;
+
+      // 회사 타입에 따른 잔액 계산
+      if (companyType === "payment") {
+        // 지급 회사: 구매하면 빚이 늘어나고(음수), 지급하면 빚이 줄어듦(양수)
+        lampleRunningBalance =
+          lampleRunningBalance - lamplePurchase + lamplePayment;
+        gompyoRunningBalance =
+          gompyoRunningBalance - gompyoPurchase + gompyoPayment;
+      } else {
+        // 수금 회사: 판매하면 채권이 늘어나고(양수), 수금하면 채권이 줄어듦(음수)
+        lampleRunningBalance =
+          lampleRunningBalance + lamplePurchase - lamplePayment;
+        gompyoRunningBalance =
+          gompyoRunningBalance + gompyoPurchase - gompyoPayment;
+      }
+
+      // 계산된 값들 업데이트
+      item.lampleBalance = lampleRunningBalance;
+      item.gompyoBalance = gompyoRunningBalance;
+      item.totalPurchase = lamplePurchase + gompyoPurchase;
+      item.totalPayment = lamplePayment + gompyoPayment;
+      item.totalBalance = lampleRunningBalance + gompyoRunningBalance;
+    }
+  }
+
+  return updatedData;
+};
+
+/**
+ * 특정 행의 구매/지급 변경 시 전체 잔액 재계산
+ * @param changedRowIndex 변경된 행의 인덱스 (사용하지 않음, 전체 재계산)
+ * @param field 변경된 잔액 필드 (사용하지 않음, 전체 재계산)
  * @param data 전체 재무 데이터
  * @param companyType 회사 타입
  * @returns 업데이트된 데이터 배열
@@ -84,81 +164,11 @@ export const calculateMonthlyBalance = (
 export const recalculateBalancesFromMonth = (
   changedRowIndex: number,
   field: BalanceField,
-  data: FinancialData[],
+  data: FinancialDataWithCalculated[],
   companyType: CompanyType,
-): FinancialData[] => {
-  const updatedData = [...data];
-
-  // 변경된 월부터 12월까지 재계산
-  for (let i = changedRowIndex; i < updatedData.length; i++) {
-    const item = updatedData[i];
-    if (item.isCarryover) continue;
-
-    // 월 인덱스 계산 (1월=1, 2월=2, ...)
-    const monthIndex = i;
-
-    // 잔액 재계산
-    const newBalance = calculateMonthlyBalance(
-      monthIndex,
-      field,
-      updatedData,
-      companyType,
-    );
-
-    if (field === "lampleBalance") {
-      item.lampleBalance = newBalance;
-    } else {
-      item.gompyoBalance = newBalance;
-    }
-
-    // 전체 잔액 재계산
-    item.totalBalance = (item.lampleBalance || 0) + (item.gompyoBalance || 0);
-  }
-
-  return updatedData;
-};
-
-/**
- * 전체 데이터의 모든 잔액 재계산
- * @param data 전체 재무 데이터
- * @param companyType 회사 타입
- * @returns 업데이트된 데이터 배열
- */
-export const recalculateAllBalances = (
-  data: FinancialData[],
-  companyType: CompanyType,
-): FinancialData[] => {
-  const updatedData = [...data];
-
-  // 1월부터 12월까지 순차적으로 계산
-  for (let i = 1; i < updatedData.length; i++) {
-    const item = updatedData[i];
-    if (item.isCarryover) continue;
-
-    // 램플 잔액 계산
-    item.lampleBalance = calculateMonthlyBalance(
-      i,
-      "lampleBalance",
-      updatedData,
-      companyType,
-    );
-
-    // 곰표 잔액 계산
-    item.gompyoBalance = calculateMonthlyBalance(
-      i,
-      "gompyoBalance",
-      updatedData,
-      companyType,
-    );
-
-    // 전체 구매/지급/잔액 계산
-    item.totalPurchase =
-      (item.lamplePurchase || 0) + (item.gompyoPurchase || 0);
-    item.totalPayment = (item.lamplePayment || 0) + (item.gompyoPayment || 0);
-    item.totalBalance = (item.lampleBalance || 0) + (item.gompyoBalance || 0);
-  }
-
-  return updatedData;
+): FinancialDataWithCalculated[] => {
+  // 간단하게 전체 재계산으로 변경
+  return recalculateAllBalances(data, companyType);
 };
 
 /**
@@ -167,8 +177,8 @@ export const recalculateAllBalances = (
  * @returns 업데이트된 이월잔액 데이터
  */
 export const calculateCarryoverTotal = (
-  carryoverData: FinancialData,
-): FinancialData => {
+  carryoverData: FinancialDataWithCalculated,
+): FinancialDataWithCalculated => {
   return {
     ...carryoverData,
     totalBalance:

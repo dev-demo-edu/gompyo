@@ -10,7 +10,7 @@ import {
   selectedCompanyAtom,
   availableYearsAtom,
   selectedYearAtom,
-  financialDataAtom,
+  partnerRefreshAtom,
 } from "@/states/partner";
 import {
   companyAddFields,
@@ -21,7 +21,12 @@ import {
   yearAddSchema,
 } from "./partner-form";
 import DynamicForm from "@/components/dynamic-form";
-import { Company } from "@/types/partner";
+import {
+  createCompany,
+  deleteCompany,
+  addYear,
+  deleteYear,
+} from "@/actions/partner";
 
 // 기본 삭제 확인 모달
 function DeleteConfirmModal({
@@ -30,23 +35,35 @@ function DeleteConfirmModal({
   onConfirm,
   title,
   message,
+  loading = false,
 }: {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   message: string;
+  loading?: boolean;
 }) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent sx={{ py: 3 }}>{message}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0, justifyContent: "flex-end" }}>
-        <Button variant="outlined" color="primary" onClick={onClose}>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={onClose}
+          disabled={loading}
+        >
           취소
         </Button>
-        <Button variant="contained" color="primary" onClick={onConfirm}>
-          삭제
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onConfirm}
+          disabled={loading}
+        >
+          {loading ? "처리 중..." : "삭제"}
         </Button>
       </DialogActions>
     </Dialog>
@@ -62,9 +79,9 @@ export function CompanyAddModal({
   onClose: () => void;
 }) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
-  const [companies, setCompanies] = useAtom(companiesAtom);
-  const setSelectedCompany = useSetAtom(selectedCompanyAtom);
+  const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
 
   const handleClose = () => {
     setFieldErrors({});
@@ -72,34 +89,10 @@ export function CompanyAddModal({
   };
 
   const handleSubmit = async (values: CompanyAddFormValues) => {
+    setLoading(true);
     try {
-      if (companies.some((c) => c.name === values.name)) {
-        setFieldErrors({ name: "이미 존재하는 회사명입니다." });
-        return;
-      }
-
-      // 서버 액션 호출 (현재는 목업)
-      // await createPartnerCompany({ name: values.name, type: values.type });
-      console.log("createPartnerCompany 호출:", {
-        values,
-      });
-
-      // 새 회사 추가
-      /* 서버액션 완성 시 newCompany = 서버액션함수({
-          name: values.name,
-          type: values.type,
-        }) */
-
-      // 서버액션 완성 시 삭제 - 임시 데이터
-      const newCompany: Company = {
-        id: `temp_${Date.now()}`,
-        name: values.name,
-        type: values.type,
-      };
-
-      setCompanies([...companies, newCompany]);
-      setSelectedCompany(newCompany.id);
-
+      await createCompany(values.name, values.type);
+      setPartnerRefresh((prev) => prev + 1);
       handleClose();
     } catch (error: unknown) {
       const errorMessage =
@@ -110,6 +103,8 @@ export function CompanyAddModal({
       setFieldErrors({
         name: errorMessage,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,7 +116,7 @@ export function CompanyAddModal({
           fields={companyAddFields}
           onSubmit={handleSubmit}
           onCancel={handleClose}
-          submitLabel="추가"
+          submitLabel={loading ? "추가 중..." : "추가"}
           zodSchema={companyAddSchema}
           fieldErrors={fieldErrors}
         />
@@ -140,34 +135,22 @@ export function CompanyDeleteModal({
   onClose: () => void;
   companyName: string;
 }) {
-  const [companies, setCompanies] = useAtom(companiesAtom);
-  const [selectedCompany, setSelectedCompany] = useAtom(selectedCompanyAtom);
-
-  const setFinancialData = useSetAtom(financialDataAtom);
-  const setAvailableYears = useSetAtom(availableYearsAtom);
+  const [loading, setLoading] = useState(false);
+  const selectedCompany = useAtomValue(selectedCompanyAtom);
+  const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
 
   const handleConfirm = async () => {
+    if (!selectedCompany) return;
+
+    setLoading(true);
     try {
-      // 서버 액션 호출 (현재는 목업)
-      // await deletePartnerCompany(selectedCompany);
-      console.log("deletePartnerCompany 호출:", selectedCompany);
-
-      const updatedCompanies = companies.filter(
-        (c) => c.id !== selectedCompany,
-      );
-      setCompanies(updatedCompanies);
-
-      if (updatedCompanies.length > 0) {
-        setSelectedCompany(updatedCompanies[0].id);
-      } else {
-        setSelectedCompany("");
-        setFinancialData([]);
-        setAvailableYears([]);
-      }
-
+      await deleteCompany(selectedCompany);
+      setPartnerRefresh((prev) => prev + 1);
       onClose();
     } catch (error) {
       console.error("회사 삭제 실패:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,7 +160,8 @@ export function CompanyDeleteModal({
       onClose={onClose}
       onConfirm={handleConfirm}
       title="회사 삭제 확인"
-      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까?`}
+      message={`정말로 "${companyName}" 회사를 삭제하시겠습니까? 관련된 모든 재무 데이터도 함께 삭제됩니다.`}
+      loading={loading}
     />
   );
 }
@@ -191,9 +175,10 @@ export function YearAddModal({
   onClose: () => void;
 }) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [availableYears, setAvailableYears] = useAtom(availableYearsAtom);
-  const setSelectedYear = useSetAtom(selectedYearAtom);
+  const [loading, setLoading] = useState(false);
+  const availableYears = useAtomValue(availableYearsAtom);
   const selectedCompany = useAtomValue(selectedCompanyAtom);
+  const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
 
   const handleClose = () => {
     setFieldErrors({});
@@ -201,6 +186,11 @@ export function YearAddModal({
   };
 
   const handleSubmit = async (values: YearAddFormValues) => {
+    if (!selectedCompany) {
+      setFieldErrors({ year: "회사를 먼저 선택해주세요." });
+      return;
+    }
+
     const yearNumber = parseInt(values.year);
 
     // 중복 검사
@@ -209,17 +199,10 @@ export function YearAddModal({
       return;
     }
 
+    setLoading(true);
     try {
-      // 서버 액션 호출 (현재는 목업)
-      // await createFinancialYear(selectedCompany, yearNumber);
-      console.log("createFinancialYear 호출:", selectedCompany, yearNumber);
-
-      const updatedYears = [...availableYears, yearNumber].sort(
-        (a, b) => a - b,
-      );
-      setAvailableYears(updatedYears);
-      setSelectedYear(yearNumber);
-
+      await addYear(selectedCompany, yearNumber);
+      setPartnerRefresh((prev) => prev + 1);
       handleClose();
     } catch (error: unknown) {
       const errorMessage =
@@ -230,6 +213,8 @@ export function YearAddModal({
       setFieldErrors({
         year: errorMessage,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -241,7 +226,7 @@ export function YearAddModal({
           fields={yearAddFields}
           onSubmit={handleSubmit}
           onCancel={handleClose}
-          submitLabel="추가"
+          submitLabel={loading ? "추가 중..." : "추가"}
           zodSchema={yearAddSchema}
           fieldErrors={fieldErrors}
         />
@@ -258,18 +243,19 @@ export function YearDeleteModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const [loading, setLoading] = useState(false);
   const [availableYears, setAvailableYears] = useAtom(availableYearsAtom);
   const [selectedYear, setSelectedYear] = useAtom(selectedYearAtom);
   const selectedCompany = useAtomValue(selectedCompanyAtom);
   const companies = useAtomValue(companiesAtom);
-  const setCompanies = useSetAtom(companiesAtom);
-  const setSelectedCompany = useSetAtom(selectedCompanyAtom);
-  const setFinancialData = useSetAtom(financialDataAtom);
+  const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
 
   // 경고 모달 상태
   const [showWarning, setShowWarning] = useState(false);
 
   const handleConfirm = async () => {
+    if (!selectedCompany || !selectedYear) return;
+
     try {
       // 마지막 년도인지 체크
       if (availableYears.length === 1) {
@@ -278,43 +264,43 @@ export function YearDeleteModal({
       }
 
       // 일반 년도 삭제
-      // await deleteFinancialYear(selectedCompany, selectedYear);
-      console.log("deleteFinancialYear 호출:", selectedCompany, selectedYear);
+      setLoading(true);
+      await deleteYear(selectedCompany, selectedYear);
 
-      const updatedYears = availableYears.filter((y) => y !== selectedYear);
+      // 삭제 성공 후 즉시 상태 업데이트
+      const updatedYears = availableYears.filter(
+        (year) => year !== selectedYear,
+      );
       setAvailableYears(updatedYears);
-      setSelectedYear(updatedYears[updatedYears.length - 1]);
-      setFinancialData([]);
 
+      // 새로운 연도 선택 (가장 최근 연도)
+      if (updatedYears.length > 0) {
+        setSelectedYear(updatedYears[0]);
+      }
+
+      setPartnerRefresh((prev) => prev + 1);
       onClose();
     } catch (error) {
       console.error("년도 삭제 실패:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleWarningConfirm = async () => {
+    if (!selectedCompany) return;
+
+    setLoading(true);
     try {
       // 회사까지 삭제
-      // await deleteCompanyWithAllYears(selectedCompany);
-      console.log("deleteCompanyWithAllYears 호출:", selectedCompany);
-
-      const updatedCompanies = companies.filter(
-        (c) => c.id !== selectedCompany,
-      );
-      setCompanies(updatedCompanies);
-
-      if (updatedCompanies.length > 0) {
-        setSelectedCompany(updatedCompanies[0].id);
-      } else {
-        setSelectedCompany("");
-        setFinancialData([]);
-        setAvailableYears([]);
-      }
-
+      await deleteCompany(selectedCompany);
+      setPartnerRefresh((prev) => prev + 1);
       setShowWarning(false);
       onClose();
     } catch (error) {
       console.error("회사 삭제 실패:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -356,6 +342,7 @@ export function YearDeleteModal({
             variant="outlined"
             color="primary"
             onClick={() => setShowWarning(false)}
+            disabled={loading}
           >
             취소
           </Button>
@@ -366,8 +353,9 @@ export function YearDeleteModal({
               "&:hover": { backgroundColor: "#DC2626" },
             }}
             onClick={handleWarningConfirm}
+            disabled={loading}
           >
-            회사까지 삭제
+            {loading ? "삭제 중..." : "회사까지 삭제"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -382,6 +370,7 @@ export function YearDeleteModal({
       onConfirm={handleConfirm}
       title="연도 삭제 확인"
       message={`정말로 ${selectedYear}년 데이터를 삭제하시겠습니까?`}
+      loading={loading}
     />
   );
 }

@@ -10,10 +10,9 @@ import {
 } from "ag-grid-community";
 import DataGrid from "@/components/data-grid";
 import { CircularProgress } from "@mui/material";
-import { Company, FinancialData } from "@/types/partner";
+import { Company, FinancialDataWithCalculated } from "@/types/partner";
 import {
   recalculateAllBalances,
-  recalculateBalancesFromMonth,
   calculateCarryoverTotal,
   CompanyType,
 } from "@/utils/partner";
@@ -22,10 +21,10 @@ interface PartnerGridProps {
   companies: Company[];
   selectedCompany: string;
   selectedYear: number;
-  data: FinancialData[];
+  data: FinancialDataWithCalculated[];
   loading?: boolean;
   editMode: boolean;
-  onDataChange: (data: FinancialData[]) => void;
+  onDataChange: (data: FinancialDataWithCalculated[]) => void;
   onGridReady: (api: GridApi) => void;
 }
 
@@ -103,27 +102,16 @@ export default function PartnerGrid({
             flex: 1,
             editable: (params: EditableCallbackParams) =>
               editMode && !params.data?.isCarryover,
-            valueFormatter: (params: ValueFormatterParams) =>
-              formatNumber(params.value),
+            valueFormatter: (params: ValueFormatterParams) => {
+              if (params.data?.isCarryover) return "";
+              return formatNumber(params.value);
+            },
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.lamplePurchase = newValue;
-              // 전체 구매 금액 재계산
-              params.data.totalPurchase =
-                (newValue || 0) + (params.data.gompyoPurchase || 0);
 
-              // 현재 행의 인덱스 찾기
-              const currentIndex = data.findIndex(
-                (item) => item.id === params.data.id,
-              );
-
-              // 램플 잔액 재계산 (현재 월부터 이후 모든 월)
-              const updatedData = recalculateBalancesFromMonth(
-                currentIndex,
-                "lampleBalance",
-                data,
-                companyType,
-              );
+              // 전체 재계산
+              const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
             },
@@ -138,28 +126,16 @@ export default function PartnerGrid({
             flex: 1,
             editable: (params: EditableCallbackParams) =>
               editMode && !params.data?.isCarryover,
-            valueFormatter: (params: ValueFormatterParams) =>
-              formatNumber(params.value),
+            valueFormatter: (params: ValueFormatterParams) => {
+              if (params.data?.isCarryover) return "";
+              return formatNumber(params.value);
+            },
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.lamplePayment = newValue;
 
-              // 전체 지급 금액 재계산
-              params.data.totalPayment =
-                (newValue || 0) + (params.data.gompyoPayment || 0);
-
-              // 현재 행의 인덱스 찾기
-              const currentIndex = data.findIndex(
-                (item) => item.id === params.data.id,
-              );
-
-              // 램플 잔액 재계산 (현재 월부터 이후 모든 월)
-              const updatedData = recalculateBalancesFromMonth(
-                currentIndex,
-                "lampleBalance",
-                data,
-                companyType,
-              );
+              // 전체 재계산
+              const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
             },
@@ -217,7 +193,7 @@ export default function PartnerGrid({
         suppressMovable: true,
         children: [
           {
-            headerName: "구매",
+            headerName: purchaseOrSaleText,
             filter: false,
             field: "gompyoPurchase",
             suppressMovable: true,
@@ -226,32 +202,22 @@ export default function PartnerGrid({
             flex: 1,
             editable: (params: EditableCallbackParams) =>
               editMode && !params.data?.isCarryover,
-            valueFormatter: (params: ValueFormatterParams) =>
-              formatNumber(params.value),
+            valueFormatter: (params: ValueFormatterParams) => {
+              if (params.data?.isCarryover) return "";
+              return formatNumber(params.value);
+            },
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gompyoPurchase = newValue;
 
-              params.data.totalPurchase =
-                (params.data.lamplePurchase || 0) + (newValue || 0);
-
-              const currentIndex = data.findIndex(
-                (item) => item.id === params.data.id,
-              );
-
-              const updatedData = recalculateBalancesFromMonth(
-                currentIndex,
-                "gompyoBalance",
-                data,
-                companyType,
-              );
-
+              // 전체 재계산
+              const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
             },
           },
           {
-            headerName: "지급",
+            headerName: paymentOrCollectionText,
             filter: false,
             field: "gompyoPayment",
             suppressMovable: true,
@@ -260,26 +226,16 @@ export default function PartnerGrid({
             flex: 1,
             editable: (params: EditableCallbackParams) =>
               editMode && !params.data?.isCarryover,
-            valueFormatter: (params: ValueFormatterParams) =>
-              formatNumber(params.value),
+            valueFormatter: (params: ValueFormatterParams) => {
+              if (params.data?.isCarryover) return "";
+              return formatNumber(params.value);
+            },
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.gompyoPayment = newValue;
 
-              params.data.totalPayment =
-                (params.data.lamplePayment || 0) + (newValue || 0);
-
-              const currentIndex = data.findIndex(
-                (item) => item.id === params.data.id,
-              );
-
-              const updatedData = recalculateBalancesFromMonth(
-                currentIndex,
-                "gompyoBalance",
-                data,
-                companyType,
-              );
-
+              // 전체 재계산
+              const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
             },
@@ -331,7 +287,7 @@ export default function PartnerGrid({
         headerClass: "text-center",
         children: [
           {
-            headerName: "구매",
+            headerName: purchaseOrSaleText,
             filter: false,
             suppressMovable: true,
             sortable: false,
@@ -339,12 +295,15 @@ export default function PartnerGrid({
             minWidth: 120,
             flex: 1,
             editable: false, // 계산 필드이므로 직접 편집 불가
-            valueFormatter: (params: ValueFormatterParams) =>
-              formatNumber(params.value),
+            valueFormatter: (params: ValueFormatterParams) => {
+              // 이월잔액인 경우 구매 열에 값 표시 안함
+              if (params.data?.isCarryover) return "";
+              return formatNumber(params.value);
+            },
             cellStyle: { backgroundColor: "#F3F4F6" }, // 계산 필드 표시
           },
           {
-            headerName: "지급",
+            headerName: paymentOrCollectionText,
             filter: false,
             suppressMovable: true,
             sortable: false,
@@ -352,8 +311,11 @@ export default function PartnerGrid({
             minWidth: 120,
             flex: 1,
             editable: false, // 계산 필드이므로 직접 편집 불가
-            valueFormatter: (params: ValueFormatterParams) =>
-              formatNumber(params.value),
+            valueFormatter: (params: ValueFormatterParams) => {
+              // 이월잔액인 경우 지급 열에 값 표시 안함
+              if (params.data?.isCarryover) return "";
+              return formatNumber(params.value);
+            },
             cellStyle: { backgroundColor: "#F3F4F6" }, // 계산 필드 표시
           },
           {
