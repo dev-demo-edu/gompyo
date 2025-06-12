@@ -581,7 +581,9 @@ export default function QuotationContainer() {
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
-      <div className="p-4 sm:p-8">
+      <div className="p-4 sm:p-8 pb-20 sm:pb-8">
+        {" "}
+        {/* 모바일에서 하단 여백 추가 */}
         <div className="flex flex-col lg:flex-row lg:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">견적서 작성</h1>
         </div>
@@ -612,8 +614,9 @@ export default function QuotationContainer() {
               <Tab label="해외 업체" value="overseas" />
             </Tabs>
           </div>
-          {/* 모든 버튼들을 한 줄에 배치 */}
-          <div className="overflow-auto w-full">
+
+          {/* 데스크톱 버튼들 - sm 이상에서만 표시 */}
+          <div className="hidden sm:block overflow-auto w-full">
             <Stack
               direction="row"
               spacing={2}
@@ -692,7 +695,6 @@ export default function QuotationContainer() {
             </Stack>
           </div>
         </Stack>
-
         {/* 그리드 */}
         <div className="overflow-hidden">
           <QuotationGrid
@@ -717,7 +719,6 @@ export default function QuotationContainer() {
             onItemsSelect={() => {}}
           />
         </div>
-
         {/* 선택된 교차점 표시 */}
         {getIntersectionItems().length > 0 && (
           <div className="mt-4 p-3 bg-green-50 rounded-lg">
@@ -735,6 +736,74 @@ export default function QuotationContainer() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* 모바일 플로팅 버튼들 - sm 미만에서만 표시 */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 overflow-x-auto">
+        <Stack direction="row" spacing={2} sx={{ minWidth: "max-content" }}>
+          <CommonButton
+            variant="info"
+            onClick={() => setCompanyModalOpen(true)}
+            className="whitespace-nowrap"
+          >
+            업체 추가
+          </CommonButton>
+          <CommonButton
+            variant="info"
+            onClick={() => setItemModalOpen(true)}
+            className="whitespace-nowrap"
+          >
+            품목 추가
+          </CommonButton>
+          <CommonButton
+            variant="primary"
+            onClick={() => setCompanyEditModalOpen(true)}
+            disabled={!selectedCompany}
+            className="whitespace-nowrap"
+          >
+            업체 수정
+          </CommonButton>
+          <CommonButton
+            variant="primary"
+            onClick={() => setItemEditModalOpen(true)}
+            disabled={
+              Object.keys(selectedColumnsForManagement).filter(
+                (key) => selectedColumnsForManagement[key],
+              ).length !== 1
+            }
+            className="whitespace-nowrap"
+          >
+            품목 수정
+          </CommonButton>
+          <CommonButton
+            variant="danger"
+            onClick={() => setCompanyDeleteModalOpen(true)}
+            disabled={!selectedCompany}
+            className="whitespace-nowrap"
+          >
+            업체 삭제
+          </CommonButton>
+          <CommonButton
+            variant="danger"
+            onClick={() => setItemDeleteModalOpen(true)}
+            disabled={
+              Object.keys(selectedColumnsForManagement).filter(
+                (key) => selectedColumnsForManagement[key],
+              ).length === 0
+            }
+            className="whitespace-nowrap"
+          >
+            품목 삭제
+          </CommonButton>
+          <CommonButton
+            variant="special"
+            onClick={() => setQuotationDocumentModalOpen(true)}
+            disabled={getIntersectionItems().length === 0}
+            className="whitespace-nowrap"
+          >
+            견적서 ({getIntersectionItems().length})
+          </CommonButton>
+        </Stack>
       </div>
 
       {/* 모달들 */}
