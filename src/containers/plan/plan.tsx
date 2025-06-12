@@ -3,7 +3,7 @@
 import PlanGrid from "@/components/plan-grid";
 import PlanButton from "./plan-button";
 import { useAtom } from "jotai";
-import { selectedCargosAtom } from "@/states/plan";
+import { selectedPlanRowsAtom } from "@/states/plan";
 import { useEffect, useState } from "react";
 import { CargoDeleteConfirmModal } from "@/containers/plan/cargo-delete-modal";
 import Stack from "@mui/material/Stack";
@@ -11,7 +11,7 @@ import CommonButton from "@/components/common-button";
 
 export default function Plan() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [selectedRows, setSelectedRows] = useAtom(selectedCargosAtom);
+  const [selectedRows, setSelectedRows] = useAtom(selectedPlanRowsAtom);
 
   useEffect(() => {
     // 페이지 진입 시 선택된 행 초기화

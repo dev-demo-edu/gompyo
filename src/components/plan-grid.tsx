@@ -13,20 +13,17 @@ import {
   saveUserPlanColumnOrder,
 } from "@/actions/user";
 import useDragColumnChange from "@/hooks/useDragColumnChange";
-import { useAtomValue } from "jotai";
-import { cargoRefreshAtom } from "@/states/plan";
+import { useAtomValue, useAtom } from "jotai";
+import { cargoRefreshAtom, selectedPlanRowsAtom } from "@/states/plan";
 import {
   DEFAULT_PLAN_COLUMN,
   defaultPlanColumnOrderFields,
 } from "@/constants/column";
 import FilterGrid from "./filter-grid";
 import { DetailButtonRenderer } from "./cell-renderers";
-import { selectedCargosAtom } from "@/states/plan";
-import { useSetAtom } from "jotai";
 import { ColumnOrder } from "@/actions/user";
 import { useMediaQuery } from "@mui/material";
 import PlanMobileCard from "./card";
-// 컬럼 드래그 커스텀 훅
 
 export default function PlanGrid() {
   const [rowData, setRowData] = useState<IPlanData[]>([]);
@@ -35,6 +32,9 @@ export default function PlanGrid() {
   const [error, setError] = useState<string | null>(null);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+  // 선택된 행 관리
+  const [selectedRows, setSelectedRows] = useAtom(selectedPlanRowsAtom);
 
   // 컬럼 정의
   const columnDefs = useMemo<ColDef[]>(() => {
@@ -94,7 +94,6 @@ export default function PlanGrid() {
 
     try {
       const result = await saveUserPlanColumnOrder(newColumnOrder);
-      // console.log("Column order save result:", result);
 
       if (result.success) {
         setColumnOrder(newColumnOrder);
@@ -148,13 +147,38 @@ export default function PlanGrid() {
     fetchData();
   }, [refreshTrigger]);
 
-  const setSelectedRows = useSetAtom(selectedCargosAtom);
+  // 데스크톱 그리드 선택 변경 핸들러
   const onSelectionChanged = useCallback(
     (event: SelectionChangedEvent) => {
       const selectedRows = event.api.getSelectedRows();
       setSelectedRows(selectedRows);
     },
     [setSelectedRows],
+  );
+
+  // 모바일 카드 선택 핸들러
+  const handleMobileCardSelect = useCallback(
+    (rowData: IPlanData) => {
+      setSelectedRows((prev) => {
+        const isSelected = prev.some((item) => item.id === rowData.id);
+        if (isSelected) {
+          // 선택 해제
+          return prev.filter((item) => item.id !== rowData.id);
+        } else {
+          // 선택 추가 - IPlanData를 CargoRow 타입으로 캐스팅
+          return [...prev, rowData as IPlanData];
+        }
+      });
+    },
+    [setSelectedRows],
+  );
+
+  // 모바일에서 카드가 선택되었는지 확인
+  const isCardSelected = useCallback(
+    (cardId: string) => {
+      return selectedRows.some((item) => item.id === cardId);
+    },
+    [selectedRows],
   );
 
   return isMobile ? (
@@ -167,6 +191,9 @@ export default function PlanGrid() {
           importer={row.importer}
           contractDate={row.contractDate}
           item={row.itemName}
+          isSelected={isCardSelected(row.id)}
+          onSelect={handleMobileCardSelect}
+          rowData={row}
         />
       ))}
     </div>
