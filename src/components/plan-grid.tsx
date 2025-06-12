@@ -23,7 +23,7 @@ import FilterGrid from "./filter-grid";
 import { DetailButtonRenderer } from "./cell-renderers";
 import { ColumnOrder } from "@/actions/user";
 import { useMediaQuery } from "@mui/material";
-import PlanMobileCard from "./card";
+import CommonCard from "./card";
 
 export default function PlanGrid() {
   const [rowData, setRowData] = useState<IPlanData[]>([]);
@@ -184,16 +184,19 @@ export default function PlanGrid() {
   return isMobile ? (
     <div className="flex flex-col gap-1">
       {rowData.map((row) => (
-        <PlanMobileCard
+        <CommonCard
           key={row.id}
           id={row.id}
-          contractNo={row.contractNumber}
-          importer={row.importer}
-          contractDate={row.contractDate}
-          item={row.itemName}
+          title={`계약번호: ${row.contractNumber}`}
+          fields={[
+            { label: "수입회사", value: row.importer },
+            { label: "계약일자", value: row.contractDate },
+            { label: "품목명", value: row.itemName },
+          ]}
           isSelected={isCardSelected(row.id)}
           onSelect={handleMobileCardSelect}
           rowData={row}
+          detailHref={`/detail/${row.id}`}
         />
       ))}
     </div>

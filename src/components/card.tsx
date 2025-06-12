@@ -1,30 +1,38 @@
-// PlanMobileCard.tsx
 import React from "react";
-import CommonButton from "./common-button";
 import Link from "next/link";
-import { IPlanData } from "@/types/grid-col";
+import CommonButton from "./common-button";
 
-interface PlanMobileCardProps {
-  id: string;
-  contractNo: string;
-  importer: string;
-  contractDate: string;
-  item: string;
-  isSelected: boolean;
-  onSelect: (rowData: IPlanData) => void;
-  rowData: IPlanData;
+// 카드에 표시할 필드 정의
+interface CardField {
+  label: string;
+  value: string | number;
 }
 
-export default function PlanMobileCard({
-  id,
-  contractNo,
-  importer,
-  contractDate,
-  item,
+// 선택 가능한 아이템의 최소 요구사항
+interface SelectableItem {
+  id: string;
+}
+
+interface CommonCardProps<T extends SelectableItem> {
+  id: string;
+  title: string; // 카드 제목 (예: "계약번호: CONTRACT-001")
+  fields: CardField[]; // 표시할 필드들
+  isSelected: boolean;
+  onSelect: (rowData: T) => void;
+  rowData: T;
+  detailHref?: string; // 상세 페이지 링크 (선택사항)
+  detailButtonText?: string; // 버튼 텍스트 커스텀
+}
+
+export default function CommonCard<T extends SelectableItem>({
+  title,
+  fields,
   isSelected,
   onSelect,
   rowData,
-}: PlanMobileCardProps) {
+  detailHref,
+  detailButtonText = "상세보기",
+}: CommonCardProps<T>) {
   const handleCardClick = (e: React.MouseEvent) => {
     // 상세보기 버튼 클릭은 제외
     if ((e.target as HTMLElement).closest("a")) {
@@ -42,7 +50,7 @@ export default function PlanMobileCard({
       }`}
       onClick={handleCardClick}
     >
-      {/* 체크박스와 계약번호 */}
+      {/* 체크박스와 제목 */}
       <div className="flex items-center mb-1">
         <input
           type="checkbox"
@@ -52,22 +60,25 @@ export default function PlanMobileCard({
           className="mr-3 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
           onClick={(e) => e.stopPropagation()}
         />
-        <div className="font-semibold text-gray-800">
-          계약번호: {contractNo}
-        </div>
+        <div className="font-semibold text-gray-800">{title}</div>
       </div>
 
       <div className="flex justify-between">
         <div className="flex flex-col">
-          <div className="text-sm text-gray-600">수입회사: {importer}</div>
-          <div className="text-sm text-gray-600">계약일자: {contractDate}</div>
-          <div className="text-sm text-gray-600">품목명: {item}</div>
+          {fields.map((field) => (
+            <div key={field.label} className="text-sm text-gray-600">
+              {field.label}: {field.value}
+            </div>
+          ))}
         </div>
-        <div className="flex justify-end items-end">
-          <Link href={`/detail/${id}`}>
-            <CommonButton variant="primary">상세보기</CommonButton>
-          </Link>
-        </div>
+
+        {detailHref && (
+          <div className="flex justify-end items-end">
+            <Link href={detailHref}>
+              <CommonButton variant="primary">{detailButtonText}</CommonButton>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
