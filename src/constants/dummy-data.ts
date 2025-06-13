@@ -13,6 +13,7 @@ export const dummyShipmentData: IShipmentData[] = [
     packingUnit: "Bulk",
     unitPrice: 850000,
     totalPrice: 425000000,
+    totalPriceUsd: 850000 * 500, // 단가 * 톤수
     supplyPrice: 900000,
     sellingPrice: 950000,
     paymentMethod: "L/C",
@@ -37,6 +38,7 @@ export const dummyShipmentData: IShipmentData[] = [
     packingUnit: "25kg/포대",
     unitPrice: 920000,
     totalPrice: 276000000,
+    totalPriceUsd: 920000 * 300, // 단가 * 톤수
     supplyPrice: 980000,
     sellingPrice: 1050000,
     paymentMethod: "T/T",
@@ -61,6 +63,7 @@ export const dummyShipmentData: IShipmentData[] = [
     packingUnit: "Bulk",
     unitPrice: 780000,
     totalPrice: 312000000,
+    totalPriceUsd: 780000 * 400, // 단가 * 톤수
     supplyPrice: 830000,
     sellingPrice: 880000,
     paymentMethod: "CAD",
@@ -85,6 +88,7 @@ export const dummyShipmentData: IShipmentData[] = [
     packingUnit: "Bulk",
     unitPrice: 720000,
     totalPrice: 432000000,
+    totalPriceUsd: 720000 * 600, // 단가 * 톤수
     supplyPrice: 770000,
     sellingPrice: 820000,
     paymentMethod: "Usance",
@@ -109,6 +113,7 @@ export const dummyShipmentData: IShipmentData[] = [
     packingUnit: "30kg/포대",
     unitPrice: 890000,
     totalPrice: 311500000,
+    totalPriceUsd: 890000 * 350, // 단가 * 톤수
     supplyPrice: 940000,
     sellingPrice: 990000,
     paymentMethod: "T/T",
@@ -136,6 +141,7 @@ export const dummyPlanData: IPlanData[] = [
     contractTon: 500,
     unitPrice: 850000,
     totalPrice: 425000000,
+    totalPriceUsd: 850000 * 500, // 단가 * 톤수
     paymentMethod: "L/C",
     warehouseEntryDate: "2024-02-22",
     importCostPerKg: 950,
@@ -158,6 +164,7 @@ export const dummyPlanData: IPlanData[] = [
     contractTon: 300,
     unitPrice: 920000,
     totalPrice: 276000000,
+    totalPriceUsd: 920000 * 300, // 단가 * 톤수
     paymentMethod: "T/T",
     warehouseEntryDate: "2024-03-17",
     importCostPerKg: 1050,
@@ -180,6 +187,7 @@ export const dummyPlanData: IPlanData[] = [
     contractTon: 400,
     unitPrice: 780000,
     totalPrice: 312000000,
+    totalPriceUsd: 780000 * 400, // 단가 * 톤수
     paymentMethod: "CAD",
     warehouseEntryDate: "2024-02-27",
     importCostPerKg: 880,
@@ -202,6 +210,7 @@ export const dummyPlanData: IPlanData[] = [
     contractTon: 600,
     unitPrice: 720000,
     totalPrice: 432000000,
+    totalPriceUsd: 720000 * 600, // 단가 * 톤수
     paymentMethod: "Usance",
     warehouseEntryDate: "2024-02-17",
     importCostPerKg: 820,
@@ -224,6 +233,7 @@ export const dummyPlanData: IPlanData[] = [
     contractTon: 350,
     unitPrice: 890000,
     totalPrice: 311500000,
+    totalPriceUsd: 890000 * 350, // 단가 * 톤수
     paymentMethod: "T/T",
     warehouseEntryDate: "2024-03-12",
     importCostPerKg: 980,

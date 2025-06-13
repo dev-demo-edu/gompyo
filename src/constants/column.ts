@@ -68,9 +68,9 @@ export const DEFAULT_PLAN_COLUMN: ColDef[] = [
     width: 130,
   },
   {
-    field: "totalPrice",
-    headerName: "단가 * 무게",
-    valueFormatter: currencyFormatter,
+    field: "totalPriceUsd",
+    headerName: "단가 * 톤수",
+    valueFormatter: currencyDollarFormatter,
     width: 150,
   },
   {
@@ -183,9 +183,9 @@ export const DEFAULT_SHIPMENT_COLUMN: ColDef[] = [
     width: 130,
   },
   {
-    field: "totalPrice",
-    headerName: "단가 * 무게",
-    valueFormatter: currencyFormatter,
+    field: "totalPriceUsd",
+    headerName: "단가 * 톤수",
+    valueFormatter: currencyDollarFormatter,
     width: 150,
   },
   {
@@ -261,3 +261,8 @@ export const defaultShipmentColumnOrderFields: ColumnOrder[] =
     field: col.field as string,
     width: col.width || 100,
   })) as ColumnOrder[];
+
+// Quotation 그리드는 동적으로 컬럼이 생성되므로 기본 컬럼만 정의
+export const defaultQuotationColumnOrderFields: ColumnOrder[] = [
+  { field: "companyColumnName", width: 150 },
+];

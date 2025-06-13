@@ -71,7 +71,7 @@ export default function BusinessNumber() {
           </Stack>
         </div>
         {/* 그리드 */}
-        <div className="overflow-hidden">
+        <div className="overflow-auto md:h-[75vh]">
           <BusinessNumberGrid />
         </div>
       </div>

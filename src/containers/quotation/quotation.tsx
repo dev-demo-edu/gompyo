@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import QuotationGrid from "./quotation-grid";
 import {
   CompanyAddModal,
@@ -33,6 +33,8 @@ import {
 import { nanoid } from "nanoid";
 import { CellValueChangedEvent } from "ag-grid-community";
 import CommonButton from "@/components/common-button";
+import { getUserQuotationColumnOrder, ColumnOrder } from "@/actions/user";
+import { defaultQuotationColumnOrderFields } from "@/constants/column";
 
 // 문서 번호 생성 함수 추가
 const generateDocumentNumber = (): string => {
@@ -64,6 +66,9 @@ export default function QuotationContainer() {
   const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
     useState(false);
 
+  // 컬럼 순서 상태 추가
+  const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
+
   // 선택 상태 관리 (QuotationGrid에서 상위로 이동)
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [selectedColumns, setSelectedColumns] = useState<
@@ -71,6 +76,25 @@ export default function QuotationContainer() {
   >({}); // 견적서용 품목 선택
   const [selectedColumnsForManagement, setSelectedColumnsForManagement] =
     useState<Record<string, boolean>>({}); // 컬럼 관리용 품목 선택
+
+  // 컬럼 순서 로딩
+  useEffect(() => {
+    const loadColumnOrder = async () => {
+      try {
+        const userColumnOrder = await getUserQuotationColumnOrder();
+        setColumnOrder(userColumnOrder || defaultQuotationColumnOrderFields);
+      } catch (error) {
+        console.error("컬럼 순서 로딩 오류:", error);
+        setColumnOrder(defaultQuotationColumnOrderFields);
+      }
+    };
+    loadColumnOrder();
+  }, []);
+
+  // 컬럼 순서 변경 핸들러
+  const handleColumnOrderChange = useCallback((newOrder: ColumnOrder[]) => {
+    setColumnOrder(newOrder);
+  }, []);
 
   // 데이터 상태 관리
   const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
@@ -132,6 +156,15 @@ export default function QuotationContainer() {
       setOverseasPriceData(overseasData.priceData);
       console.log("domesticData", domesticData);
       console.log("overseasData", overseasData);
+
+      // 컬럼 순서 로드 추가
+      try {
+        const userColumnOrder = await getUserQuotationColumnOrder();
+        setColumnOrder(userColumnOrder || defaultQuotationColumnOrderFields);
+      } catch (error) {
+        console.error("컬럼 순서 로딩 오류:", error);
+        setColumnOrder(defaultQuotationColumnOrderFields);
+      }
     };
     fetchData();
   }, []);
@@ -184,7 +217,7 @@ export default function QuotationContainer() {
     }
   };
 
-  // 교차점 데이터 계산 (행/열 변경: selectedRows=회사, selectedColumns=품목)
+  // 교차점 데이터 계산 (행/열 변경: selectedRows=회사, selectedColumns=품목) - 컬럼 순서 반영
   const getIntersectionItems = () => {
     const intersectionItems: Array<{
       productCode: string;
@@ -205,7 +238,8 @@ export default function QuotationContainer() {
           if (isColSelected) {
             const product = items.find((item) => item.id === itemId);
             const company = companies.find((c) => c.id === companyId);
-            const price = priceData[companyId]?.[product?.itemName || ""] || 0;
+            // itemId를 키로 사용하도록 변경
+            const price = priceData[companyId]?.[itemId] || 0;
 
             if (price > 0) {
               intersectionItems.push({
@@ -223,7 +257,25 @@ export default function QuotationContainer() {
         });
       }
     });
-    return intersectionItems;
+
+    // 컬럼 순서에 따라 품목 정렬
+    const sortedItems = intersectionItems.sort((a, b) => {
+      const aIndex = columnOrder.findIndex(
+        (col) => col.field === a.productCode,
+      );
+      const bIndex = columnOrder.findIndex(
+        (col) => col.field === b.productCode,
+      );
+
+      // 컬럼 순서에 없는 항목은 뒤로 정렬
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+
+    return sortedItems;
   };
 
   // 업체 추가 핸들러
@@ -323,9 +375,9 @@ export default function QuotationContainer() {
       const updated = { ...prev };
       Object.keys(updated).forEach((company) => {
         selectedManagementItems.forEach((itemId) => {
-          const item = items.find((i) => i.id === itemId);
-          if (item && updated[company][item.itemName]) {
-            delete updated[company][item.itemName];
+          // itemId를 직접 키로 사용하도록 변경
+          if (updated[company][itemId]) {
+            delete updated[company][itemId];
           }
         });
       });
@@ -435,17 +487,14 @@ export default function QuotationContainer() {
       console.log("finalValue:", finalValue);
       console.log("numericValue:", numericValue);
 
-      // 로컬 상태 업데이트 (제품명으로 저장)
-      const product = items.find((item) => item.id === itemId);
-      if (product) {
-        setPriceData((prev) => ({
-          ...prev,
-          [companyId]: {
-            ...prev[companyId],
-            [product.itemName]: numericValue || 0,
-          },
-        }));
-      }
+      // 로컬 상태 업데이트 (itemId로 저장하도록 변경)
+      setPriceData((prev) => ({
+        ...prev,
+        [companyId]: {
+          ...prev[companyId],
+          [itemId]: numericValue || 0,
+        },
+      }));
 
       // 서버에 업데이트 요청
       await updateQuotationCellAction({
@@ -467,11 +516,38 @@ export default function QuotationContainer() {
   // PDF 생성 공통 로직
   const generatePDFData = async () => {
     const quotationData = getIntersectionItems();
+
+    if (quotationData.length === 0) {
+      throw new Error("선택된 견적 항목이 없습니다.");
+    }
+
+    // 컬럼 순서에 따라 품목들을 한 번 더 정렬하여 PDF에 반영
+    console.log("PDF 생성 시 컬럼 순서:", columnOrder);
+    console.log("PDF 생성 시 견적 데이터:", quotationData);
+
+    const sortedQuotationData = quotationData.sort((a, b) => {
+      const aIndex = columnOrder.findIndex(
+        (col) => col.field === a.productCode,
+      );
+      const bIndex = columnOrder.findIndex(
+        (col) => col.field === b.productCode,
+      );
+
+      // 컬럼 순서에 없는 항목은 뒤로 정렬
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+
+    console.log("PDF 생성 시 정렬된 견적 데이터:", sortedQuotationData);
+
     const pdfResponse = await generateQuotationPDF({
       sender: "㈜ 곰표",
-      receiver: quotationData[0].company,
+      receiver: sortedQuotationData[0].company,
       date: new Date().toISOString().split("T")[0],
-      items: quotationData.map((item, index) => ({
+      items: sortedQuotationData.map((item, index) => ({
         no: index + 1,
         name: item.productName,
         originEn: item.originEn,
@@ -479,7 +555,7 @@ export default function QuotationContainer() {
         price: item.price,
       })),
       documentNumber: generateDocumentNumber(),
-      priceType: quotationData[0].priceType,
+      priceType: sortedQuotationData[0].priceType,
       reference: "",
     });
 
@@ -696,7 +772,7 @@ export default function QuotationContainer() {
           </div>
         </Stack>
         {/* 그리드 */}
-        <div className="overflow-hidden">
+        <div className="overflow-auto lg:h-[75vh]">
           <QuotationGrid
             items={items.map((item) => ({
               id: item.id,
@@ -717,6 +793,7 @@ export default function QuotationContainer() {
             onCompanySelect={setSelectedCompany}
             onCellValueChanged={handleCellValueChanged}
             onItemsSelect={() => {}}
+            onColumnOrderChange={handleColumnOrderChange}
           />
         </div>
         {/* 선택된 교차점 표시 */}

@@ -71,7 +71,7 @@ export default function AccountNumber() {
           </Stack>
         </div>
         {/* 그리드 */}
-        <div className="overflow-hidden">
+        <div className="overflow-auto md:h-[75vh]">
           <AccountNumberGrid />
         </div>
       </div>

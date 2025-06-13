@@ -37,7 +37,7 @@ export default function Shipment() {
           </Stack>
         </div>
         {/* 그리드 */}
-        <div className="overflow-hidden">
+        <div className="overflow-auto md:h-[75vh]">
           <ShipmentGrid />
         </div>
       </div>

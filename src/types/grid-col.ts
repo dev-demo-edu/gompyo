@@ -10,6 +10,7 @@ export interface IShipmentData {
   packingUnit: string;
   unitPrice: number;
   totalPrice: number;
+  totalPriceUsd: number; // 새로운 달러 단위 총액
   supplyPrice: number;
   sellingPrice: number;
   paymentMethod: string;
@@ -36,6 +37,7 @@ export interface IPlanData {
   contractTon: number;
   unitPrice: number;
   totalPrice: number;
+  totalPriceUsd: number; // 새로운 달러 단위 총액
   paymentMethod: string;
   warehouseEntryDate: string;
   importCostPerKg: number;
