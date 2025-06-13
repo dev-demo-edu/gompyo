@@ -2,14 +2,14 @@
   "containers/dashboard.tsx -> react-apexcharts": {
     "id": 89811,
     "files": [
-      "static/chunks/721aab79.a2008fad44324a9e.js",
-      "static/chunks/811.7cde5adaa6ee5c50.js"
+      "static/chunks/721aab79.847f97fe62d021f0.js",
+      "static/chunks/9811.9926944efc8650b3.js"
     ]
   },
   "containers/detail-view/stock.tsx -> @/actions/detail-view/stock": {
     "id": 15676,
     "files": [
-      "static/chunks/676.6a02d72b6901a34a.js"
+      "static/chunks/5676.74b727b857ab4abe.js"
     ]
   }
 }

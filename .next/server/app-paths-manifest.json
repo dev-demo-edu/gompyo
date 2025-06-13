@@ -1,15 +1,15 @@
 {
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/info/business-number/page": "app/info/business-number/page.js",
+  "/info/account-number/page": "app/info/account-number/page.js",
   "/login/page": "app/login/page.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/detail/[cargo_id]/page": "app/detail/[cargo_id]/page.js",
-  "/info/account-number/page": "app/info/account-number/page.js",
   "/page": "app/page.js",
-  "/shipment/page": "app/shipment/page.js",
-  "/info/links/page": "app/info/links/page.js",
   "/partner/page": "app/partner/page.js",
-  "/quotation/page": "app/quotation/page.js",
+  "/plan/page": "app/plan/page.js",
   "/cashflow/page": "app/cashflow/page.js",
-  "/plan/page": "app/plan/page.js"
+  "/info/links/page": "app/info/links/page.js",
+  "/quotation/page": "app/quotation/page.js",
+  "/shipment/page": "app/shipment/page.js",
+  "/info/business-number/page": "app/info/business-number/page.js"
 }

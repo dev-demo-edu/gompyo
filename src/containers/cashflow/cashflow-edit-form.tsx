@@ -100,6 +100,7 @@ export default function CashflowEditForm({
           ...values,
           amount: Number(values.amount),
           companyId,
+          isApproved: selectedCashflow.isApproved,
         },
         selectedCashflow.id,
       );
