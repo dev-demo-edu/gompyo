@@ -72,11 +72,12 @@ export default function CashflowContainer() {
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
-      <div className="p-4 sm:p-8">
+      <div className="p-4 sm:p-8 pb-20 sm:pb-8">
+        {" "}
+        {/* 모바일에서 하단 여백 추가 */}
         <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
           수금 지출 관리
         </h1>
-
         <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
           <div
             className="flex flex-row justify-between items-end flex-shrink-0"
@@ -92,7 +93,9 @@ export default function CashflowContainer() {
               ))}
             </Tabs>
           </div>
-          <div className="overflow-auto w-full h-fit">
+
+          {/* 데스크톱 버튼들 - sm 이상에서만 표시 */}
+          <div className="hidden sm:block overflow-auto w-full h-fit">
             <Stack
               direction="row"
               spacing={2}
@@ -175,6 +178,83 @@ export default function CashflowContainer() {
         </Stack>
         <CashflowGrid />
       </div>
+
+      {/* 모바일 플로팅 버튼들 - sm 미만에서만 표시 */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 overflow-x-auto">
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="center"
+          sx={{ minWidth: "max-content" }}
+        >
+          <CommonButton
+            variant="info"
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenCashflowAddModal(true);
+            }}
+            className="whitespace-nowrap"
+          >
+            목록 추가
+          </CommonButton>
+          <CommonButton
+            variant="primary"
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenCashflowBalanceModal(true);
+            }}
+            className="whitespace-nowrap"
+          >
+            잔액 설정
+          </CommonButton>
+          <CommonButton
+            variant="primary"
+            disabled={
+              !(
+                selectedIncomeRows.length === 1 &&
+                selectedExpenseRows.length === 0
+              ) &&
+              !(
+                selectedIncomeRows.length === 0 &&
+                selectedExpenseRows.length === 1
+              )
+            }
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenCashflowEditModal(true);
+            }}
+            className="whitespace-nowrap"
+          >
+            수정
+          </CommonButton>
+          <CommonButton
+            variant="danger"
+            disabled={
+              selectedIncomeRows.length === 0 &&
+              selectedExpenseRows.length === 0
+            }
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setOpenCashflowDeleteConfirmModal(true);
+            }}
+            className="whitespace-nowrap"
+          >
+            삭제
+          </CommonButton>
+          <CommonButton
+            variant="secondary"
+            editMode={editMode}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setEditMode((v) => !v);
+            }}
+            className="whitespace-nowrap"
+          >
+            {editMode ? "편집 종료" : "편집"}
+          </CommonButton>
+        </Stack>
+      </div>
+
       <CashflowAddModal
         open={openCashflowAddModal}
         onClose={() => setOpenCashflowAddModal(false)}
