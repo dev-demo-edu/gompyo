@@ -10,6 +10,7 @@ import type {
   CheckboxSelectionCallbackParams,
 } from "ag-grid-community";
 import { useEffect, useMemo, useRef, useState } from "react";
+import "@/styles/cashflow-grid.css";
 
 import { InferSelectModel } from "drizzle-orm";
 import { accountNumbers } from "@/db/schema";
@@ -25,7 +26,11 @@ import {
   editModeAtom,
 } from "@/states/cashflow-state";
 import Typography from "@mui/material/Typography";
-import { getCashflowList, updateCashflowPriorities } from "@/actions/cashflow";
+import {
+  getCashflowList,
+  updateCashflowPriorities,
+  updateCashflowApproval,
+} from "@/actions/cashflow";
 import { weekDayFormatter, oneDecimalFormatter } from "@/utils/formatter";
 
 export function mapCashflowWithTotal<T extends CashflowItem>(
@@ -55,6 +60,13 @@ export default function CashflowGrid() {
   const editMode = useAtomValue(editModeAtom);
   const gridApiRef = useRef<GridApi | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleApprovalChange = async (id: string, isApproved: boolean) => {
+    await updateCashflowApproval(id, isApproved);
+    // 캐시플로우 목록 새로고침
+    const updatedCashflows = await getCashflowList();
+    setCashflowList([...updatedCashflows]);
+  };
 
   const handleRowDragEnd = async (event: RowDragEndEvent) => {
     const type = event.node.data.type;
@@ -216,6 +228,39 @@ export default function CashflowGrid() {
       suppressHeaderMenuButton: true,
     },
     {
+      headerName: "확인",
+      field: "isApproved",
+      minWidth: 80,
+      flex: 0.5,
+      filter: false,
+      sortable: false,
+      cellRenderer: (params: ICellRendererParams) => {
+        const data = params.data as CashflowItem;
+        // balance-row이거나 지출이 아닌 경우 체크박스 표시하지 않음
+        if (data.id === "balance-row" || data.type !== "expense") {
+          return "";
+        }
+
+        return (
+          <div className="checkbox-item center-checkbox">
+            <input
+              type="checkbox"
+              className="checkbox-input"
+              checked={data.isApproved || false}
+              onChange={(e) => handleApprovalChange(data.id, e.target.checked)}
+            />
+          </div>
+        );
+      },
+      onCellClicked: (params) => {
+        const data = params.data as CashflowItem;
+        if (data.id !== "balance-row" && data.type === "expense") {
+          handleApprovalChange(data.id, !data.isApproved);
+        }
+      },
+      suppressHeaderMenuButton: true,
+    },
+    {
       headerName: "우선순위",
       field: "priority",
       minWidth: 100,
@@ -256,6 +301,7 @@ export default function CashflowGrid() {
     counterparty: "잔액",
     createdAt: "",
     updatedAt: "",
+    isApproved: null,
   };
 
   const incomeData = useMemo(() => {

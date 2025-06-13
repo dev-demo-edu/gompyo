@@ -351,6 +351,7 @@ export const cashflows = sqliteTable(
     amount: real("amount").notNull(),
     type: text("type").notNull(), // income | expense
     priority: integer("priority"),
+    isApproved: integer("is_approved", { mode: "boolean" }).default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },

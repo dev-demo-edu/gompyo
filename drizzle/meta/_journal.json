@@ -134,6 +134,13 @@
       "when": 1749640983205,
       "tag": "0018_dusty_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1749734084480,
+      "tag": "0019_powerful_scrambler",
+      "breakpoints": true
     }
   ]
 }
