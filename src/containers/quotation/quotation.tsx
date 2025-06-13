@@ -12,7 +12,7 @@ import {
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
-import { Stack, Tab, Tabs } from "@mui/material";
+import { Stack, Tab, Tabs, useMediaQuery } from "@mui/material";
 import {
   updateQuotationCellAction,
   addQuotationCompanyAction,
@@ -35,6 +35,7 @@ import { CellValueChangedEvent } from "ag-grid-community";
 import CommonButton from "@/components/common-button";
 import { getUserQuotationColumnOrder, ColumnOrder } from "@/actions/user";
 import { defaultQuotationColumnOrderFields } from "@/constants/column";
+import QuotationMobileView from "./quotation-mobile-view";
 
 // 문서 번호 생성 함수 추가
 const generateDocumentNumber = (): string => {
@@ -54,6 +55,8 @@ export interface ColumnCompany extends QuotationCompany {
 }
 
 export default function QuotationContainer() {
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   // 모달 상태 관리
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
   const [companyEditModalOpen, setCompanyEditModalOpen] = useState(false);
@@ -61,8 +64,9 @@ export default function QuotationContainer() {
   const [itemEditModalOpen, setItemEditModalOpen] = useState(false);
   const [companyDeleteModalOpen, setCompanyDeleteModalOpen] = useState(false);
   const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] =
-    useState<QuotationCompany | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<ColumnCompany | null>(
+    null,
+  );
   const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
     useState(false);
 
@@ -127,6 +131,15 @@ export default function QuotationContainer() {
     tab === "domestic" ? setDomesticCompanies : setOverseasCompanies;
   const setPriceData =
     tab === "domestic" ? setDomesticPriceData : setOverseasPriceData;
+
+  useEffect(() => {
+    // 모바일에서 데스크톱으로 전환 시 선택 상태 초기화
+    if (!isMobile) {
+      setSelectedCompany(null);
+      setSelectedRows({});
+      setSelectedColumns({});
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -655,6 +668,27 @@ export default function QuotationContainer() {
     }
   };
 
+  // 모바일 회사 선택 핸들러
+  const handleMobileCompanySelect = useCallback((company: ColumnCompany) => {
+    setSelectedCompany(company);
+    setSelectedRows({ [company.id]: true });
+    setSelectedColumns({}); // 견적서용 초기화
+    setSelectedColumnsForManagement({}); // 관리용도 초기화
+  }, []);
+
+  const handleMobileItemSelect = useCallback((itemId: string) => {
+    setSelectedColumns((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+
+    // 품목 관리용 선택 상태도 동시에 업데이트
+    setSelectedColumnsForManagement((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  }, []);
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8 pb-20 sm:pb-8">
@@ -772,30 +806,43 @@ export default function QuotationContainer() {
           </div>
         </Stack>
         {/* 그리드 */}
-        <div className="overflow-auto lg:h-[75vh]">
-          <QuotationGrid
-            items={items.map((item) => ({
-              id: item.id,
-              code: item.itemOrigin,
-              name: item.itemName,
-              origin: item.itemOrigin,
-            }))}
+        {isMobile ? (
+          <QuotationMobileView
             companies={companies}
+            items={items}
             priceData={priceData}
-            selectedRows={selectedRows}
-            setSelectedRows={setSelectedRows}
+            selectedCompany={selectedCompany}
             selectedColumns={selectedColumns}
-            setSelectedColumns={setSelectedColumns}
-            selectedColumnsForManagement={selectedColumnsForManagement}
-            setSelectedColumnsForManagement={setSelectedColumnsForManagement}
-            getIntersectionItems={getIntersectionItems}
+            onCompanySelect={handleMobileCompanySelect}
+            onItemSelect={handleMobileItemSelect}
             formatNumber={formatNumber}
-            onCompanySelect={setSelectedCompany}
-            onCellValueChanged={handleCellValueChanged}
-            onItemsSelect={() => {}}
-            onColumnOrderChange={handleColumnOrderChange}
           />
-        </div>
+        ) : (
+          <div className="overflow-auto lg:h-[75vh]">
+            <QuotationGrid
+              items={items.map((item) => ({
+                id: item.id,
+                code: item.itemOrigin,
+                name: item.itemName,
+                origin: item.itemOrigin,
+              }))}
+              companies={companies}
+              priceData={priceData}
+              selectedRows={selectedRows}
+              setSelectedRows={setSelectedRows}
+              selectedColumns={selectedColumns}
+              setSelectedColumns={setSelectedColumns}
+              selectedColumnsForManagement={selectedColumnsForManagement}
+              setSelectedColumnsForManagement={setSelectedColumnsForManagement}
+              getIntersectionItems={getIntersectionItems}
+              formatNumber={formatNumber}
+              onCompanySelect={setSelectedCompany}
+              onCellValueChanged={handleCellValueChanged}
+              onItemsSelect={() => {}}
+              onColumnOrderChange={handleColumnOrderChange}
+            />
+          </div>
+        )}
         {/* 선택된 교차점 표시 */}
         {getIntersectionItems().length > 0 && (
           <div className="mt-4 p-3 bg-green-50 rounded-lg">
@@ -816,72 +863,74 @@ export default function QuotationContainer() {
       </div>
 
       {/* 모바일 플로팅 버튼들 - sm 미만에서만 표시 */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 overflow-x-auto">
-        <Stack direction="row" spacing={2} sx={{ minWidth: "max-content" }}>
-          <CommonButton
-            variant="info"
-            onClick={() => setCompanyModalOpen(true)}
-            className="whitespace-nowrap"
-          >
-            업체 추가
-          </CommonButton>
-          <CommonButton
-            variant="info"
-            onClick={() => setItemModalOpen(true)}
-            className="whitespace-nowrap"
-          >
-            품목 추가
-          </CommonButton>
-          <CommonButton
-            variant="primary"
-            onClick={() => setCompanyEditModalOpen(true)}
-            disabled={!selectedCompany}
-            className="whitespace-nowrap"
-          >
-            업체 수정
-          </CommonButton>
-          <CommonButton
-            variant="primary"
-            onClick={() => setItemEditModalOpen(true)}
-            disabled={
-              Object.keys(selectedColumnsForManagement).filter(
-                (key) => selectedColumnsForManagement[key],
-              ).length !== 1
-            }
-            className="whitespace-nowrap"
-          >
-            품목 수정
-          </CommonButton>
-          <CommonButton
-            variant="danger"
-            onClick={() => setCompanyDeleteModalOpen(true)}
-            disabled={!selectedCompany}
-            className="whitespace-nowrap"
-          >
-            업체 삭제
-          </CommonButton>
-          <CommonButton
-            variant="danger"
-            onClick={() => setItemDeleteModalOpen(true)}
-            disabled={
-              Object.keys(selectedColumnsForManagement).filter(
-                (key) => selectedColumnsForManagement[key],
-              ).length === 0
-            }
-            className="whitespace-nowrap"
-          >
-            품목 삭제
-          </CommonButton>
-          <CommonButton
-            variant="special"
-            onClick={() => setQuotationDocumentModalOpen(true)}
-            disabled={getIntersectionItems().length === 0}
-            className="whitespace-nowrap"
-          >
-            견적서 ({getIntersectionItems().length})
-          </CommonButton>
-        </Stack>
-      </div>
+      {isMobile && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 overflow-x-auto">
+          <Stack direction="row" spacing={2} sx={{ minWidth: "max-content" }}>
+            <CommonButton
+              variant="info"
+              onClick={() => setCompanyModalOpen(true)}
+              className="whitespace-nowrap"
+            >
+              업체 추가
+            </CommonButton>
+            <CommonButton
+              variant="info"
+              onClick={() => setItemModalOpen(true)}
+              className="whitespace-nowrap"
+            >
+              품목 추가
+            </CommonButton>
+            <CommonButton
+              variant="primary"
+              onClick={() => setCompanyEditModalOpen(true)}
+              disabled={!selectedCompany}
+              className="whitespace-nowrap"
+            >
+              업체 수정
+            </CommonButton>
+            <CommonButton
+              variant="primary"
+              onClick={() => setItemEditModalOpen(true)}
+              disabled={
+                Object.keys(selectedColumnsForManagement).filter(
+                  (key) => selectedColumnsForManagement[key],
+                ).length !== 1
+              }
+              className="whitespace-nowrap"
+            >
+              품목 수정
+            </CommonButton>
+            <CommonButton
+              variant="danger"
+              onClick={() => setCompanyDeleteModalOpen(true)}
+              disabled={!selectedCompany}
+              className="whitespace-nowrap"
+            >
+              업체 삭제
+            </CommonButton>
+            <CommonButton
+              variant="danger"
+              onClick={() => setItemDeleteModalOpen(true)}
+              disabled={
+                Object.keys(selectedColumnsForManagement).filter(
+                  (key) => selectedColumnsForManagement[key],
+                ).length === 0
+              }
+              className="whitespace-nowrap"
+            >
+              품목 삭제
+            </CommonButton>
+            <CommonButton
+              variant="special"
+              onClick={() => setQuotationDocumentModalOpen(true)}
+              disabled={getIntersectionItems().length === 0}
+              className="whitespace-nowrap"
+            >
+              견적서 ({getIntersectionItems().length})
+            </CommonButton>
+          </Stack>
+        </div>
+      )}
 
       {/* 모달들 */}
       <CompanyAddModal
