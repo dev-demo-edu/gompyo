@@ -28,10 +28,10 @@ interface QuotationMobileViewProps {
   }>;
   // 모바일 상태들
   selectedCompany: ColumnCompany | null;
-  selectedColumns: Record<string, boolean>;
-  selectedColumnsForManagement: Record<string, boolean>;
+  selectedColumns: Record<string, boolean>; // 견적서용 (시각적 표시 없음)
+  selectedColumnsForManagement: Record<string, boolean>; // 관리용 (카드 색상 표시)
   onCompanySelect: (company: ColumnCompany) => void;
-  onItemSelect: (itemId: string) => void;
+  onItemSelect: (itemId: string) => void; // 관리용 선택 핸들러
   // 모달 열기 핸들러들
   onCompanyModalOpen: () => void;
   onItemModalOpen: () => void;
@@ -75,8 +75,8 @@ export default function QuotationMobileView({
     [onCompanySelect],
   );
 
-  // 모바일 품목 선택 핸들러
-  const handleItemSelect = useCallback(
+  // 모바일 품목 관리용 선택 핸들러 (카드 색상 변경용)
+  const handleItemManagementSelect = useCallback(
     (itemId: string) => {
       onItemSelect(itemId);
     },
@@ -85,8 +85,8 @@ export default function QuotationMobileView({
 
   // 가격 수정 모달 열기 핸들러
   const handleOpenPriceEditModal = useCallback(() => {
-    const selectedItemIds = Object.keys(selectedColumns).filter(
-      (k) => selectedColumns[k],
+    const selectedItemIds = Object.keys(selectedColumnsForManagement).filter(
+      (k) => selectedColumnsForManagement[k],
     );
     const itemId = selectedItemIds[0];
     const item = items.find((i) => i.id === itemId);
@@ -98,7 +98,7 @@ export default function QuotationMobileView({
       currentPrice,
     });
   }, [
-    selectedColumns,
+    selectedColumnsForManagement, // 관리용 선택 상태 사용
     items,
     priceData,
     selectedCompany,
@@ -138,7 +138,11 @@ export default function QuotationMobileView({
 
           {items.map((item) => {
             const price = priceData[selectedCompany.id]?.[item.id] || 0;
-            const isSelected = selectedColumns[item.id] || false;
+            // 관리용 선택 상태에 따라 카드 색상 결정
+            const isSelectedForManagement =
+              selectedColumnsForManagement[item.id] || false;
+            // 견적서용 선택 상태는 시각적 표시에 사용하지 않음
+            const isInQuotation = selectedColumns[item.id] || false;
 
             return (
               <CommonCard
@@ -150,9 +154,18 @@ export default function QuotationMobileView({
                     label: "가격",
                     value: price > 0 ? `${formatNumber(price)}원` : "-",
                   },
+                  // 견적서 포함 여부를 별도 필드로 표시 (선택사항)
+                  ...(isInQuotation
+                    ? [
+                        {
+                          label: "견적서",
+                          value: "포함됨",
+                        },
+                      ]
+                    : []),
                 ]}
-                isSelected={isSelected}
-                onSelect={() => handleItemSelect(item.id)}
+                isSelected={isSelectedForManagement} // 관리용 선택 상태만 카드 색상에 반영
+                onSelect={() => handleItemManagementSelect(item.id)}
                 rowData={item}
               />
             );
@@ -220,8 +233,9 @@ export default function QuotationMobileView({
             onClick={handleOpenPriceEditModal}
             disabled={
               !selectedCompany ||
-              Object.keys(selectedColumns).filter((k) => selectedColumns[k])
-                .length !== 1
+              Object.keys(selectedColumnsForManagement).filter(
+                (k) => selectedColumnsForManagement[k],
+              ).length !== 1
             }
             className="whitespace-nowrap"
           >

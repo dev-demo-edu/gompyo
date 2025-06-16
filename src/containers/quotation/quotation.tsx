@@ -244,6 +244,39 @@ export default function QuotationContainer() {
     }
   };
 
+  // 모바일 회사 선택 핸들러 (견적서용 품목만 자동 선택)
+  const handleMobileCompanySelect = useCallback(
+    (company: ColumnCompany) => {
+      setMobileSelectedCompany(company);
+
+      // 기존 견적서용 선택 상태 초기화
+      setMobileSelectedColumns({});
+
+      // 새로 선택된 회사의 가격이 있는 품목들을 견적서용으로만 자동 선택
+      const companyPriceData = priceData[company.id] || {};
+      const newSelectedColumns: Record<string, boolean> = {};
+
+      items.forEach((item) => {
+        const price = companyPriceData[item.id];
+        if (price && price > 0) {
+          newSelectedColumns[item.id] = true;
+        }
+      });
+
+      setMobileSelectedColumns(newSelectedColumns);
+      // 관리용 선택은 건드리지 않음 (카드 색상 변경 없음)
+    },
+    [priceData, items],
+  );
+
+  // 모바일 품목 관리용 선택 핸들러 (카드 색상 변경용)
+  const handleMobileItemManagementSelect = useCallback((itemId: string) => {
+    setMobileSelectedColumnsForManagement((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  }, []);
+
   // 교차점 데이터 계산 (데스크톱/모바일 통합)
   const getIntersectionItems = () => {
     const intersectionItems: Array<{
@@ -737,6 +770,28 @@ export default function QuotationContainer() {
     [],
   );
 
+  // 모바일용 가격 수정 성공 콜백 (견적서에 자동 추가)
+  const handleMobilePriceEditSuccess = useCallback(
+    (newPrice: number, itemId: string) => {
+      // 가격이 0보다 크면 견적서용 선택에 자동 추가
+      if (newPrice > 0) {
+        setMobileSelectedColumns((prev) => ({
+          ...prev,
+          [itemId]: true,
+        }));
+      } else {
+        // 가격이 0이면 견적서용 선택에서 제거
+        setMobileSelectedColumns((prev) => {
+          const updated = { ...prev };
+          delete updated[itemId];
+          return updated;
+        });
+      }
+      console.log(`가격이 ${newPrice}원으로 업데이트되었습니다.`);
+    },
+    [],
+  );
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
       <div className="p-4 sm:p-8 pb-20 sm:pb-8">
@@ -864,17 +919,8 @@ export default function QuotationContainer() {
             selectedCompany={mobileSelectedCompany}
             selectedColumns={mobileSelectedColumns}
             selectedColumnsForManagement={mobileSelectedColumnsForManagement}
-            onCompanySelect={setMobileSelectedCompany}
-            onItemSelect={(itemId: string) => {
-              setMobileSelectedColumns((prev) => ({
-                ...prev,
-                [itemId]: !prev[itemId],
-              }));
-              setMobileSelectedColumnsForManagement((prev) => ({
-                ...prev,
-                [itemId]: !prev[itemId],
-              }));
-            }}
+            onCompanySelect={handleMobileCompanySelect}
+            onItemSelect={handleMobileItemManagementSelect}
             // 모달 핸들러들
             onCompanyModalOpen={() => setCompanyModalOpen(true)}
             onItemModalOpen={() => setItemModalOpen(true)}
@@ -1009,10 +1055,12 @@ export default function QuotationContainer() {
             setMobilePriceEditModalOpen(false);
             setSelectedItemForPriceEdit(null);
           }}
-          onSuccess={(newPrice) => {
-            // 성공 시 추가 작업이 필요하다면 여기에 작성
-            console.log(`가격이 ${newPrice}원으로 업데이트되었습니다.`);
-          }}
+          onSuccess={(newPrice) =>
+            handleMobilePriceEditSuccess(
+              newPrice,
+              selectedItemForPriceEdit.itemId,
+            )
+          }
           itemName={selectedItemForPriceEdit.itemName}
           currentPrice={selectedItemForPriceEdit.currentPrice}
           itemId={selectedItemForPriceEdit.itemId}
