@@ -251,6 +251,8 @@ export default function QuotationContainer() {
 
       // 기존 견적서용 선택 상태 초기화
       setMobileSelectedColumns({});
+      // 관리용 선택 상태도 함께 초기화 추가
+      setMobileSelectedColumnsForManagement({});
 
       // 새로 선택된 회사의 가격이 있는 품목들을 견적서용으로만 자동 선택
       const companyPriceData = priceData[company.id] || {};
