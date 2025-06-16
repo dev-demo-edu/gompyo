@@ -917,6 +917,7 @@ export default function QuotationContainer() {
             priceData={priceData}
             formatNumber={formatNumber}
             getIntersectionItems={getIntersectionItems}
+            columnOrder={columnOrder}
             // 모바일 상태들 전달
             selectedCompany={mobileSelectedCompany}
             selectedColumns={mobileSelectedColumns}

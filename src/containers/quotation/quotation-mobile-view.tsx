@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   Select,
   MenuItem,
@@ -9,6 +9,7 @@ import {
 import CommonCard from "@/components/card";
 import CommonButton from "@/components/common-button";
 import { ColumnCompany } from "./quotation";
+import { ColumnOrder } from "@/actions/user";
 import { QuotationItem } from "@/services/quotation-service";
 
 interface QuotationMobileViewProps {
@@ -16,6 +17,7 @@ interface QuotationMobileViewProps {
   items: QuotationItem[];
   priceData: Record<string, Record<string, number>>;
   formatNumber: (num: number) => string;
+  columnOrder: ColumnOrder[];
   getIntersectionItems: () => Array<{
     productCode: string;
     productName: string;
@@ -52,6 +54,7 @@ export default function QuotationMobileView({
   items,
   priceData,
   formatNumber,
+  columnOrder,
   getIntersectionItems,
   selectedCompany,
   selectedColumns,
@@ -82,6 +85,25 @@ export default function QuotationMobileView({
     },
     [onItemSelect],
   );
+
+  // 📌 컬럼 순서에 따라 품목들을 정렬
+  const sortedItems = useMemo(() => {
+    if (!columnOrder || columnOrder.length === 0) {
+      return items; // 컬럼 순서가 없으면 원본 순서 유지
+    }
+
+    return items.sort((a, b) => {
+      const aIndex = columnOrder.findIndex((col) => col.field === a.id);
+      const bIndex = columnOrder.findIndex((col) => col.field === b.id);
+
+      // 컬럼 순서에 없는 항목들은 뒤로 보냄
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+  }, [items, columnOrder]);
 
   // 가격 수정 모달 열기 핸들러
   const handleOpenPriceEditModal = useCallback(() => {
@@ -136,7 +158,7 @@ export default function QuotationMobileView({
             품목을 선택하세요
           </div>
 
-          {items.map((item) => {
+          {sortedItems.map((item) => {
             const price = priceData[selectedCompany.id]?.[item.id] || 0;
             // 관리용 선택 상태에 따라 카드 색상 결정
             const isSelectedForManagement =
