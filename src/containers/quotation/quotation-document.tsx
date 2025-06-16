@@ -419,10 +419,9 @@ export default function QuotationDocument({
     date = new Date().toLocaleDateString("ko-KR"),
     items = [],
     companyInfo = {
-      office:
-        "인천광역시 중구 축항대로86번길 70 205호   T.032-888-9686, F.032-888-9685",
+      office: "인천광역시 남동구 논현동642-4   T.032-888-9686, F.032-888-9685",
       warehouse:
-        "안산시 단원구 별망로175 금은산업b동2층 T.032-888-9686, F.032-888-9685",
+        "인천광역시 남동구 논현동642-4   T.032-888-9686, F.032-888-9685",
     },
     priceType = "도착도",
   } = invoiceData;
