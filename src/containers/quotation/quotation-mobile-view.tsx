@@ -9,7 +9,7 @@ import {
 import CommonCard from "@/components/card";
 import CommonButton from "@/components/common-button";
 import { ColumnCompany } from "./quotation";
-import { ColumnOrder } from "@/actions/user";
+import { ColumnOrder, saveUserQuotationColumnOrder } from "@/actions/user";
 import { QuotationItem } from "@/services/quotation-service";
 
 interface QuotationMobileViewProps {
@@ -18,6 +18,7 @@ interface QuotationMobileViewProps {
   priceData: Record<string, Record<string, number>>;
   formatNumber: (num: number) => string;
   columnOrder: ColumnOrder[];
+  onColumnOrderChange: (newOrder: ColumnOrder[]) => void;
   getIntersectionItems: () => Array<{
     productCode: string;
     productName: string;
@@ -59,6 +60,7 @@ export default function QuotationMobileView({
   selectedCompany,
   selectedColumns,
   selectedColumnsForManagement,
+  onColumnOrderChange,
   onCompanySelect,
   onItemSelect,
   onCompanyModalOpen,
@@ -104,6 +106,47 @@ export default function QuotationMobileView({
       return aIndex - bIndex;
     });
   }, [items, columnOrder]);
+
+  // 📌 품목 순서 이동 핸들러
+  const handleMoveItem = useCallback(
+    async (itemId: string, direction: "up" | "down") => {
+      const currentIndex = sortedItems.findIndex((item) => item.id === itemId);
+      if (currentIndex === -1) return;
+
+      const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (newIndex < 0 || newIndex >= sortedItems.length) return;
+
+      // 새로운 컬럼 순서 배열 생성
+      const newColumnOrder = [...columnOrder];
+
+      // 현재 아이템의 컬럼 순서에서의 인덱스 찾기
+      const currentOrderIndex = newColumnOrder.findIndex(
+        (col) => col.field === itemId,
+      );
+      const targetItem = sortedItems[newIndex];
+      const targetOrderIndex = newColumnOrder.findIndex(
+        (col) => col.field === targetItem.id,
+      );
+
+      if (currentOrderIndex !== -1 && targetOrderIndex !== -1) {
+        // 두 항목의 위치를 바꿈
+        [newColumnOrder[currentOrderIndex], newColumnOrder[targetOrderIndex]] =
+          [newColumnOrder[targetOrderIndex], newColumnOrder[currentOrderIndex]];
+
+        try {
+          // 서버에 저장
+          const result = await saveUserQuotationColumnOrder(newColumnOrder);
+          if (result.success) {
+            // 부모 컴포넌트에 순서 변경 알림
+            onColumnOrderChange?.(newColumnOrder);
+          }
+        } catch (error) {
+          console.error("컬럼 순서 저장 중 오류:", error);
+        }
+      }
+    },
+    [sortedItems, columnOrder, onColumnOrderChange],
+  );
 
   // 가격 수정 모달 열기 핸들러
   const handleOpenPriceEditModal = useCallback(() => {
@@ -158,7 +201,7 @@ export default function QuotationMobileView({
             품목을 선택하세요
           </div>
 
-          {sortedItems.map((item) => {
+          {sortedItems.map((item, index) => {
             const price = priceData[selectedCompany.id]?.[item.id] || 0;
             // 관리용 선택 상태에 따라 카드 색상 결정
             const isSelectedForManagement =
@@ -189,6 +232,11 @@ export default function QuotationMobileView({
                 isSelected={isSelectedForManagement} // 관리용 선택 상태만 카드 색상에 반영
                 onSelect={() => handleItemManagementSelect(item.id)}
                 rowData={item}
+                showOrderControls={true}
+                onMoveUp={() => handleMoveItem(item.id, "up")}
+                onMoveDown={() => handleMoveItem(item.id, "down")}
+                canMoveUp={index > 0}
+                canMoveDown={index < sortedItems.length - 1}
               />
             );
           })}
