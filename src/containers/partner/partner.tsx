@@ -240,18 +240,28 @@ export default function Partner() {
         setCompanies(companiesData);
 
         if (companiesData.length > 0) {
-          const firstCompanyId = companiesData[0].id;
-          setSelectedCompany(firstCompanyId);
+          // 현재 선택된 회사가 없거나 삭제된 경우에만 첫 번째 회사 선택
+          if (
+            !selectedCompany ||
+            !companiesData.find((c) => c.id === selectedCompany)
+          ) {
+            const firstCompanyId = companiesData[0].id;
+            setSelectedCompany(firstCompanyId);
 
-          // 첫 번째 회사의 년도 목록 조회
-          const years = await fetchAvailableYears(firstCompanyId);
-          setAvailableYears(years);
+            // 첫 번째 회사의 년도 목록 조회
+            const years = await fetchAvailableYears(firstCompanyId);
+            setAvailableYears(years);
 
-          // 가장 최근 연도 선택 (없으면 현재 연도)
-          if (years.length > 0) {
-            setSelectedYear(years[0]);
+            // 가장 최근 연도 선택 (없으면 현재 연도)
+            if (years.length > 0) {
+              setSelectedYear(years[0]);
+            } else {
+              setSelectedYear(new Date().getFullYear());
+            }
           } else {
-            setSelectedYear(new Date().getFullYear());
+            // 현재 선택된 회사의 연도 목록만 업데이트
+            const years = await fetchAvailableYears(selectedCompany);
+            setAvailableYears(years);
           }
         }
       } catch (error) {
@@ -265,7 +275,7 @@ export default function Partner() {
     };
 
     loadCompanies();
-  }, [refresh]); // refresh 감지
+  }, [refresh, selectedCompany]);
 
   // 선택된 회사가 변경될 때 해당 회사의 연도 목록 조회
   useEffect(() => {
@@ -276,15 +286,13 @@ export default function Partner() {
         const years = await fetchAvailableYears(selectedCompany);
         setAvailableYears(years);
 
-        // 연도가 있으면 첫 번째 연도 선택, 없으면 현재 연도
-        if (years.length > 0) {
-          setSelectedYear(years[0]);
-        } else {
+        // 연도가 없을 때만 현재 연도로 설정
+        if (years.length === 0) {
           setSelectedYear(new Date().getFullYear());
         }
       } catch (error) {
         console.error("사용 가능한 연도 목록 조회 실패:", error);
-        // 에러가 발생해도 기본 연도는 설정
+        // 에러 발생 시 이전 상태로 복구
         setSelectedYear(new Date().getFullYear());
       }
     };
@@ -295,7 +303,12 @@ export default function Partner() {
   // 재무 데이터 로드
   useEffect(() => {
     const loadData = async () => {
-      if (!selectedCompany || !selectedYear) return;
+      // 회사 또는 연도가 없으면 데이터 로드하지 않음
+      if (!selectedCompany || !selectedYear || companies.length === 0) {
+        setFinancialData([]);
+        setEditingData([]);
+        return;
+      }
 
       // 선택된 연도가 사용 가능한 연도 목록에 없는 경우 처리
       if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
@@ -332,7 +345,7 @@ export default function Partner() {
     };
 
     loadData();
-  }, [selectedCompany, selectedYear, refresh, availableYears]);
+  }, [selectedCompany, selectedYear, refresh, availableYears, companies]);
 
   const handleEditModeToggle = async () => {
     if (!editMode) {
@@ -370,7 +383,7 @@ export default function Partner() {
         await saveFinancialData(selectedCompany!, selectedYear!, dataToSave);
         console.log("저장 완료!");
 
-        // 저장 후 최신 데이터를 다시 로드
+        // 저장 후 최신 데이터를 다시 로드 (현재 선택된 연도 유지)
         const freshData = await fetchFinancialData(
           selectedCompany!,
           selectedYear!,
@@ -461,15 +474,18 @@ export default function Partner() {
           className="w-full justify-between items-center mb-4 sm:mb-6"
         >
           {/* 왼쪽: 회사 및 년도 선택 */}
-          <Stack direction="row" spacing={2}>
-            {/* 회사 선택 */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel shrink>회사</InputLabel>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200 }}
+              disabled={editMode || loading}
+            >
+              <InputLabel>회사</InputLabel>
               <Select
-                value={selectedCompany || ""}
+                value={selectedCompany}
                 label="회사"
-                onChange={(e) => setSelectedCompany(e.target.value as string)}
-                disabled={loading}
+                onChange={(e) => setSelectedCompany(e.target.value)}
+                disabled={editMode || loading}
               >
                 {companies.map((company) => (
                   <MenuItem key={company.id} value={company.id}>
@@ -480,26 +496,24 @@ export default function Partner() {
               </Select>
             </FormControl>
 
-            {/* 년도 선택 */}
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>년도</InputLabel>
+            <FormControl
+              size="small"
+              sx={{ minWidth: 120 }}
+              disabled={editMode || loading || !selectedCompany}
+            >
+              <InputLabel>연도</InputLabel>
               <Select
-                value={selectedYear || ""}
-                label="년도"
-                onChange={(e) => handleYearChange(e.target.value as number)}
-                disabled={loading || !selectedCompany}
+                value={selectedYear}
+                label="연도"
+                onChange={(e) => handleYearChange(e.target.value)}
+                disabled={editMode || loading || !selectedCompany}
               >
                 {availableYears.map((year) => (
                   <MenuItem key={year} value={year}>
                     {year}년
                   </MenuItem>
                 ))}
-                <MenuItem
-                  value="add_year"
-                  onClick={() => setIsYearModalOpen(true)}
-                >
-                  + 연도 추가하기
-                </MenuItem>
+                <MenuItem value="add_year">+ 연도 추가</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -636,18 +650,27 @@ export default function Partner() {
         </Stack>
 
         {/* 그리드 */}
-        <div className="overflow-hidden">
-          <PartnerGrid
-            editMode={editMode}
-            companies={companies}
-            selectedCompany={selectedCompany}
-            selectedYear={selectedYear}
-            data={displayData}
-            loading={loading}
-            onDataChange={handleDataChange}
-            onGridReady={handleGridReady}
-          />
-        </div>
+        {companies.length > 0 &&
+        selectedCompany &&
+        selectedYear &&
+        displayData.length > 0 ? (
+          <div className="overflow-hidden">
+            <PartnerGrid
+              editMode={editMode}
+              companies={companies}
+              selectedCompany={selectedCompany}
+              selectedYear={selectedYear}
+              data={displayData}
+              loading={loading}
+              onDataChange={handleDataChange}
+              onGridReady={handleGridReady}
+            />
+          </div>
+        ) : (
+          <div className="w-full h-[600px] flex items-center justify-center text-gray-400">
+            회사와 연도를 선택해주세요.
+          </div>
+        )}
       </div>
       {/* 연도 추가 모달 */}
       <YearAddModal

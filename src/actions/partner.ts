@@ -61,7 +61,7 @@ export async function fetchCompanies(): Promise<Company[]> {
 export async function createCompany(
   name: string,
   type: "payment" | "collection",
-): Promise<void> {
+): Promise<{ id: string }> {
   try {
     if (!name || !name.trim()) {
       throw new Error("회사명을 입력해주세요.");
@@ -83,15 +83,24 @@ export async function createCompany(
     }
 
     const now = new Date().toISOString();
+    const companyId = nanoid();
+
     await db.insert(partnerCompanies).values({
-      id: nanoid(),
+      id: companyId,
       name: name.trim(),
       type,
       createdAt: now,
       updatedAt: now,
     });
 
+    // 현재 연도 데이터 생성
+    const currentYear = new Date().getFullYear();
+    const yearId = await createCompanyYear(companyId, currentYear);
+    await createInitialFinancialData(yearId);
+
     revalidatePath("/partner");
+
+    return { id: companyId };
   } catch (error) {
     console.error("거래처 추가 실패:", error);
     if (error instanceof Error) {
@@ -131,6 +140,7 @@ export async function deleteCompany(companyId: string): Promise<void> {
 
       // 2. 각 연도의 재무 데이터 삭제 (가장 하위 레벨부터)
       for (const yearData of companyYearsList) {
+        // 재무 데이터 삭제
         await tx
           .delete(financialData)
           .where(eq(financialData.yearId, yearData.id));
@@ -147,6 +157,7 @@ export async function deleteCompany(companyId: string): Promise<void> {
         .where(eq(partnerCompanies.id, companyId));
     });
 
+    // 캐시 무효화
     revalidatePath("/partner");
   } catch (error) {
     console.error("거래처 삭제 실패:", error);

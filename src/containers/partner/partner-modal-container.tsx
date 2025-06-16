@@ -11,6 +11,7 @@ import {
   availableYearsAtom,
   selectedYearAtom,
   partnerRefreshAtom,
+  financialDataAtom,
 } from "@/states/partner";
 import {
   companyAddFields,
@@ -82,6 +83,9 @@ export function CompanyAddModal({
   const [loading, setLoading] = useState(false);
 
   const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
+  const setSelectedCompany = useSetAtom(selectedCompanyAtom);
+  const setSelectedYear = useSetAtom(selectedYearAtom);
+  const setAvailableYears = useSetAtom(availableYearsAtom);
 
   const handleClose = () => {
     setFieldErrors({});
@@ -91,7 +95,19 @@ export function CompanyAddModal({
   const handleSubmit = async (values: CompanyAddFormValues) => {
     setLoading(true);
     try {
-      await createCompany(values.name, values.type);
+      const { id: newCompanyId } = await createCompany(
+        values.name,
+        values.type,
+      );
+
+      // 새로 생성된 회사 선택
+      setSelectedCompany(newCompanyId);
+
+      // 현재 연도를 기본값으로 설정
+      const currentYear = new Date().getFullYear();
+      setSelectedYear(currentYear);
+      setAvailableYears([currentYear]);
+
       setPartnerRefresh((prev) => prev + 1);
       handleClose();
     } catch (error: unknown) {
@@ -137,18 +153,35 @@ export function CompanyDeleteModal({
 }) {
   const [loading, setLoading] = useState(false);
   const selectedCompany = useAtomValue(selectedCompanyAtom);
+  const setSelectedCompany = useSetAtom(selectedCompanyAtom);
+  const setSelectedYear = useSetAtom(selectedYearAtom);
+  const setFinancialData = useSetAtom(financialDataAtom);
   const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
+  const setAvailableYears = useSetAtom(availableYearsAtom);
 
   const handleConfirm = async () => {
     if (!selectedCompany) return;
 
     setLoading(true);
     try {
+      // 상태 초기화를 먼저 수행
+      setFinancialData([]);
+      setSelectedCompany("");
+      setSelectedYear(new Date().getFullYear());
+      setAvailableYears([]); // 연도 목록도 초기화
+
+      // 회사 삭제 실행
       await deleteCompany(selectedCompany);
+
+      // 삭제 성공 후 새로고침
       setPartnerRefresh((prev) => prev + 1);
       onClose();
     } catch (error) {
       console.error("회사 삭제 실패:", error);
+      // 에러 발생 시 이전 상태로 복구
+      setSelectedCompany(selectedCompany);
+      setSelectedYear(new Date().getFullYear());
+      setAvailableYears([]);
     } finally {
       setLoading(false);
     }
@@ -249,6 +282,8 @@ export function YearDeleteModal({
   const selectedCompany = useAtomValue(selectedCompanyAtom);
   const companies = useAtomValue(companiesAtom);
   const setPartnerRefresh = useSetAtom(partnerRefreshAtom);
+  const setSelectedCompany = useSetAtom(selectedCompanyAtom);
+  const setFinancialData = useSetAtom(financialDataAtom);
 
   // 경고 모달 상태
   const [showWarning, setShowWarning] = useState(false);
@@ -292,13 +327,25 @@ export function YearDeleteModal({
 
     setLoading(true);
     try {
-      // 회사까지 삭제
+      // 상태 초기화를 먼저 수행
+      setFinancialData([]);
+      setSelectedCompany("");
+      setSelectedYear(new Date().getFullYear());
+      setAvailableYears([]);
+
+      // 회사 삭제 실행
       await deleteCompany(selectedCompany);
+
+      // 삭제 성공 후 새로고침
       setPartnerRefresh((prev) => prev + 1);
       setShowWarning(false);
       onClose();
     } catch (error) {
       console.error("회사 삭제 실패:", error);
+      // 에러 발생 시 이전 상태로 복구
+      setSelectedCompany(selectedCompany);
+      setSelectedYear(selectedYear);
+      setAvailableYears(availableYears);
     } finally {
       setLoading(false);
     }
