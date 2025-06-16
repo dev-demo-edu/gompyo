@@ -106,6 +106,7 @@ export default function PartnerGrid({
               if (params.data?.isCarryover) return "";
               return formatNumber(params.value);
             },
+
             valueSetter: (params: NewValueParams) => {
               const newValue = parseNumber(params.newValue);
               params.data.lamplePurchase = newValue;
@@ -114,6 +115,13 @@ export default function PartnerGrid({
               const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
+            },
+            cellStyle: (params: CellClassParams) => {
+              // 편집모드이고 이월잔액인 경우 회색 배경 (편집 불가)
+              if (editMode && params.data?.isCarryover) {
+                return { backgroundColor: "#F3F4F6" };
+              }
+              return {};
             },
           },
           {
@@ -138,6 +146,13 @@ export default function PartnerGrid({
               const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
+            },
+            cellStyle: (params: CellClassParams) => {
+              // 편집모드이고 이월잔액인 경우 회색 배경 (편집 불가)
+              if (editMode && params.data?.isCarryover) {
+                return { backgroundColor: "#F3F4F6" };
+              }
+              return {};
             },
           },
           {
@@ -179,10 +194,20 @@ export default function PartnerGrid({
               return false; // 월별 데이터는 자동 계산으로 편집 불가
             },
             cellStyle: (params: CellClassParams) => {
-              if (params.value < 0) {
-                return { color: "red" };
+              const baseStyle: { backgroundColor?: string; color?: string } =
+                {};
+
+              // 편집모드이고 월별 데이터인 경우 회색 배경 (편집 불가, 자동 계산)
+              if (editMode && !params.data?.isCarryover) {
+                baseStyle.backgroundColor = "#F3F4F6";
               }
-              return null;
+
+              // 음수인 경우 빨간색 텍스트
+              if (params.value < 0) {
+                baseStyle.color = "red";
+              }
+
+              return baseStyle;
             },
           },
         ],
@@ -215,6 +240,13 @@ export default function PartnerGrid({
               onDataChange(updatedData);
               return true;
             },
+            cellStyle: (params: CellClassParams) => {
+              // 편집모드이고 이월잔액인 경우 회색 배경 (편집 불가)
+              if (editMode && params.data?.isCarryover) {
+                return { backgroundColor: "#F3F4F6" };
+              }
+              return {};
+            },
           },
           {
             headerName: paymentOrCollectionText,
@@ -238,6 +270,13 @@ export default function PartnerGrid({
               const updatedData = recalculateAllBalances(data, companyType);
               onDataChange(updatedData);
               return true;
+            },
+            cellStyle: (params: CellClassParams) => {
+              // 편집모드이고 이월잔액인 경우 회색 배경 (편집 불가)
+              if (editMode && params.data?.isCarryover) {
+                return { backgroundColor: "#F3F4F6" };
+              }
+              return {};
             },
           },
           {
@@ -274,10 +313,20 @@ export default function PartnerGrid({
               return false;
             },
             cellStyle: (params: CellClassParams) => {
-              if (params.value < 0) {
-                return { color: "red" };
+              const baseStyle: { backgroundColor?: string; color?: string } =
+                {};
+
+              // 편집모드이고 월별 데이터인 경우 회색 배경 (편집 불가, 자동 계산)
+              if (editMode && !params.data?.isCarryover) {
+                baseStyle.backgroundColor = "#F3F4F6";
               }
-              return null;
+
+              // 음수인 경우 빨간색 텍스트
+              if (params.value < 0) {
+                baseStyle.color = "red";
+              }
+
+              return baseStyle;
             },
           },
         ],
@@ -300,7 +349,7 @@ export default function PartnerGrid({
               if (params.data?.isCarryover) return "";
               return formatNumber(params.value);
             },
-            cellStyle: { backgroundColor: "#F3F4F6" }, // 계산 필드 표시
+            cellStyle: editMode ? { backgroundColor: "#F3F4F6" } : {},
           },
           {
             headerName: paymentOrCollectionText,
@@ -316,7 +365,7 @@ export default function PartnerGrid({
               if (params.data?.isCarryover) return "";
               return formatNumber(params.value);
             },
-            cellStyle: { backgroundColor: "#F3F4F6" }, // 계산 필드 표시
+            cellStyle: editMode ? { backgroundColor: "#F3F4F6" } : {}, // 계산 필드 표시
           },
           {
             headerName: "잔액",
@@ -330,7 +379,10 @@ export default function PartnerGrid({
             valueFormatter: (params: ValueFormatterParams) =>
               formatNumber(params.value),
             cellStyle: (params: CellClassParams) => {
-              const baseStyle = { backgroundColor: "#F3F4F6" };
+              // 편집모드일 때만 회색 배경
+              const baseStyle = editMode ? { backgroundColor: "#F3F4F6" } : {};
+
+              // 음수인 경우 빨간색 텍스트 추가
               if (params.value < 0) {
                 return { ...baseStyle, color: "red" };
               }
