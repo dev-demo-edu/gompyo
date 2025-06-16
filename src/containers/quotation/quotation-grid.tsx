@@ -7,7 +7,6 @@ import {
   DragStoppedEvent,
 } from "ag-grid-community";
 import { ColumnCompany } from "./quotation";
-import { QuotationCompany } from "@/services/quotation-service";
 import {
   getUserQuotationColumnOrder,
   saveUserQuotationColumnOrder,
@@ -53,7 +52,7 @@ interface QuotationGridProps {
     origin: string;
   }>;
   formatNumber: (num: number) => string;
-  onCompanySelect: (company: QuotationCompany | null) => void;
+  onCompanySelect: (company: ColumnCompany | null) => void;
   onItemsSelect: (itemIds: string[]) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
   // 컬럼 관리용 선택 상태 추가

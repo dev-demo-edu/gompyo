@@ -5,7 +5,7 @@ import DialogActions from "@mui/material/DialogActions";
 
 import { deletePlans } from "@/actions/plan";
 import { useAtomValue, useSetAtom } from "jotai";
-import { cargoRefreshAtom, selectedCargosAtom } from "@/states/plan";
+import { cargoRefreshAtom, selectedPlanRowsAtom } from "@/states/plan";
 import CommonButton from "@/components/common-button";
 
 // 계획 삭제 확인 모달 컴포넌트
@@ -18,7 +18,7 @@ export function CargoDeleteConfirmModal({
   open,
   onClose,
 }: CargoDeleteConfirmModalProps) {
-  const selectedRows = useAtomValue(selectedCargosAtom);
+  const selectedRows = useAtomValue(selectedPlanRowsAtom);
   const setRefresh = useSetAtom(cargoRefreshAtom);
 
   async function onConfirm() {
