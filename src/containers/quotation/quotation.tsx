@@ -8,11 +8,12 @@ import {
   ItemAddModal,
   ItemDeleteModal,
   ItemEditModal,
+  PriceEditModal,
   QuotationDocumentModal,
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
-import { Stack, Tab, Tabs } from "@mui/material";
+import { Stack, Tab, Tabs, useMediaQuery } from "@mui/material";
 import {
   updateQuotationCellAction,
   addQuotationCompanyAction,
@@ -25,16 +26,13 @@ import {
   updateCompanyAction,
   updateItemAction,
 } from "@/actions/quotation";
-import {
-  QuotationCompany,
-  // QuotationGridItem,
-  QuotationItem,
-} from "@/services/quotation-service";
+import { QuotationCompany, QuotationItem } from "@/services/quotation-service";
 import { nanoid } from "nanoid";
 import { CellValueChangedEvent } from "ag-grid-community";
 import CommonButton from "@/components/common-button";
 import { getUserQuotationColumnOrder, ColumnOrder } from "@/actions/user";
 import { defaultQuotationColumnOrderFields } from "@/constants/column";
+import QuotationMobileView from "./quotation-mobile-view";
 
 // 문서 번호 생성 함수 추가
 const generateDocumentNumber = (): string => {
@@ -54,6 +52,8 @@ export interface ColumnCompany extends QuotationCompany {
 }
 
 export default function QuotationContainer() {
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   // 모달 상태 관리
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
   const [companyEditModalOpen, setCompanyEditModalOpen] = useState(false);
@@ -61,21 +61,40 @@ export default function QuotationContainer() {
   const [itemEditModalOpen, setItemEditModalOpen] = useState(false);
   const [companyDeleteModalOpen, setCompanyDeleteModalOpen] = useState(false);
   const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] =
-    useState<QuotationCompany | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<ColumnCompany | null>(
+    null,
+  );
   const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
     useState(false);
+  const [mobilePriceEditModalOpen, setMobilePriceEditModalOpen] =
+    useState(false);
+  const [selectedItemForPriceEdit, setSelectedItemForPriceEdit] = useState<{
+    itemId: string;
+    itemName: string;
+    currentPrice: number;
+  } | null>(null);
 
   // 컬럼 순서 상태 추가
   const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
 
-  // 선택 상태 관리 (QuotationGrid에서 상위로 이동)
+  // 데스크톱 전용 선택 상태 관리
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [selectedColumns, setSelectedColumns] = useState<
     Record<string, boolean>
-  >({}); // 견적서용 품목 선택
+  >({});
   const [selectedColumnsForManagement, setSelectedColumnsForManagement] =
-    useState<Record<string, boolean>>({}); // 컬럼 관리용 품목 선택
+    useState<Record<string, boolean>>({});
+
+  // 모바일 전용 선택 상태 관리 추가
+  const [mobileSelectedCompany, setMobileSelectedCompany] =
+    useState<ColumnCompany | null>(null);
+  const [mobileSelectedColumns, setMobileSelectedColumns] = useState<
+    Record<string, boolean>
+  >({});
+  const [
+    mobileSelectedColumnsForManagement,
+    setMobileSelectedColumnsForManagement,
+  ] = useState<Record<string, boolean>>({});
 
   // 컬럼 순서 로딩
   useEffect(() => {
@@ -98,25 +117,19 @@ export default function QuotationContainer() {
 
   // 데이터 상태 관리
   const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
-
   const [domesticCompanies, setDomesticCompanies] = useState<ColumnCompany[]>(
     [],
   );
-
   const [domesticPriceData, setDomesticPriceData] = useState<
     Record<string, Record<string, number>>
   >({});
-
   const [overseasItems, setOverseasItems] = useState<QuotationItem[]>([]);
-
   const [overseasCompanies, setOverseasCompanies] = useState<ColumnCompany[]>(
     [],
   );
-
   const [overseasPriceData, setOverseasPriceData] = useState<
     Record<string, Record<string, number>>
   >({});
-
   const [tab, setTab] = useState<"domestic" | "overseas">("domestic");
 
   const items = tab === "domestic" ? domesticItems : overseasItems;
@@ -127,6 +140,20 @@ export default function QuotationContainer() {
     tab === "domestic" ? setDomesticCompanies : setOverseasCompanies;
   const setPriceData =
     tab === "domestic" ? setDomesticPriceData : setOverseasPriceData;
+
+  useEffect(() => {
+    // 모바일에서 데스크톱으로 전환 시 선택 상태 초기화
+    if (!isMobile) {
+      setMobileSelectedCompany(null);
+      setMobileSelectedColumns({});
+      setMobileSelectedColumnsForManagement({});
+    } else {
+      // 데스크톱에서 모바일로 전환 시 데스크톱 선택 상태 초기화
+      setSelectedCompany(null);
+      setSelectedRows({});
+      setSelectedColumns({});
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -217,7 +244,42 @@ export default function QuotationContainer() {
     }
   };
 
-  // 교차점 데이터 계산 (행/열 변경: selectedRows=회사, selectedColumns=품목) - 컬럼 순서 반영
+  // 모바일 회사 선택 핸들러 (견적서용 품목만 자동 선택)
+  const handleMobileCompanySelect = useCallback(
+    (company: ColumnCompany) => {
+      setMobileSelectedCompany(company);
+
+      // 기존 견적서용 선택 상태 초기화
+      setMobileSelectedColumns({});
+      // 관리용 선택 상태도 함께 초기화 추가
+      setMobileSelectedColumnsForManagement({});
+
+      // 새로 선택된 회사의 가격이 있는 품목들을 견적서용으로만 자동 선택
+      const companyPriceData = priceData[company.id] || {};
+      const newSelectedColumns: Record<string, boolean> = {};
+
+      items.forEach((item) => {
+        const price = companyPriceData[item.id];
+        if (price && price > 0) {
+          newSelectedColumns[item.id] = true;
+        }
+      });
+
+      setMobileSelectedColumns(newSelectedColumns);
+      // 관리용 선택은 건드리지 않음 (카드 색상 변경 없음)
+    },
+    [priceData, items],
+  );
+
+  // 모바일 품목 관리용 선택 핸들러 (카드 색상 변경용)
+  const handleMobileItemManagementSelect = useCallback((itemId: string) => {
+    setMobileSelectedColumnsForManagement((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  }, []);
+
+  // 교차점 데이터 계산 (데스크톱/모바일 통합)
   const getIntersectionItems = () => {
     const intersectionItems: Array<{
       productCode: string;
@@ -230,33 +292,56 @@ export default function QuotationContainer() {
       productNameEn: string;
     }> = [];
 
-    // selectedRows는 이제 회사 선택 상태
-    Object.entries(selectedRows).forEach(([companyId, isRowSelected]) => {
-      if (isRowSelected) {
-        // selectedColumns는 이제 품목 선택 상태
-        Object.entries(selectedColumns).forEach(([itemId, isColSelected]) => {
-          if (isColSelected) {
-            const product = items.find((item) => item.id === itemId);
-            const company = companies.find((c) => c.id === companyId);
-            // itemId를 키로 사용하도록 변경
-            const price = priceData[companyId]?.[itemId] || 0;
+    if (isMobile) {
+      // 모바일용 로직
+      if (!mobileSelectedCompany) return intersectionItems;
 
-            if (price > 0) {
-              intersectionItems.push({
-                productCode: itemId,
-                productName: product?.itemName || "",
-                origin: product?.itemOrigin || "",
-                company: company?.companyName || companyId,
-                priceType: company?.priceType || "",
-                price,
-                originEn: product?.itemOriginEn || "",
-                productNameEn: product?.itemNameEn || "",
-              });
-            }
+      Object.entries(mobileSelectedColumns).forEach(([itemId, isSelected]) => {
+        if (isSelected) {
+          const product = items.find((item) => item.id === itemId);
+          const price = priceData[mobileSelectedCompany.id]?.[itemId] || 0;
+
+          if (price > 0) {
+            intersectionItems.push({
+              productCode: itemId,
+              productName: product?.itemName || "",
+              origin: product?.itemOrigin || "",
+              company: mobileSelectedCompany.companyName || "",
+              priceType: mobileSelectedCompany.priceType || "",
+              price,
+              originEn: product?.itemOriginEn || "",
+              productNameEn: product?.itemNameEn || "",
+            });
           }
-        });
-      }
-    });
+        }
+      });
+    } else {
+      // 데스크톱용 로직 (기존)
+      Object.entries(selectedRows).forEach(([companyId, isRowSelected]) => {
+        if (isRowSelected) {
+          Object.entries(selectedColumns).forEach(([itemId, isColSelected]) => {
+            if (isColSelected) {
+              const product = items.find((item) => item.id === itemId);
+              const company = companies.find((c) => c.id === companyId);
+              const price = priceData[companyId]?.[itemId] || 0;
+
+              if (price > 0) {
+                intersectionItems.push({
+                  productCode: itemId,
+                  productName: product?.itemName || "",
+                  origin: product?.itemOrigin || "",
+                  company: company?.companyName || companyId,
+                  priceType: company?.priceType || "",
+                  price,
+                  originEn: product?.itemOriginEn || "",
+                  productNameEn: product?.itemNameEn || "",
+                });
+              }
+            }
+          });
+        }
+      });
+    }
 
     // 컬럼 순서에 따라 품목 정렬
     const sortedItems = intersectionItems.sort((a, b) => {
@@ -343,25 +428,34 @@ export default function QuotationContainer() {
   };
 
   const handleDeleteCompany = () => {
-    if (!selectedCompany) return;
+    const targetCompany = isMobile ? mobileSelectedCompany : selectedCompany;
+    if (!targetCompany) return;
 
     setCompanies((prev) =>
-      prev.filter((company) => company.id !== selectedCompany.id),
+      prev.filter((company) => company.id !== targetCompany.id),
     );
-    deleteQuotationCompanyAction(selectedCompany.id);
+    deleteQuotationCompanyAction(targetCompany.id);
     setPriceData((prev) => {
       const updated = { ...prev };
-      delete updated[selectedCompany.id];
+      delete updated[targetCompany.id];
       return updated;
     });
-    setSelectedCompany(null);
+
+    if (isMobile) {
+      setMobileSelectedCompany(null);
+    } else {
+      setSelectedCompany(null);
+    }
     setCompanyDeleteModalOpen(false);
   };
 
   const handleDeleteItems = () => {
-    const selectedManagementItems = Object.keys(
-      selectedColumnsForManagement,
-    ).filter((key) => selectedColumnsForManagement[key]);
+    const targetSelectedColumns = isMobile
+      ? mobileSelectedColumnsForManagement
+      : selectedColumnsForManagement;
+    const selectedManagementItems = Object.keys(targetSelectedColumns).filter(
+      (key) => targetSelectedColumns[key],
+    );
 
     if (selectedManagementItems.length === 0) return;
 
@@ -383,21 +477,28 @@ export default function QuotationContainer() {
       });
       return updated;
     });
-    setSelectedColumnsForManagement({});
+
+    if (isMobile) {
+      setMobileSelectedColumnsForManagement({});
+    } else {
+      setSelectedColumnsForManagement({});
+    }
     setItemDeleteModalOpen(false);
   };
 
   const handleEditCompany = (values: CompanyFormValues) => {
-    if (!selectedCompany) return;
+    const targetCompany = isMobile ? mobileSelectedCompany : selectedCompany;
+    if (!targetCompany) return;
+
     checkCompanyDuplicate(values.name, values.priceType, companies);
-    updateCompanyAction(selectedCompany.id, {
+    updateCompanyAction(targetCompany.id, {
       companyName: values.name,
       companyType: tab,
       priceType: values.priceType,
     });
     setCompanies((prev) =>
       prev.map((company) =>
-        company.id === selectedCompany.id
+        company.id === targetCompany.id
           ? {
               ...company,
               companyName: values.name,
@@ -410,14 +511,16 @@ export default function QuotationContainer() {
           : company,
       ),
     );
-    // setSelectedCompany(null);
     setCompanyEditModalOpen(false);
   };
 
   const handleEditItem = (values: ItemFormValues) => {
-    const selectedManagementItems = Object.keys(
-      selectedColumnsForManagement,
-    ).filter((key) => selectedColumnsForManagement[key]);
+    const targetSelectedColumns = isMobile
+      ? mobileSelectedColumnsForManagement
+      : selectedColumnsForManagement;
+    const selectedManagementItems = Object.keys(targetSelectedColumns).filter(
+      (key) => targetSelectedColumns[key],
+    );
 
     if (selectedManagementItems.length === 0) return;
 
@@ -441,7 +544,12 @@ export default function QuotationContainer() {
           : item,
       ),
     );
-    setSelectedColumnsForManagement({});
+
+    if (isMobile) {
+      setMobileSelectedColumnsForManagement({});
+    } else {
+      setSelectedColumnsForManagement({});
+    }
     setItemEditModalOpen(false);
   };
 
@@ -655,9 +763,40 @@ export default function QuotationContainer() {
     }
   };
 
+  // 모바일용 가격 수정 핸들러
+  const handleMobilePriceEditModalOpen = useCallback(
+    (itemData: { itemId: string; itemName: string; currentPrice: number }) => {
+      setSelectedItemForPriceEdit(itemData);
+      setMobilePriceEditModalOpen(true);
+    },
+    [],
+  );
+
+  // 모바일용 가격 수정 성공 콜백 (견적서에 자동 추가)
+  const handleMobilePriceEditSuccess = useCallback(
+    (newPrice: number, itemId: string) => {
+      // 가격이 0보다 크면 견적서용 선택에 자동 추가
+      if (newPrice > 0) {
+        setMobileSelectedColumns((prev) => ({
+          ...prev,
+          [itemId]: true,
+        }));
+      } else {
+        // 가격이 0이면 견적서용 선택에서 제거
+        setMobileSelectedColumns((prev) => {
+          const updated = { ...prev };
+          delete updated[itemId];
+          return updated;
+        });
+      }
+      console.log(`가격이 ${newPrice}원으로 업데이트되었습니다.`);
+    },
+    [],
+  );
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
-      <div className="p-4 sm:p-8">
+      <div className="p-4 sm:p-8 pb-20 sm:pb-8">
         <div className="flex flex-col lg:flex-row lg:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">견적서 작성</h1>
         </div>
@@ -671,15 +810,15 @@ export default function QuotationContainer() {
               onChange={(_, v) => setTab(v)}
               sx={{
                 "& .MuiTabs-indicator": {
-                  backgroundColor: "#22C55E", // 선택된 탭 하단 인디케이터 색상
+                  backgroundColor: "#22C55E",
                 },
                 "& .MuiTab-root": {
-                  color: "#6B7280", // 기본 탭 텍스트 색상
+                  color: "#6B7280",
                   "&.Mui-selected": {
-                    color: "#22C55E", // 선택된 탭 텍스트 색상
+                    color: "#22C55E",
                   },
                   "&:hover": {
-                    color: "#16A34A", // 호버 시 색상
+                    color: "#16A34A",
                   },
                 },
               }}
@@ -688,8 +827,9 @@ export default function QuotationContainer() {
               <Tab label="해외 업체" value="overseas" />
             </Tabs>
           </div>
-          {/* 모든 버튼들을 한 줄에 배치 */}
-          <div className="overflow-auto w-full">
+
+          {/* 데스크톱 버튼들 - sm 이상에서만 표시 */}
+          <div className="hidden sm:block overflow-auto w-full">
             <Stack
               direction="row"
               spacing={2}
@@ -770,33 +910,62 @@ export default function QuotationContainer() {
         </Stack>
 
         {/* 그리드 */}
-        <div className="overflow-auto lg:h-[75vh]">
-          <QuotationGrid
-            items={items.map((item) => ({
-              id: item.id,
-              code: item.itemOrigin,
-              name: item.itemName,
-              origin: item.itemOrigin,
-            }))}
+        {isMobile ? (
+          <QuotationMobileView
             companies={companies}
+            items={items}
             priceData={priceData}
-            selectedRows={selectedRows}
-            setSelectedRows={setSelectedRows}
-            selectedColumns={selectedColumns}
-            setSelectedColumns={setSelectedColumns}
-            selectedColumnsForManagement={selectedColumnsForManagement}
-            setSelectedColumnsForManagement={setSelectedColumnsForManagement}
-            getIntersectionItems={getIntersectionItems}
             formatNumber={formatNumber}
-            onCompanySelect={setSelectedCompany}
-            onCellValueChanged={handleCellValueChanged}
-            onItemsSelect={() => {}}
+            columnOrder={columnOrder}
             onColumnOrderChange={handleColumnOrderChange}
+            getIntersectionItems={getIntersectionItems}
+            // 모바일 상태들 전달
+            selectedCompany={mobileSelectedCompany}
+            selectedColumns={mobileSelectedColumns}
+            selectedColumnsForManagement={mobileSelectedColumnsForManagement}
+            onCompanySelect={handleMobileCompanySelect}
+            onItemSelect={handleMobileItemManagementSelect}
+            // 모달 핸들러들
+            onCompanyModalOpen={() => setCompanyModalOpen(true)}
+            onItemModalOpen={() => setItemModalOpen(true)}
+            onCompanyEditModalOpen={() => setCompanyEditModalOpen(true)}
+            onItemEditModalOpen={() => setItemEditModalOpen(true)}
+            onCompanyDeleteModalOpen={() => setCompanyDeleteModalOpen(true)}
+            onItemDeleteModalOpen={() => setItemDeleteModalOpen(true)}
+            onQuotationDocumentModalOpen={() =>
+              setQuotationDocumentModalOpen(true)
+            }
+            onPriceEditModalOpen={handleMobilePriceEditModalOpen}
           />
-        </div>
+        ) : (
+          <div className="overflow-auto lg:h-[75vh]">
+            <QuotationGrid
+              items={items.map((item) => ({
+                id: item.id,
+                code: item.itemOrigin,
+                name: item.itemName,
+                origin: item.itemOrigin,
+              }))}
+              companies={companies}
+              priceData={priceData}
+              selectedRows={selectedRows}
+              setSelectedRows={setSelectedRows}
+              selectedColumns={selectedColumns}
+              setSelectedColumns={setSelectedColumns}
+              selectedColumnsForManagement={selectedColumnsForManagement}
+              setSelectedColumnsForManagement={setSelectedColumnsForManagement}
+              getIntersectionItems={getIntersectionItems}
+              formatNumber={formatNumber}
+              onCompanySelect={setSelectedCompany}
+              onCellValueChanged={handleCellValueChanged}
+              onItemsSelect={() => {}}
+              onColumnOrderChange={handleColumnOrderChange}
+            />
+          </div>
+        )}
 
-        {/* 선택된 교차점 표시 */}
-        {getIntersectionItems().length > 0 && (
+        {/* 데스크톱용 선택된 교차점 표시 */}
+        {!isMobile && getIntersectionItems().length > 0 && (
           <div className="mt-4 p-3 bg-green-50 rounded-lg">
             <p className="text-sm text-green-800 font-semibold">
               선택된 견적 항목: {getIntersectionItems().length}개
@@ -821,18 +990,22 @@ export default function QuotationContainer() {
         onSubmit={handleAddCompany}
       />
 
-      {selectedCompany &&
-        companies.find((c) => c.id === selectedCompany.id) && (
+      {(() => {
+        const targetCompany = isMobile
+          ? mobileSelectedCompany
+          : selectedCompany;
+        return targetCompany &&
+          companies.find((c) => c.id === targetCompany.id) ? (
           <CompanyEditModal
             open={companyEditModalOpen}
             onClose={() => setCompanyEditModalOpen(false)}
             onSubmit={handleEditCompany}
             selectedCompany={
-              companies.find((c) => c.id === selectedCompany?.id) ||
-              selectedCompany
+              companies.find((c) => c.id === targetCompany?.id) || targetCompany
             }
           />
-        )}
+        ) : null;
+      })()}
 
       <ItemAddModal
         open={itemModalOpen}
@@ -841,9 +1014,12 @@ export default function QuotationContainer() {
       />
 
       {(() => {
+        const targetSelectedColumns = isMobile
+          ? mobileSelectedColumnsForManagement
+          : selectedColumnsForManagement;
         const selectedManagementItems = Object.keys(
-          selectedColumnsForManagement,
-        ).filter((key) => selectedColumnsForManagement[key]);
+          targetSelectedColumns,
+        ).filter((key) => targetSelectedColumns[key]);
         const selectedItem =
           selectedManagementItems.length > 0
             ? items.find((i) => i.id === selectedManagementItems[0])
@@ -875,6 +1051,27 @@ export default function QuotationContainer() {
         onDownload={handleQuotationPDFDownload}
         onOpenInNewWindow={handleQuotationPDFView}
       />
+
+      {selectedItemForPriceEdit && mobileSelectedCompany && (
+        <PriceEditModal
+          open={mobilePriceEditModalOpen}
+          onClose={() => {
+            setMobilePriceEditModalOpen(false);
+            setSelectedItemForPriceEdit(null);
+          }}
+          onSuccess={(newPrice) =>
+            handleMobilePriceEditSuccess(
+              newPrice,
+              selectedItemForPriceEdit.itemId,
+            )
+          }
+          itemName={selectedItemForPriceEdit.itemName}
+          currentPrice={selectedItemForPriceEdit.currentPrice}
+          itemId={selectedItemForPriceEdit.itemId}
+          companyId={mobileSelectedCompany.id}
+          setPriceData={setPriceData}
+        />
+      )}
     </div>
   );
 }
