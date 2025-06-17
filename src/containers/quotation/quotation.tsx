@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import QuotationGrid from "./quotation-grid";
 import {
   CompanyAddModal,
@@ -12,7 +12,7 @@ import {
 } from "./quotation-modal-container";
 import { CompanyFormValues } from "./company-form";
 import { ItemFormValues } from "./item-form";
-import { Button, Stack, Tab, Tabs } from "@mui/material";
+import { Stack, Tab, Tabs } from "@mui/material";
 import {
   updateQuotationCellAction,
   addQuotationCompanyAction,
@@ -32,6 +32,9 @@ import {
 } from "@/services/quotation-service";
 import { nanoid } from "nanoid";
 import { CellValueChangedEvent } from "ag-grid-community";
+import CommonButton from "@/components/common-button";
+import { getUserQuotationColumnOrder, ColumnOrder } from "@/actions/user";
+import { defaultQuotationColumnOrderFields } from "@/constants/column";
 
 // 문서 번호 생성 함수 추가
 const generateDocumentNumber = (): string => {
@@ -60,15 +63,38 @@ export default function QuotationContainer() {
   const [itemDeleteModalOpen, setItemDeleteModalOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] =
     useState<QuotationCompany | null>(null);
-  const [selectedItems, setSelectedItems] = useState<string[] | null>(null);
   const [quotationDocumentModalOpen, setQuotationDocumentModalOpen] =
     useState(false);
+
+  // 컬럼 순서 상태 추가
+  const [columnOrder, setColumnOrder] = useState<ColumnOrder[]>([]);
 
   // 선택 상태 관리 (QuotationGrid에서 상위로 이동)
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [selectedColumns, setSelectedColumns] = useState<
     Record<string, boolean>
-  >({});
+  >({}); // 견적서용 품목 선택
+  const [selectedColumnsForManagement, setSelectedColumnsForManagement] =
+    useState<Record<string, boolean>>({}); // 컬럼 관리용 품목 선택
+
+  // 컬럼 순서 로딩
+  useEffect(() => {
+    const loadColumnOrder = async () => {
+      try {
+        const userColumnOrder = await getUserQuotationColumnOrder();
+        setColumnOrder(userColumnOrder || defaultQuotationColumnOrderFields);
+      } catch (error) {
+        console.error("컬럼 순서 로딩 오류:", error);
+        setColumnOrder(defaultQuotationColumnOrderFields);
+      }
+    };
+    loadColumnOrder();
+  }, []);
+
+  // 컬럼 순서 변경 핸들러
+  const handleColumnOrderChange = useCallback((newOrder: ColumnOrder[]) => {
+    setColumnOrder(newOrder);
+  }, []);
 
   // 데이터 상태 관리
   const [domesticItems, setDomesticItems] = useState<QuotationItem[]>([]);
@@ -130,6 +156,15 @@ export default function QuotationContainer() {
       setOverseasPriceData(overseasData.priceData);
       console.log("domesticData", domesticData);
       console.log("overseasData", overseasData);
+
+      // 컬럼 순서 로드 추가
+      try {
+        const userColumnOrder = await getUserQuotationColumnOrder();
+        setColumnOrder(userColumnOrder || defaultQuotationColumnOrderFields);
+      } catch (error) {
+        console.error("컬럼 순서 로딩 오류:", error);
+        setColumnOrder(defaultQuotationColumnOrderFields);
+      }
     };
     fetchData();
   }, []);
@@ -182,7 +217,7 @@ export default function QuotationContainer() {
     }
   };
 
-  // 교차점 데이터 계산 (QuotationGrid에서 상위로 이동)
+  // 교차점 데이터 계산 (행/열 변경: selectedRows=회사, selectedColumns=품목) - 컬럼 순서 반영
   const getIntersectionItems = () => {
     const intersectionItems: Array<{
       productCode: string;
@@ -195,34 +230,52 @@ export default function QuotationContainer() {
       productNameEn: string;
     }> = [];
 
-    Object.entries(selectedRows).forEach(([itemId, isRowSelected]) => {
+    // selectedRows는 이제 회사 선택 상태
+    Object.entries(selectedRows).forEach(([companyId, isRowSelected]) => {
       if (isRowSelected) {
-        Object.entries(selectedColumns).forEach(
-          ([companyId, isColSelected]) => {
-            if (isColSelected) {
-              const product = items.find((item) => item.id === itemId);
-              const company = companies.find((c) => c.id === companyId);
-              const price =
-                priceData[companyId]?.[product?.itemName || ""] || 0;
+        // selectedColumns는 이제 품목 선택 상태
+        Object.entries(selectedColumns).forEach(([itemId, isColSelected]) => {
+          if (isColSelected) {
+            const product = items.find((item) => item.id === itemId);
+            const company = companies.find((c) => c.id === companyId);
+            // itemId를 키로 사용하도록 변경
+            const price = priceData[companyId]?.[itemId] || 0;
 
-              if (price > 0) {
-                intersectionItems.push({
-                  productCode: itemId,
-                  productName: product?.itemName || "",
-                  origin: product?.itemOrigin || "",
-                  company: company?.companyName || companyId,
-                  priceType: company?.priceType || "",
-                  price,
-                  originEn: product?.itemOriginEn || "",
-                  productNameEn: product?.itemNameEn || "",
-                });
-              }
+            if (price > 0) {
+              intersectionItems.push({
+                productCode: itemId,
+                productName: product?.itemName || "",
+                origin: product?.itemOrigin || "",
+                company: company?.companyName || companyId,
+                priceType: company?.priceType || "",
+                price,
+                originEn: product?.itemOriginEn || "",
+                productNameEn: product?.itemNameEn || "",
+              });
             }
-          },
-        );
+          }
+        });
       }
     });
-    return intersectionItems;
+
+    // 컬럼 순서에 따라 품목 정렬
+    const sortedItems = intersectionItems.sort((a, b) => {
+      const aIndex = columnOrder.findIndex(
+        (col) => col.field === a.productCode,
+      );
+      const bIndex = columnOrder.findIndex(
+        (col) => col.field === b.productCode,
+      );
+
+      // 컬럼 순서에 없는 항목은 뒤로 정렬
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+
+    return sortedItems;
   };
 
   // 업체 추가 핸들러
@@ -306,25 +359,31 @@ export default function QuotationContainer() {
   };
 
   const handleDeleteItems = () => {
-    if (selectedItems === null || selectedItems.length === 0) return;
+    const selectedManagementItems = Object.keys(
+      selectedColumnsForManagement,
+    ).filter((key) => selectedColumnsForManagement[key]);
 
-    setItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
-    selectedItems.forEach((itemId) => {
+    if (selectedManagementItems.length === 0) return;
+
+    setItems((prev) =>
+      prev.filter((item) => !selectedManagementItems.includes(item.id)),
+    );
+    selectedManagementItems.forEach((itemId) => {
       deleteQuotationItemAction(itemId);
     });
     setPriceData((prev) => {
       const updated = { ...prev };
       Object.keys(updated).forEach((company) => {
-        selectedItems.forEach((itemId) => {
-          const item = items.find((i) => i.id === itemId);
-          if (item && updated[company][item.itemName]) {
-            delete updated[company][item.itemName];
+        selectedManagementItems.forEach((itemId) => {
+          // itemId를 직접 키로 사용하도록 변경
+          if (updated[company][itemId]) {
+            delete updated[company][itemId];
           }
         });
       });
       return updated;
     });
-    setSelectedItems([]);
+    setSelectedColumnsForManagement({});
     setItemDeleteModalOpen(false);
   };
 
@@ -356,9 +415,14 @@ export default function QuotationContainer() {
   };
 
   const handleEditItem = (values: ItemFormValues) => {
-    if (!selectedItems) return;
+    const selectedManagementItems = Object.keys(
+      selectedColumnsForManagement,
+    ).filter((key) => selectedColumnsForManagement[key]);
+
+    if (selectedManagementItems.length === 0) return;
+
     checkItemDuplicate(values.itemName, values.itemOrigin, items);
-    updateItemAction(selectedItems[0], {
+    updateItemAction(selectedManagementItems[0], {
       itemName: values.itemName,
       itemOrigin: values.itemOrigin,
       itemNameEn: values.itemNameEn,
@@ -366,7 +430,7 @@ export default function QuotationContainer() {
     });
     setItems((prev) =>
       prev.map((item) =>
-        item.id === selectedItems[0]
+        item.id === selectedManagementItems[0]
           ? {
               ...item,
               itemName: values.itemName,
@@ -377,33 +441,37 @@ export default function QuotationContainer() {
           : item,
       ),
     );
-    // setSelectedItems(null);
+    setSelectedColumnsForManagement({});
     setItemEditModalOpen(false);
   };
 
-  //업데이트 함수
+  //업데이트 함수 (행/열 변경: data.id=회사ID, column=품목ID)
   const handleCellValueChanged = async (params: CellValueChangedEvent) => {
     try {
       // ag-grid에서 제공하는 정보 추출
-      const itemId = params.data.id; // 제품 ID
-      const companyId = params.column.getColId(); // 회사 ID (컬럼 필드명)
+      const companyId = params.data.id; // 회사 ID (이제 행이 회사)
+      const itemId = params.column.getColId(); // 품목 ID (이제 컬럼이 품목)
 
       // 여러 방법으로 새로운 값 확인
       const newValue = params.newValue; // 새로운 값
       const oldValue = params.oldValue; // 이전 값
-      const currentValue = params.data[companyId]; // 현재 데이터에서 값
+      const currentValue = params.data[itemId]; // 현재 데이터에서 값
 
       console.log("=== 셀 값 변경 디버깅 ===");
-      console.log("itemId:", itemId);
       console.log("companyId:", companyId);
+      console.log("itemId:", itemId);
       console.log("newValue:", newValue);
       console.log("oldValue:", oldValue);
       console.log("currentValue:", currentValue);
       console.log("params:", params);
 
-      // companyId가 없으면 처리하지 않음 (체크박스 컬럼 등)
-      if (!companyId || typeof companyId !== "string") {
-        console.log("companyId가 유효하지 않음, 처리 중단");
+      // itemId가 없으면 처리하지 않음 (체크박스 컬럼, 업체명 컬럼 등)
+      if (
+        !itemId ||
+        typeof itemId !== "string" ||
+        itemId === "companyColumnName"
+      ) {
+        console.log("itemId가 유효하지 않음, 처리 중단");
         return;
       }
 
@@ -419,17 +487,14 @@ export default function QuotationContainer() {
       console.log("finalValue:", finalValue);
       console.log("numericValue:", numericValue);
 
-      // 로컬 상태 업데이트 (제품명으로 저장)
-      const product = items.find((item) => item.id === itemId);
-      if (product) {
-        setPriceData((prev) => ({
-          ...prev,
-          [companyId]: {
-            ...prev[companyId],
-            [product.itemName]: numericValue || 0,
-          },
-        }));
-      }
+      // 로컬 상태 업데이트 (itemId로 저장하도록 변경)
+      setPriceData((prev) => ({
+        ...prev,
+        [companyId]: {
+          ...prev[companyId],
+          [itemId]: numericValue || 0,
+        },
+      }));
 
       // 서버에 업데이트 요청
       await updateQuotationCellAction({
@@ -439,7 +504,7 @@ export default function QuotationContainer() {
       });
 
       console.log(
-        `셀 값 업데이트 완료: 제품 ${itemId}, 회사 ${companyId}, 값 ${numericValue}`,
+        `셀 값 업데이트 완료: 회사 ${companyId}, 제품 ${itemId}, 값 ${numericValue}`,
       );
     } catch (error) {
       console.error("셀 값 업데이트 실패:", error);
@@ -451,11 +516,38 @@ export default function QuotationContainer() {
   // PDF 생성 공통 로직
   const generatePDFData = async () => {
     const quotationData = getIntersectionItems();
+
+    if (quotationData.length === 0) {
+      throw new Error("선택된 견적 항목이 없습니다.");
+    }
+
+    // 컬럼 순서에 따라 품목들을 한 번 더 정렬하여 PDF에 반영
+    console.log("PDF 생성 시 컬럼 순서:", columnOrder);
+    console.log("PDF 생성 시 견적 데이터:", quotationData);
+
+    const sortedQuotationData = quotationData.sort((a, b) => {
+      const aIndex = columnOrder.findIndex(
+        (col) => col.field === a.productCode,
+      );
+      const bIndex = columnOrder.findIndex(
+        (col) => col.field === b.productCode,
+      );
+
+      // 컬럼 순서에 없는 항목은 뒤로 정렬
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+
+    console.log("PDF 생성 시 정렬된 견적 데이터:", sortedQuotationData);
+
     const pdfResponse = await generateQuotationPDF({
       sender: "㈜ 곰표",
-      receiver: quotationData[0].company,
+      receiver: sortedQuotationData[0].company,
       date: new Date().toISOString().split("T")[0],
-      items: quotationData.map((item, index) => ({
+      items: sortedQuotationData.map((item, index) => ({
         no: index + 1,
         name: item.productName,
         originEn: item.originEn,
@@ -463,7 +555,7 @@ export default function QuotationContainer() {
         price: item.price,
       })),
       documentNumber: generateDocumentNumber(),
-      priceType: quotationData[0].priceType,
+      priceType: sortedQuotationData[0].priceType,
       reference: "",
     });
 
@@ -569,116 +661,116 @@ export default function QuotationContainer() {
         <div className="flex flex-col lg:flex-row lg:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">견적서 작성</h1>
         </div>
-        <Stack direction="row" spacing={2}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
           <div
-            className="flex flex-row justify-between items-end flex-shrink-0"
+            className="flex flex-row justify-between items-end flex-shrink-0 overflow-x-auto"
             style={{ minHeight: 24 }}
           >
-            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              sx={{
+                "& .MuiTabs-indicator": {
+                  backgroundColor: "#22C55E", // 선택된 탭 하단 인디케이터 색상
+                },
+                "& .MuiTab-root": {
+                  color: "#6B7280", // 기본 탭 텍스트 색상
+                  "&.Mui-selected": {
+                    color: "#22C55E", // 선택된 탭 텍스트 색상
+                  },
+                  "&:hover": {
+                    color: "#16A34A", // 호버 시 색상
+                  },
+                },
+              }}
+            >
               <Tab label="국내 업체" value="domestic" />
               <Tab label="해외 업체" value="overseas" />
             </Tabs>
           </div>
           {/* 모든 버튼들을 한 줄에 배치 */}
-          <Stack
-            direction="row"
-            spacing={2}
-            className="w-full justify-end pb-4"
-          >
-            <Button
-              variant="contained"
-              onClick={() => setCompanyModalOpen(true)}
+          <div className="overflow-auto w-full">
+            <Stack
+              direction="row"
+              spacing={2}
               sx={{
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                fontWeight: 600,
-                boxShadow: "none",
+                width: "100%",
+                justifyContent: { xs: "flex-start", lg: "flex-end" },
+                pb: 1,
+                overflowX: "auto",
+                flexWrap: "nowrap",
+                minWidth: "max-content",
+                "& > *": {
+                  flexShrink: 0,
+                },
               }}
             >
-              업체 추가
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setCompanyEditModalOpen(true)}
-              disabled={!selectedCompany}
-              sx={{
-                backgroundColor: "#22C55E",
-                "&:hover": { backgroundColor: "#16A34A" },
-                fontWeight: 600,
-                boxShadow: "none",
-              }}
-            >
-              업체 수정
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setItemModalOpen(true)}
-              sx={{
-                backgroundColor: "#3B82F6",
-                "&:hover": { backgroundColor: "#2563EB" },
-                fontWeight: 600,
-                boxShadow: "none",
-              }}
-            >
-              품목 추가
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setItemEditModalOpen(true)}
-              disabled={selectedItems === null || selectedItems.length !== 1}
-              sx={{
-                backgroundColor: "#3B82F6",
-                "&:hover": { backgroundColor: "#2563EB" },
-                fontWeight: 600,
-                boxShadow: "none",
-              }}
-            >
-              품목 수정
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setCompanyDeleteModalOpen(true)}
-              disabled={!selectedCompany}
-              sx={{
-                backgroundColor: "#EF4444",
-                "&:hover": { backgroundColor: "#DC2626" },
-                fontWeight: 600,
-                boxShadow: "none",
-              }}
-            >
-              업체 삭제
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setItemDeleteModalOpen(true)}
-              disabled={selectedItems === null || selectedItems.length === 0}
-              sx={{
-                backgroundColor: "#EF4444",
-                "&:hover": { backgroundColor: "#DC2626" },
-                fontWeight: 600,
-                boxShadow: "none",
-              }}
-            >
-              품목 삭제
-            </Button>
-            <Button
-              variant="contained"
-              disabled={getIntersectionItems().length === 0}
-              onClick={() => setQuotationDocumentModalOpen(true)}
-              sx={{
-                backgroundColor: "#6366F1",
-                "&:hover": { backgroundColor: "#4F46E5" },
-                fontWeight: 600,
-                boxShadow: "none",
-              }}
-            >
-              견적서 작성 ({getIntersectionItems().length})
-            </Button>
-          </Stack>
+              <CommonButton
+                variant="info"
+                onClick={() => setCompanyModalOpen(true)}
+              >
+                업체 추가
+              </CommonButton>
+
+              <CommonButton
+                variant="info"
+                onClick={() => setItemModalOpen(true)}
+              >
+                품목 추가
+              </CommonButton>
+              <CommonButton
+                variant="primary"
+                onClick={() => setCompanyEditModalOpen(true)}
+                disabled={!selectedCompany}
+              >
+                업체 수정
+              </CommonButton>
+
+              <CommonButton
+                variant="primary"
+                onClick={() => setItemEditModalOpen(true)}
+                disabled={
+                  Object.keys(selectedColumnsForManagement).filter(
+                    (key) => selectedColumnsForManagement[key],
+                  ).length !== 1
+                }
+              >
+                품목 수정
+              </CommonButton>
+
+              <CommonButton
+                variant="danger"
+                onClick={() => setCompanyDeleteModalOpen(true)}
+                disabled={!selectedCompany}
+              >
+                업체 삭제
+              </CommonButton>
+
+              <CommonButton
+                variant="danger"
+                onClick={() => setItemDeleteModalOpen(true)}
+                disabled={
+                  Object.keys(selectedColumnsForManagement).filter(
+                    (key) => selectedColumnsForManagement[key],
+                  ).length === 0
+                }
+              >
+                품목 삭제
+              </CommonButton>
+
+              <CommonButton
+                variant="special"
+                onClick={() => setQuotationDocumentModalOpen(true)}
+                disabled={getIntersectionItems().length === 0}
+              >
+                견적서 작성 ({getIntersectionItems().length})
+              </CommonButton>
+            </Stack>
+          </div>
         </Stack>
 
         {/* 그리드 */}
-        <div className="overflow-hidden">
+        <div className="overflow-auto lg:h-[75vh]">
           <QuotationGrid
             items={items.map((item) => ({
               id: item.id,
@@ -692,11 +784,14 @@ export default function QuotationContainer() {
             setSelectedRows={setSelectedRows}
             selectedColumns={selectedColumns}
             setSelectedColumns={setSelectedColumns}
+            selectedColumnsForManagement={selectedColumnsForManagement}
+            setSelectedColumnsForManagement={setSelectedColumnsForManagement}
             getIntersectionItems={getIntersectionItems}
             formatNumber={formatNumber}
             onCompanySelect={setSelectedCompany}
-            onItemsSelect={setSelectedItems}
             onCellValueChanged={handleCellValueChanged}
+            onItemsSelect={() => {}}
+            onColumnOrderChange={handleColumnOrderChange}
           />
         </div>
 
@@ -745,18 +840,24 @@ export default function QuotationContainer() {
         onSubmit={handleAddItem}
       />
 
-      {selectedItems &&
-        selectedItems.length > 0 &&
-        items.find((i) => i.id === selectedItems[0]) && (
+      {(() => {
+        const selectedManagementItems = Object.keys(
+          selectedColumnsForManagement,
+        ).filter((key) => selectedColumnsForManagement[key]);
+        const selectedItem =
+          selectedManagementItems.length > 0
+            ? items.find((i) => i.id === selectedManagementItems[0])
+            : null;
+
+        return selectedItem ? (
           <ItemEditModal
             open={itemEditModalOpen}
             onClose={() => setItemEditModalOpen(false)}
             onSubmit={handleEditItem}
-            selectedItem={
-              items.find((i) => i.id === selectedItems?.[0]) as QuotationItem
-            }
+            selectedItem={selectedItem}
           />
-        )}
+        ) : null;
+      })()}
 
       <CompanyDeleteModal
         open={companyDeleteModalOpen}

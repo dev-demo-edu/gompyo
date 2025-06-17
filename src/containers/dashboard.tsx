@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import {
-  Button,
   TextField,
   Card,
   Stack,
@@ -18,6 +17,7 @@ import { BarDataItem, selectDataItem } from "@/types/dashboard-data";
 import { useEffect, useState } from "react";
 import { getPlanData } from "@/actions/plan";
 import { IPlanData } from "@/types/grid-col";
+import CommonButton from "@/components/common-button";
 
 function BarChart({
   propName,
@@ -277,13 +277,24 @@ export default function Dashboard() {
           className="w-full"
         />
 
-        <Button
+        {/* <Button
           className="w-[50%] flex items-center p-2"
           variant="contained"
           onClick={() => filterData()}
         >
           적용하기
-        </Button>
+        </Button> */}
+        <CommonButton
+          sx={{
+            width: "50%",
+            display: "flex",
+            alignItems: "center",
+            p: 2,
+          }}
+          onClick={() => filterData()}
+        >
+          적용하기
+        </CommonButton>
       </Stack>
 
       {[

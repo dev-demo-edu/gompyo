@@ -379,6 +379,7 @@ export async function getPlanData(): Promise<IPlanData[]> {
       contractTon: cargo?.contractTon || 0,
       unitPrice: calculatedData.costDetail.unitPrice || 0,
       totalPrice: calculatedData.costDetail.totalContractPrice || 0,
+      totalPriceUsd: calculatedData.costDetail.totalPriceUsd || 0,
       paymentMethod: payment?.paymentMethod || "",
       warehouseEntryDate: cargo?.warehouseEntryDate || "",
       importCostPerKg: calculatedData.costDetail.costPerKg || 0,

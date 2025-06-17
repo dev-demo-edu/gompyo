@@ -120,6 +120,27 @@
       "when": 1748758419315,
       "tag": "0016_dark_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1749638081589,
+      "tag": "0017_dry_old_lace",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1749640983205,
+      "tag": "0018_dusty_black_bird",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1749734084480,
+      "tag": "0019_powerful_scrambler",
+      "breakpoints": true
     }
   ]
 }

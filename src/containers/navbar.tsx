@@ -20,6 +20,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NavigationItem from "./nav/navigation-item";
 import SidebarHeader from "./nav/sidebar-header";
 import MobileAppBar from "./nav/mobile-app-bar";
+import MobileMenuGrid from "./nav/mobile-menu-grid";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessIcon from "@mui/icons-material/Business";
 import LinkIcon from "@mui/icons-material/Link";
@@ -32,40 +33,56 @@ const DRAWER_WIDTH = 240;
 const COLLAPSED_WIDTH = 64;
 
 export default function Navbar() {
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  // 모바일 그리드 메뉴 상태
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // 데스크톱 사이드바 상태
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isDesktopDrawerOpen, setIsDesktopDrawerOpen] = useState(true);
+
   const theme = useTheme();
   const isMobile = useMediaQuery("(max-width:640px)");
   const isTablet = useMediaQuery("(min-width:641px) and (max-width:900px)");
   const pathname = usePathname();
 
-  // Auto-collapse sidebar on tablet view
-  useEffect(() => {
-    if (isTablet && !isMobile) {
-      setIsSidebarCollapsed(true);
-    } else if (!isTablet) {
-      setIsSidebarCollapsed(true);
-    }
-  }, [isTablet, isMobile]);
-
-  // Close mobile drawer when route changes
+  // 화면 크기 변경 감지 및 상태 초기화
   useEffect(() => {
     if (isMobile) {
-      setIsMobileDrawerOpen(false);
+      // 모바일로 전환 시: 데스크톱 상태는 유지하고 모바일 메뉴만 닫기
+      setIsMobileMenuOpen(false);
+    } else {
+      // 데스크톱/태블릿으로 전환 시: 모바일 메뉴 강제 닫기
+      setIsMobileMenuOpen(false);
+
+      if (isTablet) {
+        setIsSidebarCollapsed(true);
+      }
+    }
+  }, [isMobile, isTablet]);
+
+  // 라우트 변경 시 모바일 메뉴 닫기
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
     }
   }, [pathname, isMobile]);
 
-  const handleDrawerToggle = () => {
+  const handleMenuToggle = () => {
     if (isMobile) {
-      setIsMobileDrawerOpen(!isMobileDrawerOpen);
+      // 모바일: 그리드 메뉴 토글
+      setIsMobileMenuOpen((prev) => !prev);
     } else {
-      setIsDesktopDrawerOpen(!isDesktopDrawerOpen);
+      // 데스크톱: 사이드바 토글
+      setIsDesktopDrawerOpen((prev) => !prev);
     }
   };
 
   const handleSidebarCollapse = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
+    setIsSidebarCollapsed((prev) => !prev);
+  };
+
+  const handleMobileMenuClose = () => {
+    setIsMobileMenuOpen(false);
   };
 
   const navigationItems = [
@@ -190,58 +207,63 @@ export default function Navbar() {
 
   return (
     <>
+      {/* 모바일 앱바 - 모바일일 때만 렌더링 */}
       {isMobile && (
         <MobileAppBar
-          onMenuClick={handleDrawerToggle}
-          isDrawerOpen={isDesktopDrawerOpen}
-          isSidebarCollapsed={isSidebarCollapsed}
-          drawerWidth={DRAWER_WIDTH}
-          collapsedWidth={COLLAPSED_WIDTH}
+          onMenuClick={handleMenuToggle}
           zIndex={theme.zIndex.drawer - 1}
         />
       )}
-      <Box
-        component="nav"
-        sx={{
-          width: {
-            sm: isDesktopDrawerOpen
-              ? isSidebarCollapsed
-                ? COLLAPSED_WIDTH
-                : DRAWER_WIDTH
-              : 0,
-          },
-          flexShrink: { sm: 0 },
-          zIndex: theme.zIndex.drawer,
-          position: "relative",
-        }}
-      >
-        {collapseButton}
-        <Drawer
-          variant={isMobile ? "temporary" : "permanent"}
-          open={isMobile ? isMobileDrawerOpen : isDesktopDrawerOpen}
-          onClose={handleDrawerToggle}
+
+      {/* 모바일 그리드 메뉴 - 모바일일 때만 렌더링 */}
+      {isMobile && (
+        <MobileMenuGrid
+          open={isMobileMenuOpen}
+          onClose={handleMobileMenuClose}
+        />
+      )}
+
+      {/* 데스크톱/태블릿용 사이드바 - 모바일이 아닐 때만 렌더링 */}
+      {!isMobile && (
+        <Box
+          component="nav"
           sx={{
-            "& .MuiDrawer-paper": {
-              width: isSidebarCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
-              boxSizing: "border-box",
-              transition: theme.transitions.create(
-                ["width", "visibility", "overflow"],
-                {
-                  easing: theme.transitions.easing.sharp,
-                  duration: theme.transitions.duration.enteringScreen,
-                },
-              ),
-              overflowX: "hidden",
-              borderRight: `1px solid ${theme.palette.divider}`,
+            width: {
+              sm: isDesktopDrawerOpen
+                ? isSidebarCollapsed
+                  ? COLLAPSED_WIDTH
+                  : DRAWER_WIDTH
+                : 0,
             },
-          }}
-          ModalProps={{
-            keepMounted: true,
+            flexShrink: { sm: 0 },
+            zIndex: theme.zIndex.drawer,
+            position: "relative",
           }}
         >
-          {sidebarContent}
-        </Drawer>
-      </Box>
+          {collapseButton}
+          <Drawer
+            variant="permanent"
+            open={isDesktopDrawerOpen}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: isSidebarCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
+                boxSizing: "border-box",
+                transition: theme.transitions.create(
+                  ["width", "visibility", "overflow"],
+                  {
+                    easing: theme.transitions.easing.sharp,
+                    duration: theme.transitions.duration.enteringScreen,
+                  },
+                ),
+                overflowX: "hidden",
+                borderRight: `1px solid ${theme.palette.divider}`,
+              },
+            }}
+          >
+            {sidebarContent}
+          </Drawer>
+        </Box>
+      )}
     </>
   );
 }

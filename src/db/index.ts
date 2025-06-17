@@ -9,5 +9,7 @@ const sqlite = new Database(dbPath);
 
 // Foreign Key 제약조건 활성화
 sqlite.pragma("foreign_keys = ON");
+// WAL 모드 비활성화 - .db-wal, .db-shm 파일 생성 방지
+sqlite.pragma("journal_mode = DELETE");
 
 export const db = drizzle(sqlite, { schema });

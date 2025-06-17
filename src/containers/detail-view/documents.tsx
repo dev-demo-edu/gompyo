@@ -2,7 +2,6 @@ import {
   Box,
   Typography,
   Paper,
-  Button,
   List,
   ListItem,
   ListItemText,
@@ -41,6 +40,7 @@ import {
 } from "@/states/document-state";
 import { CircularProgress } from "@mui/material";
 import { cargoDetailAtom } from "@/states/detail";
+import CommonButton from "@/components/common-button";
 interface DocumentsProps {
   cargoId: string;
 }
@@ -166,8 +166,15 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
           <CloudUploadIcon className="text-4xl text-gray-400 mb-4" />
           <Typography variant="body1" sx={{ mb: 2 }}>
             파일을 드래그하여 업로드하거나
+            <br />
+            파일 선택 버튼을 클릭해 주세요.
           </Typography>
-          <Button variant="outlined" component="label" disabled={isUploading}>
+
+          <CommonButton
+            variant="outline"
+            component="label"
+            disabled={isUploading}
+          >
             파일 선택
             <input
               type="file"
@@ -176,7 +183,7 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
               onChange={handleFileSelect}
               disabled={isUploading}
             />
-          </Button>
+          </CommonButton>
         </Box>
 
         {selectedFiles.length > 0 && (
@@ -239,16 +246,21 @@ function UploadModal({ open, onClose, onUpload, category }: UploadModalProps) {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={isUploading}>
+        <CommonButton
+          variant="outline"
+          onClick={handleClose}
+          disabled={isUploading}
+        >
           취소
-        </Button>
-        <Button
-          variant="contained"
+        </CommonButton>
+
+        <CommonButton
+          variant="primary"
           onClick={handleUpload}
           disabled={selectedFiles.length === 0 || isUploading}
         >
           {isUploading ? "업로드 중..." : `업로드 (${selectedFiles.length})`}
-        </Button>
+        </CommonButton>
       </DialogActions>
     </Dialog>
   );
@@ -567,15 +579,16 @@ export default function Documents({ cargoId }: DocumentsProps) {
             <Typography variant="h6" className="font-bold">
               서류 관리
             </Typography>
-            <Button
-              variant="contained"
+
+            <CommonButton
+              variant="primary"
               startIcon={<UploadIcon />}
               onClick={() => setIsUploadModalOpen(true)}
             >
               {activeTab === "contract"
                 ? "계약 관련 서류 업로드"
                 : "선적 관련 서류 업로드"}
-            </Button>
+            </CommonButton>
           </Stack>
 
           <Tabs
@@ -654,10 +667,12 @@ export default function Documents({ cargoId }: DocumentsProps) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteCancel}>취소</Button>
-          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+          <CommonButton variant="outline" onClick={handleDeleteCancel}>
+            취소
+          </CommonButton>
+          <CommonButton variant="danger" onClick={handleDeleteConfirm}>
             삭제
-          </Button>
+          </CommonButton>
         </DialogActions>
       </Dialog>
     </Box>

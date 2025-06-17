@@ -3,8 +3,9 @@ import { HistoryItem, FilterOption } from "./types";
 import { HistoryItemCard } from "./history-item";
 import { DateGroup } from "./date-group";
 import { DetailsModal } from "./details-modal";
-import { Button, ButtonGroup } from "@mui/material";
+import { ButtonGroup } from "@mui/material";
 import { formatISO, startOfDay, parseISO } from "date-fns";
+import CommonButton from "@/components/common-button";
 
 interface CargoHistoryTimelineProps {
   items: HistoryItem[];
@@ -83,30 +84,30 @@ export function CargoHistoryTimeline({
           }}
         >
           <ButtonGroup size="small" variant="outlined">
-            <Button
-              variant={filter === "all" ? "contained" : "outlined"}
+            <CommonButton
+              variant={filter === "all" ? "primary" : "outline"}
               onClick={() => setFilter("all")}
             >
               전체
-            </Button>
-            <Button
-              variant={filter === "change" ? "contained" : "outlined"}
+            </CommonButton>
+            <CommonButton
+              variant={filter === "change" ? "primary" : "outline"}
               onClick={() => setFilter("change")}
             >
               단일변경
-            </Button>
-            <Button
-              variant={filter === "multi-change" ? "contained" : "outlined"}
+            </CommonButton>
+            <CommonButton
+              variant={filter === "multi-change" ? "primary" : "outline"}
               onClick={() => setFilter("multi-change")}
             >
               다중변경
-            </Button>
-            <Button
-              variant={filter === "status" ? "contained" : "outlined"}
+            </CommonButton>
+            <CommonButton
+              variant={filter === "status" ? "primary" : "outline"}
               onClick={() => setFilter("status")}
             >
               상태변경
-            </Button>
+            </CommonButton>
           </ButtonGroup>
         </div>
       )}

@@ -38,6 +38,7 @@ export type CalculatedPayment = typeof payments.$inferSelect & {
 
 export type CalculatedCostDetail = typeof costDetails.$inferSelect & {
   totalContractPrice: number;
+  totalPriceUsd: number;
   costPerKg: number;
   customTaxAmount: number;
 };
@@ -77,6 +78,7 @@ export class CargoCalculator {
     margin: number;
     totalProfit: number;
     totalContractPrice: number;
+    totalPriceUsd: number;
     costPerKg: number;
     contractorCost: number;
     contractorProfit: number;
@@ -107,6 +109,7 @@ export class CargoCalculator {
     const totalContractPrice = Math.floor(
       unitPrice * exchangeRate * contractTon,
     );
+    const totalPriceUsd = Math.floor(unitPrice * contractTon); // 새로운 달러 단위 총액
     const costPerKg = (unitPrice * exchangeRate) / 1000;
     const customTaxAmount =
       (totalContractPrice * (this.data.costDetail.customsTaxRate || 0)) / 100;
@@ -157,6 +160,7 @@ export class CargoCalculator {
       margin: calculated.margin,
       totalProfit: calculated.totalProfit,
       totalContractPrice,
+      totalPriceUsd,
       costPerKg,
       contractorCost,
       contractorProfit: calculated.contractorProfit,
@@ -248,6 +252,7 @@ export class CargoCalculator {
       id: costDetail.id,
       unitPrice: costDetail.unitPrice || 0,
       totalContractPrice: this.calculatedValues.totalContractPrice,
+      totalPriceUsd: this.calculatedValues.totalPriceUsd,
       exchangeRate: costDetail.exchangeRate || 0,
       costPerKg: this.calculatedValues.costPerKg,
       costId: costDetail.costId,

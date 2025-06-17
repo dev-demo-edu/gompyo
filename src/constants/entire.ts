@@ -412,6 +412,7 @@ export const expenseFields: BaseField[] = [
     valueType: "number",
     disabled: true,
     endAdornment: "₩/Kg",
+    removeDecimal: true,
   },
   {
     name: "sellingPrice",

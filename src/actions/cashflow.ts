@@ -168,3 +168,14 @@ export async function updateCashflow(cashflow: CashflowFormValues, id: string) {
     .where(eq(cashflows.id, id))
     .then((rows) => rows[0]);
 }
+
+export async function updateCashflowApproval(id: string, isApproved: boolean) {
+  const result = await db
+    .update(cashflows)
+    .set({
+      isApproved,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(cashflows.id, id));
+  return result;
+}

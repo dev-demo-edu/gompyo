@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
@@ -37,6 +36,7 @@ import { cargoRefreshAtom } from "@/states/plan";
 import { getAllImporters, createImporter } from "@/actions/importer";
 import type { Importer } from "@/types/importer";
 import { CalculationType } from "@/types/importer";
+import CommonButton from "@/components/common-button";
 
 // 계약 정보 스키마
 export const contractSchema = z.object({
@@ -419,27 +419,22 @@ export default function PlanButton() {
                 className="[&_.MuiOutlinedInput-root]:h-14 [&_.MuiOutlinedInput-root]:rounded-lg [&_.MuiInputLabel-root]:bg-background-paper [&_.MuiInputLabel-root]:px-1 [&_.MuiInputLabel-root]:text-xs [&_.MuiInputLabel-root]:font-semibold [&_.MuiInputLabel-root]:text-text-secondary [&_.MuiInputLabel-root]:font-['Public_Sans']"
               />
               <Box className="flex gap-2">
-                <Button
-                  variant="outlined"
-                  color="inherit"
+                <CommonButton
+                  variant="outline"
+                  className="h-14"
                   onClick={() => setShowAddImporterInput(false)}
-                  className="h-14 min-w-[80px]"
                 >
                   취소
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
+                </CommonButton>
+
+                <CommonButton
+                  variant="primary"
                   onClick={handleCreateImporter}
+                  className="h-14"
                   disabled={isCreatingImporter || !newImporterName.trim()}
-                  className="h-14 min-w-[80px]"
                 >
-                  {isCreatingImporter ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "추가"
-                  )}
-                </Button>
+                  추가
+                </CommonButton>
               </Box>
             </Box>
           )}
@@ -500,21 +495,13 @@ export default function PlanButton() {
         </Box>
         {/* 버튼 영역 */}
         <Box className="flex flex-col sm:flex-row gap-6 justify-end">
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={handleClose}
-            className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
-          >
+          <CommonButton variant="outline" onClick={handleClose}>
             취소
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            className="h-12 min-w-16 px-4 bg-global-inherit-bgcolor rounded-lg text-global-inherit-color font-bold font-['Public_Sans'] hover:bg-opacity-90"
-          >
+          </CommonButton>
+
+          <CommonButton variant="primary" type="submit">
             다음
-          </Button>
+          </CommonButton>
         </Box>
       </Box>
     </form>
@@ -752,21 +739,16 @@ export default function PlanButton() {
           />
 
           <Box className="flex flex-col sm:flex-row gap-6 justify-end">
-            <Button
-              type="button"
-              variant="outlined"
+            <CommonButton
+              variant="outline"
               onClick={() => setIsAddingCargo(false)}
-              className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
             >
               취소
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              className="h-12 min-w-16 px-4 bg-global-inherit-bgcolor rounded-lg text-global-inherit-color font-bold font-['Public_Sans'] hover:bg-opacity-90"
-            >
+            </CommonButton>
+
+            <CommonButton variant="primary" type="submit">
               추가하기
-            </Button>
+            </CommonButton>
           </Box>
         </Box>
       </Box>
@@ -838,29 +820,21 @@ export default function PlanButton() {
         </TableContainer>
 
         <Box className="flex justify-end">
-          <Button
-            variant="outlined"
-            onClick={handleAddCargo}
-            className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-primary-48% outline-opacity-50 text-primary-main font-bold font-['Public_Sans']"
-          >
+          <CommonButton variant="outline" onClick={handleAddCargo}>
             추가하기
-          </Button>
+          </CommonButton>
         </Box>
 
         {/* 버튼 영역 */}
         <Box className="flex flex-col sm:flex-row gap-6 justify-end">
-          <Button
-            variant="outlined"
-            onClick={handleBack}
-            className="h-12 min-w-16 px-4 rounded-lg outline-[1px] outline-offset-[-1px] outline-components-button-outlined outline-opacity-30 text-text-primary font-bold font-['Public_Sans'] hover:bg-gray-50"
-          >
+          <CommonButton variant="outline" onClick={handleBack}>
             이전
-          </Button>
-          <Button
-            variant="contained"
+          </CommonButton>
+
+          <CommonButton
+            variant="primary"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="h-12 min-w-16 px-4 bg-global-inherit-bgcolor rounded-lg text-global-inherit-color font-bold font-['Public_Sans'] hover:bg-opacity-90"
           >
             {isSubmitting ? (
               <Box className="flex items-center gap-2">
@@ -870,7 +844,7 @@ export default function PlanButton() {
             ) : (
               "등록"
             )}
-          </Button>
+          </CommonButton>
         </Box>
       </Box>
     </>
@@ -879,13 +853,9 @@ export default function PlanButton() {
   return (
     // 오른쪽 끝으로 설정하기 위해서 flex justify-end 추가
     <div>
-      <Button
-        variant="contained"
-        onClick={handleOpen}
-        className="px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
-      >
+      <CommonButton variant="info" onClick={handleOpen}>
         추가하기
-      </Button>
+      </CommonButton>
 
       <Modal
         open={open}

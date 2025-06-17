@@ -285,7 +285,7 @@ export async function getQuotationRelations(
           : inArray(quotationCompaniesItems.companyId, companyIds),
       );
 
-    // 4. priceData 구조로 변환 (companyId -> itemName -> value)
+    // 4. priceData 구조로 변환 (companyId -> itemId -> value)
     const priceData: Record<string, Record<string, number>> = {};
 
     companies.forEach((company) => {
@@ -293,12 +293,12 @@ export async function getQuotationRelations(
     });
 
     relationshipsData.forEach((relation) => {
-      const item = items.find((item) => item.id === relation.itemId);
-      if (item && relation.value !== null) {
+      if (relation.value !== null) {
         if (!priceData[relation.companyId]) {
           priceData[relation.companyId] = {};
         }
-        priceData[relation.companyId][item.itemName] = relation.value;
+        // itemId를 키로 사용하도록 변경
+        priceData[relation.companyId][relation.itemId] = relation.value;
       }
     });
 
