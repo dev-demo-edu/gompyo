@@ -143,7 +143,6 @@ export async function getShipmentData(): Promise<IShipmentData[]> {
         calculationType:
           (importer?.calculationType as CalculationType) ||
           CalculationType.STANDARD,
-        importerCode: importer?.importerCode || "",
       },
     };
 
