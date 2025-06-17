@@ -141,6 +141,13 @@
       "when": 1749734084480,
       "tag": "0019_powerful_scrambler",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1750119728141,
+      "tag": "0020_bored_guardsmen",
+      "breakpoints": true
     }
   ]
 }
