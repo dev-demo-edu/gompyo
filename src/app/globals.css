@@ -182,3 +182,8 @@ body {
   outline-color: var(--color-primary-500) !important;
   border-color: var(--color-primary-500) !important;
 }
+
+/* ag-Grid 헤더 중앙 정렬 */
+.ag-header-group-cell.text-center .ag-header-cell-comp-wrapper {
+  justify-content: center !important;
+}
