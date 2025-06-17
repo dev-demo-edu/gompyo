@@ -438,12 +438,8 @@
           "name": "contracts_importer_id_importers_id_fk",
           "tableFrom": "contracts",
           "tableTo": "importers",
-          "columnsFrom": [
-            "importer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["importer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -988,12 +984,8 @@
           "name": "payments_tt_payment_id_payments_id_fk",
           "tableFrom": "payments_tt",
           "tableTo": "payments",
-          "columnsFrom": [
-            "payment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["payment_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1033,12 +1025,8 @@
           "name": "payments_usance_payment_id_payments_id_fk",
           "tableFrom": "payments_usance",
           "tableTo": "payments",
-          "columnsFrom": [
-            "payment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["payment_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1149,12 +1137,8 @@
           "name": "quotation_companies_items_company_id_partners_id_fk",
           "tableFrom": "quotation_companies_items",
           "tableTo": "partners",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1162,12 +1146,8 @@
           "name": "quotation_companies_items_item_id_quotation_items_id_fk",
           "tableFrom": "quotation_companies_items",
           "tableTo": "quotation_items",
-          "columnsFrom": [
-            "item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1447,12 +1427,8 @@
           "name": "stocks_cargo_id_cargos_id_fk",
           "tableFrom": "stocks",
           "tableTo": "cargos",
-          "columnsFrom": [
-            "cargo_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cargo_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
