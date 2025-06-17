@@ -15,6 +15,7 @@ export async function getAllImporters(): Promise<Importer[]> {
       ...importer,
       importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     }));
   } catch (error) {
     console.error("수입업체 목록 조회 오류:", error);
@@ -32,6 +33,7 @@ export async function searchImportersByName(name: string): Promise<Importer[]> {
       ...importer,
       importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     }));
   } catch (error) {
     console.error("수입업체 검색 오류:", error);
@@ -59,6 +61,7 @@ export async function createImporter(
       ...importer,
       importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     };
   } catch (error) {
     console.error("수입업체 생성 오류:", error);
@@ -81,6 +84,7 @@ export async function updateImporter(
       ...importer,
       importerCode: importer.importerCode || "gompyo",
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     };
   } catch (error) {
     console.error("수입업체 업데이트 오류:", error);

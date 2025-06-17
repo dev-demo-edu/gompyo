@@ -32,6 +32,7 @@ interface DataGridProps<T> {
   paginationPageSize?: number;
   onRowDragEnd?: (event: RowDragEndEvent) => void;
   onCellValueChanged?: (event: CellValueChangedEvent) => void;
+  onGridReady?: (api: GridApi) => void;
   rowSelection?: "single" | "multiple";
   suppressRowClickSelection?: boolean;
 }
@@ -50,6 +51,7 @@ export default function DataGrid<T>({
   paginationPageSize = 15,
   onRowDragEnd,
   onCellValueChanged,
+  onGridReady,
   rowSelection = "multiple",
   suppressRowClickSelection = true,
 }: DataGridProps<T>) {
@@ -138,8 +140,13 @@ export default function DataGrid<T>({
         state: columnState,
         applyOrder: true,
       });
+
+      // 부모 컴포넌트에 gridApi 전달
+      if (onGridReady) {
+        onGridReady(params.api);
+      }
     },
-    [columnState],
+    [columnState, onGridReady],
   );
 
   if (error) {
