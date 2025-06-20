@@ -14,6 +14,7 @@ export async function getAllImporters(): Promise<Importer[]> {
     return importers.map((importer) => ({
       ...importer,
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     }));
   } catch (error) {
     console.error("수입업체 목록 조회 오류:", error);
@@ -30,6 +31,7 @@ export async function searchImportersByName(name: string): Promise<Importer[]> {
     return importers.map((importer) => ({
       ...importer,
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     }));
   } catch (error) {
     console.error("수입업체 검색 오류:", error);
@@ -56,6 +58,7 @@ export async function createImporter(
     return {
       ...importer,
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     };
   } catch (error) {
     console.error("수입업체 생성 오류:", error);
@@ -77,6 +80,7 @@ export async function updateImporter(
     return {
       ...importer,
       calculationType: importer.calculationType as CalculationType,
+      importerCode: importer.importerCode ?? "",
     };
   } catch (error) {
     console.error("수입업체 업데이트 오류:", error);

@@ -511,10 +511,15 @@ export class CheckboxFilterReact extends Component {
     if (this.searchTerm) {
       this.filteredValues.forEach((value) => this.selectedValues.add(value));
     } else {
-      this.selectedValues = new Set(this.uniqueValues);
+      // Clear and add all unique values
+      this.selectedValues.clear();
+      this.uniqueValues.forEach((value) => this.selectedValues.add(value));
     }
+
     this.updateCheckboxes();
     this.updateSelectedCount();
+    this.updateButtonStates();
+
     setTimeout(() => {
       this.params.filterChangedCallback();
     }, 0);
@@ -528,10 +533,13 @@ export class CheckboxFilterReact extends Component {
     if (this.searchTerm) {
       this.filteredValues.forEach((value) => this.selectedValues.delete(value));
     } else {
-      this.selectedValues = new Set();
+      this.selectedValues.clear(); // Use clear() instead of new Set()
     }
+
     this.updateCheckboxes();
     this.updateSelectedCount();
+    this.updateButtonStates();
+
     setTimeout(() => {
       this.params.filterChangedCallback();
     }, 0);
@@ -541,14 +549,25 @@ export class CheckboxFilterReact extends Component {
     const container = this.eGui.querySelector("#checkboxContainer");
     if (!container) return;
 
-    // Update checkboxes for filtered values
+    // Update checkboxes for filtered values using data-value attribute
     this.filteredValues.forEach((value) => {
-      const safeId = `checkbox-${this.createSafeId(value)}-${this.createSafeId(this.params.colDef.field)}`;
-      const checkbox = container.querySelector(
-        `#${safeId}`,
-      ) as HTMLInputElement;
+      // Use querySelectorAll and find by data-value to handle special characters
+      const checkboxes = container.querySelectorAll(
+        'input[type="checkbox"]',
+      ) as NodeListOf<HTMLInputElement>;
+      let checkbox: HTMLInputElement | null = null;
+
+      for (const cb of checkboxes) {
+        if (cb.getAttribute("data-value") === value) {
+          checkbox = cb;
+          break;
+        }
+      }
+
       if (checkbox) {
         checkbox.checked = this.selectedValues.has(value);
+      } else {
+        console.warn(`Checkbox not found for value: "${value}"`);
       }
     });
   }
